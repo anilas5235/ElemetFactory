@@ -5,10 +5,10 @@ namespace Project.Scripts.Grid
 {
     public class Test : MonoBehaviour
     {
-        private GridField gridField;
+        private GridField<bool> _gridField;
         void Start()
         {
-            gridField = new GridField(10, 10,10f,transform.position);
+            _gridField = new GridField<bool>(10, 10,10f,transform.position);
         }
 
         private void Update()
@@ -16,7 +16,7 @@ namespace Project.Scripts.Grid
             if (Input.GetMouseButtonDown(0))
             {
                 Vector3 position = GeneralUtilities.GetMousePosition();
-                gridField.SetCellValue(position,gridField.GetCellValue(position)+ 1);
+                _gridField.SetCellValue(position,!_gridField.GetCellValue(position));
             }
         }
     }

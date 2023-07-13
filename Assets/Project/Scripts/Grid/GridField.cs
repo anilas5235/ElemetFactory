@@ -4,7 +4,7 @@ using UnityEngine.PlayerLoop;
 
 namespace Project.Scripts.Grid
 {
-    public class GridField
+    public class GridField<TGridObject>
     {
         public int Width { get; protected set; }
         public int Height { get; protected set; }
@@ -12,8 +12,10 @@ namespace Project.Scripts.Grid
 
         private readonly Vector3 _halfCellSize;
         private Vector3 _originPosition;
-        private readonly int[,] _cellValues;
+        private readonly TGridObject[,] _cellValues;
         private readonly TextMesh[,] _cellTexts;
+
+        private static bool debug = true;
 
         public GridField(int width, int height, float cellSize, Vector3 originPosition)
         {
@@ -23,28 +25,29 @@ namespace Project.Scripts.Grid
             _halfCellSize = new Vector3(cellSize, cellSize) * .5f;
             _originPosition = originPosition;
 
-            _cellValues = new int[Width, Height];
+            _cellValues = new TGridObject[Width, Height];
             _cellTexts = new TextMesh[Width, Height];
 
-            for (int x = 0; x < _cellValues.GetLength(0); x++)
+            if (debug)
             {
-                for (int y = 0; y < _cellValues.GetLength(1); y++)
+                for (int x = 0; x < _cellValues.GetLength(0); x++)
                 {
-                    _cellTexts[x, y] =
-                        GeneralUtilities.CreateWorldText($"{_cellValues[x, y]}", GetWorldPosition(x, y), 20);
-                    if (x == 0)
-                        Debug.DrawLine(GetWorldPosition(0, y) - _halfCellSize, GetWorldPosition(Width, y) - _halfCellSize,
-                            Color.white, 100f);
+                    for (int y = 0; y < _cellValues.GetLength(1); y++)
+                    {
+                        _cellTexts[x, y] = GeneralUtilities.CreateWorldText($"{_cellValues[x, y]}", GetWorldPosition(x, y), 20);
+                    }
+
+                    Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize, GetWorldPosition(x, Height) - _halfCellSize,
+                        Color.white, 100f);
+                    Debug.DrawLine(GetWorldPosition(0, x) - _halfCellSize, GetWorldPosition(Width, x) - _halfCellSize,
+                        Color.white, 100f);
                 }
 
-                Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize, GetWorldPosition(x, Height) - _halfCellSize,
+                Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
+                    Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
                     Color.white, 100f);
             }
-
-            Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
-                Color.white, 100f);
-            Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
-                Color.white, 100f);
 
         }
 
@@ -70,32 +73,32 @@ namespace Project.Scripts.Grid
         
         #region Set&GetCellValue
 
-        public void SetCellValue(int x, int y, int value)
+        public void SetCellValue(int x, int y, TGridObject value)
         {
             if (!IsValidPosition(x, y) || _cellValues[x, y].Equals(value)) return;
             _cellValues[x, y] = value;
             _cellTexts[x, y].text = $"{value}";
         }
-        public void SetCellValue(Vector2Int position, int value)
+        public void SetCellValue(Vector2Int position,TGridObject  value)
         {
             SetCellValue(position.x, position.y, value);
         }
-        public void SetCellValue(Vector3 worldPosition, int value)
+        public void SetCellValue(Vector3 worldPosition, TGridObject  value)
         {
             SetCellValue(GetCellPosition(worldPosition), value);
         }
 
-        public int GetCellValue(int x, int y)
+        public TGridObject  GetCellValue(int x, int y)
         {
             if (!IsValidPosition(x, y)) return default;
             return _cellValues[x, y];
         }
-        public int GetCellValue(Vector2Int position)
+        public TGridObject  GetCellValue(Vector2Int position)
         {
             return GetCellValue(position.x, position.y);
         }
         
-        public int GetCellValue(Vector3 worldPosition)
+        public TGridObject  GetCellValue(Vector3 worldPosition)
         {
             return GetCellValue(GetCellPosition(worldPosition));
         }
@@ -104,7 +107,7 @@ namespace Project.Scripts.Grid
 
         #region SetCellBlock
 
-        public void SetCellBlockValues(int xStart, int xEnd, int yStart, int yEnd, int value)
+        public void SetCellBlockValues(int xStart, int xEnd, int yStart, int yEnd, TGridObject  value)
         {
             if (xStart < 0) xStart = 0;
             if (xEnd >= Width) xEnd = Width - 1;
@@ -118,7 +121,7 @@ namespace Project.Scripts.Grid
             }
         }
 
-        public void SetCellBlockValues(Vector2Int leftBottomCorner, Vector2Int rightTopCorner, int value)
+        public void SetCellBlockValues(Vector2Int leftBottomCorner, Vector2Int rightTopCorner, TGridObject  value)
         {
             int xStart = leftBottomCorner.x,
                 yStart = leftBottomCorner.y,
