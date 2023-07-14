@@ -1,51 +1,64 @@
+using System;
 using Project.Scripts.Utilities;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Project.Scripts.Grid
 {
+    /*
+     * Code based on the work of Code Monkey
+     */
     public class GridField<TGridObject>
     {
         public int Width { get; protected set; }
         public int Height { get; protected set; }
         public float CellSize { get; protected set; }
 
-        private readonly Vector3 _halfCellSize;
-        private Vector3 _originPosition;
+        private readonly Vector3 _halfCellSize,_originPosition,_fieldOffset;
         private readonly TGridObject[,] _cellValues;
         private readonly TextMesh[,] _cellTexts;
 
-        private static bool debug = true;
+        private bool Debug = true;
 
-        public GridField(int width, int height, float cellSize, Vector3 originPosition)
+        public Action OnGridFieldChanged;
+        
+        public GridField(int width, int height, float cellSize, Transform originTransform, Func<GridField<TGridObject>,Vector2Int,TGridObject> createGridObject)
         {
             Width = width;
             Height = height;
             CellSize = cellSize;
             _halfCellSize = new Vector3(cellSize, cellSize) * .5f;
-            _originPosition = originPosition;
+            _fieldOffset = new Vector3(Width / 2f, Height / 2f) * CellSize - _halfCellSize;
+            _originPosition = originTransform.position - _fieldOffset;
 
             _cellValues = new TGridObject[Width, Height];
             _cellTexts = new TextMesh[Width, Height];
 
-            if (debug)
+            for (int x = 0; x < _cellValues.GetLength(0); x++)
+            {
+                for (int y = 0; y < _cellValues.GetLength(1); y++)
+                {
+                    _cellValues[x, y] = createGridObject(this, new Vector2Int(x, y));
+                }
+            }
+
+            if (Debug)
             {
                 for (int x = 0; x < _cellValues.GetLength(0); x++)
                 {
                     for (int y = 0; y < _cellValues.GetLength(1); y++)
                     {
-                        _cellTexts[x, y] = GeneralUtilities.CreateWorldText($"{_cellValues[x, y]}", GetWorldPosition(x, y), 20);
+                        _cellTexts[x, y] = GeneralUtilities.CreateWorldText(_cellValues[x, y]?.ToString(), GetLocalPosition(x, y), 20, Color.white,originTransform );
                     }
 
-                    Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize, GetWorldPosition(x, Height) - _halfCellSize,
+                    UnityEngine.Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize, GetWorldPosition(x, Height) - _halfCellSize,
                         Color.white, 100f);
-                    Debug.DrawLine(GetWorldPosition(0, x) - _halfCellSize, GetWorldPosition(Width, x) - _halfCellSize,
+                    UnityEngine.Debug.DrawLine(GetWorldPosition(0, x) - _halfCellSize, GetWorldPosition(Width, x) - _halfCellSize,
                         Color.white, 100f);
                 }
 
-                Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
+                UnityEngine.Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
                     Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
+                UnityEngine.Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
                     Color.white, 100f);
             }
 
@@ -60,7 +73,16 @@ namespace Project.Scripts.Grid
 
         public Vector3 GetWorldPosition(Vector2Int position)
         {
-            return new Vector3(position.x, position.y) * CellSize;
+            return GetWorldPosition(position.x,position.y);
+        }
+
+        public Vector3 GetLocalPosition(int x, int y)
+        {
+            return new Vector3(x, y) * CellSize - _fieldOffset;
+        }
+        public Vector3 GetLocalPosition(Vector2Int position)
+        {
+            return GetLocalPosition(position.x, position.y);
         }
 
         public Vector2Int GetCellPosition(Vector3 worldPosition)
@@ -73,70 +95,61 @@ namespace Project.Scripts.Grid
         
         #region Set&GetCellValue
 
-        public void SetCellValue(int x, int y, TGridObject value)
+        public void TriggerGridObjectChanged(Vector2Int position)
+        {
+            if(Debug) _cellTexts[position.x, position.y].text = _cellValues[position.x, position.y]?.ToString();
+            OnGridFieldChanged?.Invoke();
+        }
+        public void SetCellData(int x, int y, TGridObject value)
         {
             if (!IsValidPosition(x, y) || _cellValues[x, y].Equals(value)) return;
             _cellValues[x, y] = value;
-            _cellTexts[x, y].text = $"{value}";
+            if(Debug) _cellTexts[x, y].text = value.ToString();
+            OnGridFieldChanged?.Invoke();
         }
-        public void SetCellValue(Vector2Int position,TGridObject  value)
+        public void SetCellData(Vector2Int position,TGridObject  value)
         {
-            SetCellValue(position.x, position.y, value);
+            SetCellData(position.x, position.y, value);
         }
-        public void SetCellValue(Vector3 worldPosition, TGridObject  value)
+        public void SetCellData(Vector3 worldPosition, TGridObject  value)
         {
-            SetCellValue(GetCellPosition(worldPosition), value);
+            SetCellData(GetCellPosition(worldPosition), value);
         }
 
-        public TGridObject  GetCellValue(int x, int y)
+        public TGridObject  GetCellData(int x, int y)
         {
             if (!IsValidPosition(x, y)) return default;
             return _cellValues[x, y];
         }
-        public TGridObject  GetCellValue(Vector2Int position)
+        public TGridObject  GetCellData(Vector2Int position)
         {
-            return GetCellValue(position.x, position.y);
+            return GetCellData(position.x, position.y);
         }
         
-        public TGridObject  GetCellValue(Vector3 worldPosition)
+        public TGridObject  GetCellData(Vector3 worldPosition)
         {
-            return GetCellValue(GetCellPosition(worldPosition));
+            return GetCellData(GetCellPosition(worldPosition));
         }
         
         #endregion
 
         #region SetCellBlock
 
-        public void SetCellBlockValues(int xStart, int xEnd, int yStart, int yEnd, TGridObject  value)
+        public void SetCellBlockData(int xStart, int xEnd, int yStart, int yEnd, TGridObject value)
         {
-            if (xStart < 0) xStart = 0;
-            if (xEnd >= Width) xEnd = Width - 1;
-            if (yStart < 0) yStart = 0;
-            if (yEnd >= Height) yEnd = Height - 1;
+            xStart = Mathf.Clamp(xStart, 0, Width);
+            xEnd = Mathf.Clamp(xEnd, 0, Width);
+            yStart = Mathf.Clamp(yStart, 0, Height);
+            yEnd = Mathf.Clamp(yEnd, 0, Height);
+            
             if (xStart - xEnd < 1 || yStart - yEnd < 1) return;
 
-            for (int x = xStart; x < xEnd; x++)
-            {
-                for (int y = yStart; y < yEnd; y++) SetCellValue(x, y, value);
-            }
+            for (int x = xStart; x < xEnd; x++) { for (int y = yStart; y < yEnd; y++) SetCellData(x, y, value); }
         }
 
-        public void SetCellBlockValues(Vector2Int leftBottomCorner, Vector2Int rightTopCorner, TGridObject  value)
+        public void SetCellBlockData(Vector2Int leftBottomCorner, Vector2Int rightTopCorner, TGridObject value)
         {
-            int xStart = leftBottomCorner.x,
-                yStart = leftBottomCorner.y,
-                xEnd = rightTopCorner.x,
-                yEnd = rightTopCorner.y;
-            if (xStart < 0) xStart = 0;
-            if (xEnd >= Width) xEnd = Width - 1;
-            if (yStart < 0) yStart = 0;
-            if (yEnd >= Height) yEnd = Height - 1;
-            if (xStart - xEnd < 1 || yStart - yEnd < 1) return;
-
-            for (int x = xStart; x < xEnd; x++)
-            {
-                for (int y = yStart; y < yEnd; y++) SetCellValue(x, y, value);
-            }
+            SetCellBlockData(leftBottomCorner.x,rightTopCorner.x,leftBottomCorner.y,rightTopCorner.y, value);
         }
 
         #endregion
