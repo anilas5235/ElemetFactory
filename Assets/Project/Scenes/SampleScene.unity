@@ -360,7 +360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11f88515665d8f74b8368f65ee2f048c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testBuilding: {fileID: 6583829471852887923, guid: f772defb543ef8644ae561158ba5650d, type: 3}
+  buildings:
+  - {fileID: 11400000, guid: 0e7e22305a13a884296292bd87c1ca7c, type: 2}
 --- !u!4 &1184361985
 Transform:
   m_ObjectHideFlags: 0

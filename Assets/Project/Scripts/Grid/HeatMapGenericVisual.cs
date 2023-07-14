@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Project.Scripts.Grid
 {
+    /*
+     * Code based on the work of Code Monkey
+     */
     [RequireComponent(typeof(MeshFilter),typeof(MeshRenderer))]
     public class HeatMapGenericVisual : MonoBehaviour
     {
