@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings;
+using Project.Scripts.CellType;
 using Project.Scripts.Utilities;
 using UnityEngine;
 
@@ -12,20 +13,19 @@ namespace Project.Scripts.Grid
     public class GridBuildingSystem : MonoBehaviour
     {
         [SerializeField] private List<BuildingDataBase> buildings;
-        
         private BuildingDataBase _selectedBuilding;
-        private GridField<GridObject> _buildingGrid;
         private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
 
-        public static Vector2Int GridSize = new Vector2Int(10, 10);
-        public static readonly float CellSize = 10f;
-        
+        public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
+        public const float CellSize = 10f;
+        [SerializeField] private GameObject chunkPrefap;
+
+        public Dictionary<Vector2Int, GridChunk> Chunks = new Dictionary<Vector2Int, GridChunk>();
 
         private void Awake()
         {
-            _buildingGrid = new GridField<GridObject>(GridSize.x, GridSize.y, CellSize, transform,
-                (field, pos) => new GridObject(field, pos));
             _selectedBuilding = buildings.First();
+            Chunks.Add(new Vector2Int(0,0),Instantiate(chunkPrefap).GetComponent<GridChunk>());
         }
 
         private void Update()
@@ -35,31 +35,40 @@ namespace Project.Scripts.Grid
                 _direction = BuildingDataBase.GetNextDirection(_direction);
                 Debug.Log($"rotation: {_direction}");
             }
-            if (Input.GetMouseButton(0)&& _selectedBuilding)
+
+            if (Input.GetMouseButton(0) && _selectedBuilding)
             {
-                GridObject gridObject =  _buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
+                Vector2 chunkPos = GeneralUtilities.GetMousePosition();
+                GridChunk chunk = Chunks[new Vector2Int(Mathf.RoundToInt(chunkPos.x /(CellSize * GridSize.x)), Mathf.RoundToInt(chunkPos.y/(CellSize * GridSize.y)))];
+                if(chunk == null) return;
+                GridField<GridObject> buildingGrid = chunk._buildingGrid;
+                GridObject gridObject =  buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
                 if(gridObject == null) return;
                 List<Vector2Int> positions = _selectedBuilding.GetGridPositionList(gridObject.Position, _direction);
                 bool canPlace = true;
                 foreach (Vector2Int position in positions)
                 {
-                    GridObject gridObj = _buildingGrid.GetCellData(position);
+                    GridObject gridObj = buildingGrid.GetCellData(position);
                     if(gridObj == null|| gridObj.Occupied){ canPlace = false; break;}
                 }
                 if (canPlace)
                 {
-                    PlacedBuilding placedBuilding =  PlacedBuilding.CreateBuilding(_buildingGrid.GetLocalPosition(gridObject.Position),
-                        gridObject.Position, positions.ToArray(), _direction, _selectedBuilding, transform, _buildingGrid.CellSize);
+                    PlacedBuilding placedBuilding =  PlacedBuilding.CreateBuilding(buildingGrid.GetLocalPosition(gridObject.Position),
+                        gridObject.Position, positions.ToArray(), _direction, _selectedBuilding, transform, buildingGrid.CellSize);
                     foreach (Vector2Int blockedCell in positions)
                     {
-                        _buildingGrid.GetCellData(blockedCell).Occupy(placedBuilding);
-                        _buildingGrid.TriggerGridObjectChanged(blockedCell);
+                        buildingGrid.GetCellData(blockedCell).Occupy(placedBuilding);
+                        buildingGrid.TriggerGridObjectChanged(blockedCell);
                     }
                 }
             }
             if (Input.GetMouseButton(1))
             {
-                GridObject gridObject =  _buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
+                Vector2 chunkPos = GeneralUtilities.GetMousePosition();
+                GridChunk chunk = Chunks[new Vector2Int(Mathf.RoundToInt(chunkPos.x /(CellSize * GridSize.x)), Mathf.RoundToInt(chunkPos.y/(CellSize * GridSize.y)))];
+                if(chunk == null) return;
+                GridField<GridObject> buildingGrid = chunk._buildingGrid;
+                GridObject gridObject =  buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
                 if(gridObject == null) return;
                 if (gridObject.Occupied)
                 {
@@ -68,7 +77,7 @@ namespace Project.Scripts.Grid
                     
                     foreach (Vector2Int occupiedCell in placedBuilding.OccupiedCells)
                     {
-                        _buildingGrid.GetCellData(occupiedCell).ClearBuilding();
+                        buildingGrid.GetCellData(occupiedCell).ClearBuilding();
                     }
                 }
             }
@@ -83,16 +92,17 @@ namespace Project.Scripts.Grid
 
     public class GridObject
     {
-        private GridField<GridObject> _gridField;
+        private readonly GridField<GridObject> _gridField;
         public Vector2Int Position { get; }
         public bool Occupied => Building;
-
         public PlacedBuilding Building { get; private set; }
+        public CellResources ResourceNode { get; }
 
-        public GridObject(GridField<GridObject> gridField, Vector2Int position)
+        public GridObject(GridField<GridObject> gridField, Vector2Int position, CellResources resource = null)
         {
             _gridField = gridField;
             Position = position;
+            ResourceNode = resource;
         }
 
         public void Occupy(PlacedBuilding building)
@@ -111,7 +121,7 @@ namespace Project.Scripts.Grid
 
         public override string ToString()
         {
-            return Position+"\n" + Building;
+            return Position+"\n" + Building + "\n" + ResourceNode;
         }
     }
 }

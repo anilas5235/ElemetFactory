@@ -64,6 +64,11 @@ namespace Project.Scripts.Grid
 
         }
 
+        public GridField(Vector2Int size, float cellSize, Transform originTransform, Func<GridField<TGridObject>, Vector2Int, TGridObject> createGridObject) 
+            : this(size.x,size.y,cellSize,originTransform,createGridObject)
+        {
+        }
+
         #region GetPositions
 
         public Vector3 GetWorldPosition(int x, int y)
