@@ -18,14 +18,19 @@ namespace Project.Scripts.Grid
 
         public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
         public const float CellSize = 10f;
+        public static readonly Vector2 ChunkSize = new Vector2(CellSize * GridSize.x, CellSize * GridSize.y);
         [SerializeField] private GameObject chunkPrefap;
 
-        public Dictionary<Vector2Int, GridChunk> Chunks = new Dictionary<Vector2Int, GridChunk>();
+        public Dictionary<Vector2Int, GridChunk> Chunks { get; private set; } = new Dictionary<Vector2Int, GridChunk>();
 
         private void Awake()
         {
             _selectedBuilding = buildings.First();
-            Chunks.Add(new Vector2Int(0,0),Instantiate(chunkPrefap).GetComponent<GridChunk>());
+            GridChunk newChunk = Instantiate(chunkPrefap).GetComponent<GridChunk>();
+            Vector2Int chunkP = Vector2Int.zero;
+            Vector3 localPos = new Vector3(chunkP.x * ChunkSize.x, chunkP.y * ChunkSize.y);
+            newChunk.SetPosition(chunkP,localPos);
+            Chunks.Add(chunkP, newChunk);
         }
 
         private void Update()
@@ -39,7 +44,7 @@ namespace Project.Scripts.Grid
             if (Input.GetMouseButton(0) && _selectedBuilding)
             {
                 Vector2 chunkPos = GeneralUtilities.GetMousePosition();
-                GridChunk chunk = Chunks[new Vector2Int(Mathf.RoundToInt(chunkPos.x /(CellSize * GridSize.x)), Mathf.RoundToInt(chunkPos.y/(CellSize * GridSize.y)))];
+                GridChunk chunk = Chunks[new Vector2Int(Mathf.RoundToInt(chunkPos.x /ChunkSize.x), Mathf.RoundToInt(chunkPos.y/ChunkSize.y))];
                 if(chunk == null) return;
                 GridField<GridObject> buildingGrid = chunk._buildingGrid;
                 GridObject gridObject =  buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
