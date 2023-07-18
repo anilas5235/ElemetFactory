@@ -9,19 +9,20 @@ namespace Project.Scripts.Grid
      */
     public class GridField<TGridObject>
     {
-        public int Width { get; protected set; }
-        public int Height { get; protected set; }
-        public float CellSize { get; protected set; }
+        public int Width { get; }
+        public int Height { get; }
+        public float CellSize { get; }
 
         private readonly Vector3 _halfCellSize,_originPosition,_fieldOffset;
         private readonly TGridObject[,] _cellValues;
         private readonly TextMesh[,] _cellTexts;
 
-        private bool Debug = true;
+        private static readonly bool Debug = true, DebugDrawGrid = false;
 
         public Action OnGridFieldChanged;
-        
-        public GridField(int width, int height, float cellSize, Transform originTransform, Func<GridField<TGridObject>,Vector2Int,TGridObject> createGridObject)
+
+        public GridField(int width, int height, float cellSize, Transform originTransform,
+            Func<GridField<TGridObject>, Vector2Int, TGridObject> createGridObject)
         {
             Width = width;
             Height = height;
@@ -41,26 +42,32 @@ namespace Project.Scripts.Grid
                 }
             }
 
-            if (Debug)
-            {
-                for (int x = 0; x < _cellValues.GetLength(0); x++)
-                {
-                    for (int y = 0; y < _cellValues.GetLength(1); y++)
-                    {
-                        _cellTexts[x, y] = GeneralUtilities.CreateWorldText(_cellValues[x, y]?.ToString(), GetLocalPosition(x, y), 20, Color.white,originTransform );
-                    }
+            if (!Debug) return;
 
-                    UnityEngine.Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize, GetWorldPosition(x, Height) - _halfCellSize,
-                        Color.white, 100f);
-                    UnityEngine.Debug.DrawLine(GetWorldPosition(0, x) - _halfCellSize, GetWorldPosition(Width, x) - _halfCellSize,
-                        Color.white, 100f);
+            for (int x = 0; x < _cellValues.GetLength(0); x++)
+            {
+                for (int y = 0; y < _cellValues.GetLength(1); y++)
+                {
+                    _cellTexts[x, y] = GeneralUtilities.CreateWorldText(_cellValues[x, y]?.ToString(),
+                        GetLocalPosition(x, y), 20, Color.black, originTransform);
                 }
 
-                UnityEngine.Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
+                if (!DebugDrawGrid) continue;
+                UnityEngine.Debug.DrawLine(GetWorldPosition(x, 0) - _halfCellSize,
+                    GetWorldPosition(x, Height) - _halfCellSize,
                     Color.white, 100f);
-                UnityEngine.Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize, GetWorldPosition(Width, Height) - _halfCellSize,
+                UnityEngine.Debug.DrawLine(GetWorldPosition(0, x) - _halfCellSize,
+                    GetWorldPosition(Width, x) - _halfCellSize,
                     Color.white, 100f);
             }
+
+            if (!DebugDrawGrid) return;
+            UnityEngine.Debug.DrawLine(GetWorldPosition(0, Height) - _halfCellSize,
+                GetWorldPosition(Width, Height) - _halfCellSize,
+                Color.white, 100f);
+            UnityEngine.Debug.DrawLine(GetWorldPosition(Width, 0) - _halfCellSize,
+                GetWorldPosition(Width, Height) - _halfCellSize,
+                Color.white, 100f);
 
         }
 
