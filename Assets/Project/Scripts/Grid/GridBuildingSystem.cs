@@ -107,7 +107,7 @@ namespace Project.Scripts.Grid
 
         private void InitialChunks()
         {
-            Vector2Int size = new Vector2Int(3, 3);
+            Vector2Int size = new Vector2Int(10, 10);
             for (int x = -size.x; x < size.x+1; x++)
             {
                 for (int y = -size.y; y < size.y+1; y++)
@@ -122,7 +122,7 @@ namespace Project.Scripts.Grid
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
             Vector3 localPosition = new Vector3(chunkPosition.x * ChunkSize.x, chunkPosition.y * ChunkSize.y);
-            newChunk.SetPosition(chunkPosition, localPosition);
+            newChunk.Initialization(chunkPosition, localPosition);
             Chunks.Add(chunkPosition, newChunk);
         }
     }
@@ -134,7 +134,6 @@ namespace Project.Scripts.Grid
         public bool Occupied => Building;
         public PlacedBuilding Building { get; private set; }
         public CellResources ResourceNode { get; }
-
         public GridChunk Chunk { get; }
 
         public GridObject(GridField<GridObject> gridField, Vector2Int position, GridChunk chunk,

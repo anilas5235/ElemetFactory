@@ -9,7 +9,7 @@ namespace Project.Scripts.Grid
         public Vector3 LocalPosition { get; private set; }
         public Vector2Int ChunkPosition { get; private set; }
         
-        public void SetPosition(Vector2Int chunkPosition, Vector3 localPosition)
+        public void Initialization(Vector2Int chunkPosition, Vector3 localPosition)
         {
             ChunkPosition = chunkPosition;
             LocalPosition = localPosition;
