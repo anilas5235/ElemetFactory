@@ -49,7 +49,7 @@ namespace Project.Scripts.Grid
                 for (int y = 0; y < _cellValues.GetLength(1); y++)
                 {
                     _cellTexts[x, y] = GeneralUtilities.CreateWorldText(_cellValues[x, y]?.ToString(),
-                        GetLocalPosition(x, y), 20, Color.black, originTransform);
+                        GetLocalPosition(x, y), 20, Color.green, originTransform);
                 }
 
                 if (!DebugDrawGrid) continue;

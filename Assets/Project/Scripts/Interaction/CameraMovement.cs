@@ -1,10 +1,11 @@
+using Project.Scripts.General;
 using UnityEngine;
 
 namespace Project.Scripts.Interaction
 {
-    public class CameraMovement : MonoBehaviour
+    public class CameraMovement : Singleton<CameraMovement>
     {
-        private Camera _camera;
+        public Camera Camera { get; private set; }
 
         [Header("Parameters")]
         [SerializeField] private float moveSpeed =5;
@@ -14,20 +15,21 @@ namespace Project.Scripts.Interaction
         [SerializeField] private float minCamSize =2;
         [SerializeField] private float maxCamSize =20;
 
-        private void Awake()
+        protected override void Awake()
         {
-            _camera = GetComponent<Camera>();
+            base.Awake();
+            Camera = GetComponent<Camera>();
         }
 
         private void Update()
         {
-            _camera.orthographicSize += -Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-            if (_camera.orthographicSize < minCamSize) _camera.orthographicSize = minCamSize;
-            else if (_camera.orthographicSize > maxCamSize) _camera.orthographicSize = maxCamSize;
+            Camera.orthographicSize += -Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+            if (Camera.orthographicSize < minCamSize) Camera.orthographicSize = minCamSize;
+            else if (Camera.orthographicSize > maxCamSize) Camera.orthographicSize = maxCamSize;
 
             float speed = Input.GetKey(KeyCode.LeftShift) ? heightenedSpeed : moveSpeed;
             transform.position += new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")) *
-                                  (Time.deltaTime * speed * _camera.orthographicSize/maxCamSize);
+                                  (Time.deltaTime * speed * Camera.orthographicSize/maxCamSize);
         }
     }
 }

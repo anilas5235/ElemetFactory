@@ -1,22 +1,20 @@
-
 using System;
 using Random = UnityEngine.Random;
 
-namespace Project.Scripts.CellType
+namespace Project.Scripts.Grid.CellType
 {
     public class CellResources
     {
         public enum ResourcesType
         {
-            None,
-            Hydrogen,
-            Helium,
-            Lithium,
-            Beryllium,
-            Boron,
-            Carbon,
-            Nitrogen,
-            Oxygen,
+            H,
+            He,
+            Li,
+            Be,
+            Bor,
+            C,
+            N,
+            O,
         }
 
         public CellResources(ResourcesType resourcesType)
