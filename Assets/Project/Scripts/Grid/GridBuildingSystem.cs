@@ -213,11 +213,14 @@ namespace Project.Scripts.Grid
             Position = position;
             ResourceNode = resource;
 
-            Vector3Int tilePos = new Vector3Int(
-                Mathf.FloorToInt(Position.x - GridBuildingSystem.GridSize.x / 2f),
-                Mathf.FloorToInt(Position.y - GridBuildingSystem.GridSize.y / 2f),
-                0);
-            Chunk.ChunkTilemap.SetTile(tilePos, ResourceNode != null ? VisualResources.GetTileSource(ResourceNode.NodeType) : VisualResources.DefaultTile);
+            if (ResourceNode != null)
+            {
+                Vector3Int tilePos = new Vector3Int(
+                    Mathf.FloorToInt(Position.x - GridBuildingSystem.GridSize.x / 2f),
+                    Mathf.FloorToInt(Position.y - GridBuildingSystem.GridSize.y / 2f),
+                    0);
+                Chunk.ChunkTilemap.SetTile(tilePos, VisualResources.GetTileSource(ResourceNode.NodeType));
+            }
         }
 
         #region Functions
