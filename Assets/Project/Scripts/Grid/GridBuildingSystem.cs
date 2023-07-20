@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings;
@@ -6,7 +5,9 @@ using Project.Scripts.Grid.CellType;
 using Project.Scripts.Interaction;
 using Project.Scripts.Utilities;
 using Project.Scripts.Visualisation;
+using Unity.Burst;
 using UnityEngine;
+using Unity.Jobs;
 
 namespace Project.Scripts.Grid
 {
@@ -19,7 +20,7 @@ namespace Project.Scripts.Grid
         [SerializeField] private List<BuildingDataBase> buildings;
         private BuildingDataBase _selectedBuilding;
         private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
-
+        
         public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
         public const float CellSize = 10f;
         public static readonly Vector2 ChunkSize = new Vector2(CellSize * GridSize.x, CellSize * GridSize.y);
@@ -34,7 +35,6 @@ namespace Project.Scripts.Grid
         {
             GetComponent<UnityEngine.Grid>().cellSize = new Vector3(CellSize, CellSize, 0);
             _selectedBuilding = buildings.First();
-            InitialChunks();
         }
 
         private void Update()
@@ -66,28 +66,7 @@ namespace Project.Scripts.Grid
 
         private void FixedUpdate()
         {
-            Vector2Int chunkPosWithPlayer = GetChunkPosition(PlayerCam.transform.position);
-            int playerViewRadius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSize.x);
-
-            List<Vector2Int> chunksToLoad = new List<Vector2Int>();
-            List<Vector2Int> chunksToUnLoad = new List<Vector2Int>();
-            
-            for (int x = -playerViewRadius; x < playerViewRadius+1; x++)
-            {
-                for (int y = -playerViewRadius; y < playerViewRadius+1; y++)
-                { 
-                    chunksToLoad.Add(new Vector2Int(x, y) + chunkPosWithPlayer);
-                }
-            }
-
-            foreach (Vector2Int loadedChunkPos in LoadedChunks)
-            {
-                if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
-                else chunksToUnLoad.Add(loadedChunkPos);
-            }
-            
-            foreach (Vector2Int chunkPos in chunksToLoad) LoadChunk(chunkPos);
-            foreach (Vector2Int chunkPos in chunksToUnLoad) UnLoadChunk(chunkPos);
+            UpdateLoadedChunks();
         }
 
         #region Build
@@ -139,6 +118,32 @@ namespace Project.Scripts.Grid
         #endregion
 
         #region ChunkSystem
+
+        private void UpdateLoadedChunks()
+        {
+            Vector2Int chunkPosWithPlayer = GetChunkPosition(PlayerCam.transform.position);
+            int playerViewRadius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSize.x);
+
+            List<Vector2Int> chunksToLoad = new List<Vector2Int>();
+            List<Vector2Int> chunksToUnLoad = new List<Vector2Int>();
+            
+            for (int x = -playerViewRadius; x < playerViewRadius+1; x++)
+            {
+                for (int y = -playerViewRadius; y < playerViewRadius+1; y++)
+                { 
+                    chunksToLoad.Add(new Vector2Int(x, y) + chunkPosWithPlayer);
+                }
+            }
+
+            foreach (Vector2Int loadedChunkPos in LoadedChunks)
+            {
+                if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
+                else chunksToUnLoad.Add(loadedChunkPos);
+            }
+            
+            foreach (Vector2Int chunkPos in chunksToLoad) LoadChunk(chunkPos);
+            foreach (Vector2Int chunkPos in chunksToUnLoad) UnLoadChunk(chunkPos);
+        }
 
         public void LoadChunk(Vector2Int position)
         {
