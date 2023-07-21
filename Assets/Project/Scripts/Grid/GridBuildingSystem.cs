@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Project.Scripts.Buildings;
 using Project.Scripts.Grid.CellType;
 using Project.Scripts.Interaction;
@@ -27,6 +30,8 @@ namespace Project.Scripts.Grid
         [SerializeField] private GameObject chunkPrefap;
 
         private Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
+        private Vector2Int chunkPosWithPlayer = new Vector2Int(-10,-10);
+        private int playerViewRadius = 0;
         private List<Vector2Int> LoadedChunks { get; } = new List<Vector2Int>();
 
         private Camera PlayerCam => CameraMovement.Instance.Camera;
@@ -121,8 +126,11 @@ namespace Project.Scripts.Grid
 
         private void UpdateLoadedChunks()
         {
-            Vector2Int chunkPosWithPlayer = GetChunkPosition(PlayerCam.transform.position);
-            int playerViewRadius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSize.x);
+            Vector2Int currentPos = GetChunkPosition(PlayerCam.transform.position);
+            int radius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSize.x);
+            if (chunkPosWithPlayer == currentPos && playerViewRadius == radius) return;
+            chunkPosWithPlayer = currentPos;
+            playerViewRadius = radius;
 
             List<Vector2Int> chunksToLoad = new List<Vector2Int>();
             List<Vector2Int> chunksToUnLoad = new List<Vector2Int>();
@@ -140,23 +148,26 @@ namespace Project.Scripts.Grid
                 if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
                 else chunksToUnLoad.Add(loadedChunkPos);
             }
-            
-            foreach (Vector2Int chunkPos in chunksToLoad) LoadChunk(chunkPos);
-            foreach (Vector2Int chunkPos in chunksToUnLoad) UnLoadChunk(chunkPos);
+
+
+            foreach (Vector2Int chunkPos in chunksToLoad)  StartCoroutine(LoadChunk(chunkPos));
+            foreach (Vector2Int chunkPos in chunksToUnLoad) StartCoroutine( UnLoadChunk(chunkPos));
         }
 
-        public void LoadChunk(Vector2Int position)
+        public IEnumerator LoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
             targetChunk.Load();
             if(!LoadedChunks.Contains(position)) LoadedChunks.Add(position);
+            yield return null;
         }
         
-        public void UnLoadChunk(Vector2Int position)
+        public IEnumerator  UnLoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
             targetChunk.UnLoad();
             LoadedChunks.Remove(position);
+            yield return null;
         }
 
         public static Vector2Int GetChunkPosition(Vector3 worldPosition)
