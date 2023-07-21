@@ -1,4 +1,4 @@
-using Project.Scripts.Grid.CellType;
+using Project.Scripts.Grid;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -15,7 +15,7 @@ namespace Project.Scripts.Visualisation
 
         public static TileBase DefaultTile { get; } = Resources.Load<TileBase>("Tiles/Gray");
 
-        public static TileBase GetTileSource(CellResources.ResourcesType resourcesType)
+        public static TileBase GetTileSource(BuildingGridResources.ResourcesType resourcesType)
         {
             int index = (int)resourcesType;
             return index < _resourceTiles.Length ? _resourceTiles[index] : DefaultTile;

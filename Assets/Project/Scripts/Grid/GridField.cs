@@ -109,7 +109,8 @@ namespace Project.Scripts.Grid
 
         public void TriggerGridObjectChanged(Vector2Int position)
         {
-            if(Debug) _cellTexts[position.x, position.y].text = _cellValues[position.x, position.y]?.ToString();
+            if(!Debug) return;
+            _cellTexts[position.x, position.y].text = _cellValues[position.x, position.y]?.ToString();
             OnGridFieldChanged?.Invoke();
         }
         public void SetCellData(int x, int y, TGridObject value)

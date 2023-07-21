@@ -28,11 +28,11 @@ namespace Project.Scripts.Buildings
         public Transform prefab, visual;
         public Vector2Int size;
 
-        public int GetRotation(Directions direction)
+        public static int GetRotation(Directions direction)
         {
             return -90 * (int)direction;
         }
-        public List<Vector2Int> GetGridPositionList(Vector2Int offset, Directions direction)
+        public Vector2Int[] GetGridPositionList(Vector2Int offset, Directions direction)
         {
             List<Vector2Int> gridPositions = new List<Vector2Int>();
             switch (direction)
@@ -65,7 +65,12 @@ namespace Project.Scripts.Buildings
                 }
             }
 
-            return gridPositions;
+            return gridPositions.ToArray();
+        }
+
+        public Vector2Int[] GetGridPositionList(PlacedBuildingData data)
+        {
+            return GetGridPositionList(data.origin, data.direction);
         }
 
         public override string ToString()

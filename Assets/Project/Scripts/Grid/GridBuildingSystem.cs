@@ -1,16 +1,12 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Project.Scripts.Buildings;
-using Project.Scripts.Grid.CellType;
+using Project.Scripts.General;
+using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
 using Project.Scripts.Utilities;
-using Project.Scripts.Visualisation;
-using Unity.Burst;
 using UnityEngine;
-using Unity.Jobs;
 
 namespace Project.Scripts.Grid
 {
@@ -20,26 +16,27 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
-        [SerializeField] private List<BuildingDataBase> buildings;
-        private BuildingDataBase _selectedBuilding;
+        [SerializeField] private BuildingGridResources.PossibleBuildings buildings;
+        private BuildingGridResources.PossibleBuildings _selectedBuilding;
         private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
         
         public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
         public const float CellSize = 10f;
         public static readonly Vector2 ChunkSize = new Vector2(CellSize * GridSize.x, CellSize * GridSize.y);
-        [SerializeField] private GameObject chunkPrefap;
+        private GameObject chunkPrefap;
 
         private Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
         private Vector2Int chunkPosWithPlayer = new Vector2Int(-10,-10);
-        private int playerViewRadius = 0;
+        private int playerViewRadius;
         private List<Vector2Int> LoadedChunks { get; } = new List<Vector2Int>();
 
         private Camera PlayerCam => CameraMovement.Instance.Camera;
 
         private void Awake()
         {
+            chunkPrefap = Resources.Load<GameObject>("Prefaps/chunk");
             GetComponent<UnityEngine.Grid>().cellSize = new Vector3(CellSize, CellSize, 0);
-            _selectedBuilding = buildings.First();
+            LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
         }
 
         private void Update()
@@ -50,23 +47,17 @@ namespace Project.Scripts.Grid
                 Debug.Log($"rotation: {_direction}");
             }
 
-            if (Input.GetMouseButton(0) && _selectedBuilding)
+            if (Input.GetMouseButton(0))
             {
                 Vector3 mousePos =GeneralUtilities.GetMousePosition();
-                TryToPlaceBuilding(GetChunk(mousePos),_selectedBuilding,mousePos,_direction);
+                GridChunk.TryToPlaceBuilding(GetChunk(mousePos),_selectedBuilding,mousePos,_direction);
             }
 
             if (Input.GetMouseButton(1))
             {
                 Vector3 mousePos =GeneralUtilities.GetMousePosition();
-                TryToDeleteBuilding(GetChunk(mousePos));
+                GridChunk.TryToDeleteBuilding(GetChunk(mousePos),mousePos);
             }
-
-            if (Input.GetKeyDown(KeyCode.Alpha1)) { _selectedBuilding = buildings[0]; }
-            if (Input.GetKeyDown(KeyCode.Alpha2)) { _selectedBuilding = buildings[1]; }
-            if (Input.GetKeyDown(KeyCode.Alpha3)) { _selectedBuilding = buildings[2]; }
-            if (Input.GetKeyDown(KeyCode.Alpha4)) { _selectedBuilding = buildings[3]; }
-
         }
 
         private void FixedUpdate()
@@ -74,56 +65,12 @@ namespace Project.Scripts.Grid
             UpdateLoadedChunks();
         }
 
-        #region Build
-        public static void TryToPlaceBuilding( GridChunk chunk,BuildingDataBase buildingData, Vector3 mousePosition,
-            BuildingDataBase.Directions direction)
+        private void OnApplicationQuit()
         {
-            if (!chunk)return;
-            GridField<GridObject> buildingGrid = chunk.BuildingGrid;
-            Vector2Int cellPos = buildingGrid.GetCellPosition(mousePosition);
-            
-            GridObject gridObject = buildingGrid.GetCellData(cellPos);
-            if (gridObject == null) return;
-
-            List<Vector2Int> positions = buildingData.GetGridPositionList(cellPos, direction);
-            foreach (Vector2Int position in positions)
-            {
-                GridObject gridObj = buildingGrid.GetCellData(position);
-                if (gridObj == null || gridObj.Occupied) return;
-            }
-
-            PlacedBuilding building = PlacedBuilding.CreateBuilding(
-                buildingGrid.GetLocalPosition(cellPos),
-                cellPos, positions.ToArray(), direction, buildingData, chunk.transform,
-                buildingGrid.CellSize);
-            
-            foreach (Vector2Int blockedCell in positions)
-            {
-                buildingGrid.GetCellData(blockedCell).Occupy(building);
-                buildingGrid.TriggerGridObjectChanged(blockedCell);
-            }
-
-            chunk.Buildings.Add(building);
+            SaveAllChunksToFile();
         }
 
-        private static void TryToDeleteBuilding(GridChunk chunk)
-        {
-            if (!chunk)return;
-            GridField<GridObject> buildingGrid = chunk.BuildingGrid;
-            GridObject gridObject = buildingGrid.GetCellData(GeneralUtilities.GetMousePosition());
-            if(!(gridObject is { Occupied: true })) return;
-            PlacedBuilding placedBuilding = gridObject.Building;
-            placedBuilding.Destroy();
-                    
-            foreach (Vector2Int occupiedCell in placedBuilding.OccupiedCells)
-            {
-                buildingGrid.GetCellData(occupiedCell).ClearBuilding();
-            }
-        }
-        #endregion
-
-        #region ChunkSystem
-
+        #region PlayTimeLoad&UnLoadChunksSystem
         private void UpdateLoadedChunks()
         {
             Vector2Int currentPos = GetChunkPosition(PlayerCam.transform.position);
@@ -149,27 +96,28 @@ namespace Project.Scripts.Grid
                 else chunksToUnLoad.Add(loadedChunkPos);
             }
 
-
-            foreach (Vector2Int chunkPos in chunksToLoad)  StartCoroutine(LoadChunk(chunkPos));
+            foreach (Vector2Int chunkPos in chunksToLoad) StartCoroutine(LoadChunk(chunkPos));
             foreach (Vector2Int chunkPos in chunksToUnLoad) StartCoroutine( UnLoadChunk(chunkPos));
         }
 
-        public IEnumerator LoadChunk(Vector2Int position)
+        private IEnumerator LoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
             targetChunk.Load();
             if(!LoadedChunks.Contains(position)) LoadedChunks.Add(position);
             yield return null;
         }
-        
-        public IEnumerator  UnLoadChunk(Vector2Int position)
+
+        private IEnumerator  UnLoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
             targetChunk.UnLoad();
             LoadedChunks.Remove(position);
             yield return null;
         }
+        #endregion
 
+        #region InfoFunctions
         public static Vector2Int GetChunkPosition(Vector3 worldPosition)
         {
             return new Vector2Int(Mathf.RoundToInt(worldPosition.x / ChunkSize.x),
@@ -185,22 +133,10 @@ namespace Project.Scripts.Grid
         {
             return GetChunk(GetChunkPosition(worldPosition));
         }
+        
+        #endregion
 
-        private void InitialChunks()
-        {
-            Vector2Int size = new Vector2Int(10, 10);
-            Vector2Int half = new Vector2Int(Mathf.RoundToInt(size.x / 2f), Mathf.RoundToInt(size.y / 2f));
-            
-            for (int x = 0; x < size.x; x++)
-            {
-                for (int y = 0; y < size.y; y++)
-                {
-                    Vector2Int position = new Vector2Int(x - half.x, y-half.y);
-                    CreateChunk(position);
-                }
-            }
-        }
-
+        #region ChunkCreationHandeling
         private GridChunk CreateChunk(Vector2Int chunkPosition)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
@@ -211,52 +147,60 @@ namespace Project.Scripts.Grid
             LoadedChunks.Add(chunkPosition);
             return newChunk;
         }
-        #endregion
-    }
 
-    public class GridObject
-    {
-        private GridField<GridObject> GridField => Chunk.BuildingGrid;
-        public Vector2Int Position { get; }
-        public bool Occupied => Building;
-        public PlacedBuilding Building { get; private set; }
-        public CellResources ResourceNode { get; }
-        public GridChunk Chunk { get; }
-
-        public GridObject(GridChunk chunk, Vector2Int position,  CellResources resource = null)
+        private void SaveAllChunksToFile()
         {
-            Chunk = chunk;
-            Position = position;
-            ResourceNode = resource;
-
-            if (ResourceNode != null)
+            ChunkSave[] chunkSaves = new ChunkSave[Chunks.Count];
+            bool[] controlList = new bool[chunkSaves.Length];
+            int index = 0;
+            foreach (KeyValuePair<Vector2Int,GridChunk> chunk in Chunks)
             {
-                Vector3Int tilePos = new Vector3Int(
-                    Mathf.FloorToInt(Position.x - GridBuildingSystem.GridSize.x / 2f),
-                    Mathf.FloorToInt(Position.y - GridBuildingSystem.GridSize.y / 2f),
-                    0);
-                Chunk.ChunkTilemap.SetTile(tilePos, VisualResources.GetTileSource(ResourceNode.NodeType));
+                StartCoroutine(JobCreateChunkSave(chunkSaves, index, chunk.Value, controlList));
+                index++;
+            }
+
+            bool done = false;
+            while (!done)
+            {
+                done = true;
+                foreach (bool job in controlList)
+                {
+                    if (!job)
+                    {
+                        done = false;
+                        break;
+                    }
+                }
+            }
+
+            WorldSaveHandler.CurrentWorldSave.chunkSaves = chunkSaves;
+            WorldSaveHandler.SaveWorldToFile();
+        }
+
+        private IEnumerator JobCreateChunkSave(ChunkSave[] chunkSaves, int index, GridChunk chunk, bool[] controlList)
+        {
+            chunkSaves[index] = new ChunkSave(){chunkPosition = chunk.ChunkPosition, localPosition = chunk.LocalPosition, 
+               chunkResourcePoints = chunk.ChunkResources.ToArray(), placedBuildingData = chunk.BuildingsData.ToArray()};
+            controlList[index] = true;
+            yield return null;
+        }
+        
+        private void LoadAllChunksFromSave(WorldSave worldSave)
+        {
+            foreach (ChunkSave chunkSave in worldSave.chunkSaves)
+            {
+                StartCoroutine(LoadChunkFormSave(chunkSave));
             }
         }
-
-        #region Functions
-        public void Occupy(PlacedBuilding building)
+        
+        private IEnumerator LoadChunkFormSave(ChunkSave chunkSave)
         {
-            if (Building) return;
-            Building = building;
-            GridField.TriggerGridObjectChanged(Position);
-        }
-
-        public void ClearBuilding()
-        {
-            if (!Building) return;
-            Building = null;
-            GridField.TriggerGridObjectChanged(Position);
-        }
-
-        public override string ToString()
-        {
-            return Position + "\n" + Building + "\n" + ResourceNode;
+            GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
+            newChunk.Initialization(chunkSave.chunkPosition, chunkSave.localPosition, chunkSave.placedBuildingData, chunkSave.chunkResourcePoints);
+            newChunk.gameObject.name = $"Chunk {chunkSave.chunkPosition}";
+            Chunks.Add(chunkSave.chunkPosition, newChunk);
+            LoadedChunks.Add(chunkSave.chunkPosition);
+            yield return null;
         }
         #endregion
     }

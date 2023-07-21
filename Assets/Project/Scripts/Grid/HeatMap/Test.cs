@@ -1,8 +1,7 @@
-using System;
 using Project.Scripts.Utilities;
 using UnityEngine;
 
-namespace Project.Scripts.Grid
+namespace Project.Scripts.Grid.HeatMap
 {
     public class Test : MonoBehaviour
     {
