@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings;
@@ -11,6 +10,8 @@ namespace Project.Scripts.Grid.DataContainers
     {
         public GridField<GridObject> BuildingGrid { get; private set; }
         public List<PlacedBuildingData> BuildingsData { get; private set; } = new List<PlacedBuildingData>();
+        
+        private GridBuildingSystem myGridBuildingSystem;
         public Tilemap ChunkTilemap { get; private set; }
         public List<ChunkResourcePoint> ChunkResources { get; } = new List<ChunkResourcePoint>();
 
@@ -19,8 +20,9 @@ namespace Project.Scripts.Grid.DataContainers
         public Vector2Int ChunkPosition { get; private set; }
         public bool Loaded { get; private set; } = true;
 
-        public void Initialization(Vector2Int chunkPosition, Vector3 localPosition, PlacedBuildingData[] buildings = null, ChunkResourcePoint[] resourcePoints = null)
+        public void Initialization(GridBuildingSystem gridBuildingSystem, Vector2Int chunkPosition, Vector3 localPosition, ChunkResourcePoint[] resourcePoints = null)
         {
+            myGridBuildingSystem = gridBuildingSystem;
             ChunkPosition = chunkPosition;
             LocalPosition = localPosition;
             transform.localPosition = LocalPosition;
@@ -36,8 +38,11 @@ namespace Project.Scripts.Grid.DataContainers
                     StartCoroutine(JobSetResourceCell(resourcePoint));
                 }
             }
-            
-            if(buildings == null) BuildingsData = new List<PlacedBuildingData>();
+        }
+
+        public void LoadBuildings(PlacedBuildingData[] buildings)
+        {
+            if (buildings == null) BuildingsData = new List<PlacedBuildingData>();
             else
             {
                 foreach (PlacedBuildingData building in buildings)
@@ -75,7 +80,8 @@ namespace Project.Scripts.Grid.DataContainers
             foreach (Vector2Int position in positions)
             {
                 GridObject gridObj = buildingGrid.GetCellData(position);
-                if (gridObj == null || gridObj.Occupied) return;
+                if (gridObj == null) continue;
+                if(gridObj.Occupied) return;
             }
 
             PlaceBuilding(chunk, cellPos, buildingData, direction);
@@ -84,14 +90,26 @@ namespace Project.Scripts.Grid.DataContainers
             BuildingDataBase.Directions direction)
         {
             Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, direction);
+            GridField<GridObject> buildGridField = chunk.BuildingGrid;
+
             PlacedBuilding building = PlacedBuilding.CreateBuilding(
-                chunk.BuildingGrid.GetLocalPosition(cellPos), cellPos, direction, buildingData,
+                buildGridField.GetLocalPosition(cellPos), cellPos, direction, buildingData,
                 chunk.transform, chunk.BuildingGrid.CellSize);
 
-            foreach (Vector2Int blockedCell in positions)
+            foreach (Vector2Int cellPosition in positions)
             {
-                chunk.BuildingGrid.GetCellData(blockedCell).Occupy(building);
-                chunk.BuildingGrid.TriggerGridObjectChanged(blockedCell);
+                if (buildGridField.IsValidPosition(cellPosition))
+                { 
+                    buildGridField.GetCellData(cellPosition).Occupy(building);
+                    buildGridField.TriggerGridObjectChanged(cellPosition);
+                }
+                else
+                {
+                   GridChunk otherChunk = chunk.myGridBuildingSystem.GetChunk(GetChunkPositionOverflow(cellPosition, chunk.ChunkPosition));
+                   Vector2Int positionOfCell = GetCellPositionOverflow(cellPosition);
+                   otherChunk.BuildingGrid.GetCellData(positionOfCell).Occupy(building);
+                   otherChunk.BuildingGrid.TriggerGridObjectChanged(positionOfCell);
+                }
             }
 
             chunk.BuildingsData.Add(building.PlacedBuildingData);
@@ -111,6 +129,24 @@ namespace Project.Scripts.Grid.DataContainers
             }
         }
 
+        public static Vector2Int GetChunkPositionOverflow(Vector2Int pseudoCellPosition, Vector2Int chunkPosition)
+        {
+            if (pseudoCellPosition.x < 0) chunkPosition.x -= 1;
+            else if (pseudoCellPosition.x >= GridBuildingSystem.GridSize.x) chunkPosition.x += 1;
+            if (pseudoCellPosition.y < 0) chunkPosition.y -= 1;
+            else if (pseudoCellPosition.y >= GridBuildingSystem.GridSize.y) chunkPosition.y += 1;
+            return chunkPosition;
+        }
+        
+        public static Vector2Int GetCellPositionOverflow(Vector2Int pseudoCellPosition)
+        {
+            if (pseudoCellPosition.x < 0) pseudoCellPosition.x += GridBuildingSystem.GridSize.x;
+            else if (pseudoCellPosition.x >= GridBuildingSystem.GridSize.x) pseudoCellPosition.x -= GridBuildingSystem.GridSize.x;
+            if (pseudoCellPosition.y < 0) pseudoCellPosition.y += GridBuildingSystem.GridSize.y;
+            else if (pseudoCellPosition.y >= GridBuildingSystem.GridSize.y) pseudoCellPosition.y -= GridBuildingSystem.GridSize.y;
+            return pseudoCellPosition;
+        }
+
         public void Load()
         {
             if(Loaded) return;
@@ -124,21 +160,5 @@ namespace Project.Scripts.Grid.DataContainers
             Loaded = false;
             chunkTilemapRenderer.enabled = Loaded;
         }
-    }
-
-    [Serializable]
-    public class ChunkSave
-    {
-        public ChunkResourcePoint[] chunkResourcePoints;
-        public PlacedBuildingData[] placedBuildingData;
-        public Vector3 localPosition;
-        public Vector2Int chunkPosition;
-    }
-    
-    [Serializable]
-    public struct ChunkResourcePoint
-    {
-        public Vector2Int position;
-        public BuildingGridResources.ResourcesType resource;
     }
 }

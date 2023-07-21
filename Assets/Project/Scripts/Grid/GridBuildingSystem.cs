@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Project.Scripts.Buildings;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
@@ -16,8 +15,7 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
-        [SerializeField] private BuildingGridResources.PossibleBuildings buildings;
-        private BuildingGridResources.PossibleBuildings _selectedBuilding;
+        private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Drill;
         private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
         
         public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
@@ -25,7 +23,7 @@ namespace Project.Scripts.Grid
         public static readonly Vector2 ChunkSize = new Vector2(CellSize * GridSize.x, CellSize * GridSize.y);
         private GameObject chunkPrefap;
 
-        private Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
+        public Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
         private Vector2Int chunkPosWithPlayer = new Vector2Int(-10,-10);
         private int playerViewRadius;
         private List<Vector2Int> LoadedChunks { get; } = new List<Vector2Int>();
@@ -137,11 +135,11 @@ namespace Project.Scripts.Grid
         #endregion
 
         #region ChunkCreationHandeling
-        private GridChunk CreateChunk(Vector2Int chunkPosition)
+        private GridChunk CreateChunk( Vector2Int chunkPosition)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
             Vector3 localPosition = new Vector3(chunkPosition.x * ChunkSize.x, chunkPosition.y * ChunkSize.y);
-            newChunk.Initialization(chunkPosition, localPosition);
+            newChunk.Initialization(this,chunkPosition, localPosition);
             newChunk.gameObject.name = $"Chunk {chunkPosition}";
             Chunks.Add(chunkPosition, newChunk);
             LoadedChunks.Add(chunkPosition);
@@ -165,11 +163,9 @@ namespace Project.Scripts.Grid
                 done = true;
                 foreach (bool job in controlList)
                 {
-                    if (!job)
-                    {
-                        done = false;
-                        break;
-                    }
+                    if (job) continue;
+                    done = false;
+                    break;
                 }
             }
 
@@ -184,22 +180,43 @@ namespace Project.Scripts.Grid
             controlList[index] = true;
             yield return null;
         }
-        
+
         private void LoadAllChunksFromSave(WorldSave worldSave)
         {
-            foreach (ChunkSave chunkSave in worldSave.chunkSaves)
+            ChunkSave[] chunkSaves = WorldSaveHandler.GetWorldSave().chunkSaves;
+            bool[] controlList = new bool[chunkSaves.Length];
+
+            for (int i = 0; i < chunkSaves.Length; i++)
             {
-                StartCoroutine(LoadChunkFormSave(chunkSave));
+                StartCoroutine(LoadChunkFormSave(chunkSaves[i],i,controlList));
+            }
+
+            bool done = false;
+            while (!done)
+            {
+                done = true;
+                foreach (bool job in controlList)
+                {
+                    if (job) continue;
+                    done = false;
+                    break;
+                }
+            }
+
+            foreach (ChunkSave chunkSave in chunkSaves)
+            {
+                GetChunk(chunkSave.chunkPosition).LoadBuildings(chunkSave.placedBuildingData);
             }
         }
-        
-        private IEnumerator LoadChunkFormSave(ChunkSave chunkSave)
+
+        private IEnumerator LoadChunkFormSave(ChunkSave chunkSave,int index,bool[] controlList)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
-            newChunk.Initialization(chunkSave.chunkPosition, chunkSave.localPosition, chunkSave.placedBuildingData, chunkSave.chunkResourcePoints);
+            newChunk.Initialization(this,chunkSave.chunkPosition, chunkSave.localPosition, chunkSave.chunkResourcePoints);
             newChunk.gameObject.name = $"Chunk {chunkSave.chunkPosition}";
             Chunks.Add(chunkSave.chunkPosition, newChunk);
             LoadedChunks.Add(chunkSave.chunkPosition);
+            controlList[index] = true;
             yield return null;
         }
         #endregion

@@ -1,4 +1,3 @@
-using System;
 using Project.Scripts.Grid;
 using UnityEngine;
 
@@ -36,7 +35,7 @@ namespace Project.Scripts.Buildings
         public Vector2Int[] GetGridPositionList()
         {
             return BuildingGridResources.GetBuildingDataBase(PlacedBuildingData.buildingData)
-                .GetGridPositionList(PlacedBuildingData.origin, PlacedBuildingData.direction);
+                .GetGridPositionList(PlacedBuildingData);
         }
 
         public void Destroy()
@@ -48,13 +47,5 @@ namespace Project.Scripts.Buildings
         {
             return PlacedBuildingData.buildingData.ToString();
         }
-    }
-
-    [Serializable]
-    public class PlacedBuildingData
-    {
-        public BuildingGridResources.PossibleBuildings buildingData;
-        public Vector2Int origin;
-        public BuildingDataBase.Directions direction;
     }
 }

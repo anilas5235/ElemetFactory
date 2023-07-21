@@ -17,7 +17,7 @@ namespace Project.Scripts.Grid
         private readonly TGridObject[,] _cellValues;
         private readonly TextMesh[,] _cellTexts;
 
-        private static readonly bool Debug = false, DebugDrawGrid = false;
+        private static readonly bool Debug = true, DebugDrawGrid = false;
 
         public Action OnGridFieldChanged;
 
