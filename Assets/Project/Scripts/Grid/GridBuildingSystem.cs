@@ -183,7 +183,7 @@ namespace Project.Scripts.Grid
 
         private void LoadAllChunksFromSave(WorldSave worldSave)
         {
-            ChunkSave[] chunkSaves = WorldSaveHandler.GetWorldSave().chunkSaves;
+            ChunkSave[] chunkSaves = worldSave.chunkSaves;
             bool[] controlList = new bool[chunkSaves.Length];
 
             for (int i = 0; i < chunkSaves.Length; i++)
@@ -205,7 +205,7 @@ namespace Project.Scripts.Grid
 
             foreach (ChunkSave chunkSave in chunkSaves)
             {
-                GetChunk(chunkSave.chunkPosition).LoadBuildings(chunkSave.placedBuildingData);
+               GetChunk(chunkSave.chunkPosition).LoadBuildings(chunkSave.placedBuildingData);
             }
         }
 

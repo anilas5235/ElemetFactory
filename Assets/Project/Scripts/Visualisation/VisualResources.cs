@@ -11,6 +11,11 @@ namespace Project.Scripts.Visualisation
             {
                 Resources.Load<TileBase>("Tiles/Red"),
                 Resources.Load<TileBase>("Tiles/Blue"),
+                Resources.Load<TileBase>("Tiles/Green"),
+                Resources.Load<TileBase>("Tiles/Lila"),
+                Resources.Load<TileBase>("Tiles/Orange"),
+                Resources.Load<TileBase>("Tiles/Yellow"),
+                Resources.Load<TileBase>("Tiles/Violet"),
             };
 
         public static TileBase DefaultTile { get; } = Resources.Load<TileBase>("Tiles/Gray");

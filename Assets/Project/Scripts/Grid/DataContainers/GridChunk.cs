@@ -10,8 +10,8 @@ namespace Project.Scripts.Grid.DataContainers
     {
         public GridField<GridObject> BuildingGrid { get; private set; }
         public List<PlacedBuildingData> BuildingsData { get; private set; } = new List<PlacedBuildingData>();
-        
-        private GridBuildingSystem myGridBuildingSystem;
+
+        public GridBuildingSystem myGridBuildingSystem;
         public Tilemap ChunkTilemap { get; private set; }
         public List<ChunkResourcePoint> ChunkResources { get; } = new List<ChunkResourcePoint>();
 
@@ -35,11 +35,14 @@ namespace Project.Scripts.Grid.DataContainers
             {
                 foreach (ChunkResourcePoint resourcePoint in resourcePoints)
                 {
-                    StartCoroutine(JobSetResourceCell(resourcePoint));
+                    BuildingGrid.GetCellData(resourcePoint.position).SetResource(resourcePoint.resource);
                 }
             }
+            else
+            {
+                BuildingGridResources.GenerateResources(this);
+            }
         }
-
         public void LoadBuildings(PlacedBuildingData[] buildings)
         {
             if (buildings == null) BuildingsData = new List<PlacedBuildingData>();
@@ -51,12 +54,6 @@ namespace Project.Scripts.Grid.DataContainers
                         building.buildingData, building.direction));
                 }
             }
-        }
-
-        private IEnumerator JobSetResourceCell( ChunkResourcePoint resourcePoint)
-        {
-            BuildingGrid.GetCellData(resourcePoint.position).SetResource(resourcePoint.resource);
-            yield return null;
         }
 
         private IEnumerator JobPlaceBuilding(GridChunk chunk, Vector2Int cellPos, BuildingGridResources.PossibleBuildings buildingData,
