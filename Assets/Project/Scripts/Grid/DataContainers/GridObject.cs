@@ -39,6 +39,7 @@ namespace Project.Scripts.Grid.DataContainers
 
         public void SetResource(BuildingGridResources.ResourcesType resourcesType)
         {
+            if(ResourceNode != BuildingGridResources.ResourcesType.None || resourcesType == BuildingGridResources.ResourcesType.None)return;
             ResourceNode = resourcesType;
             Vector3Int tilePos = new Vector3Int(
                 Mathf.FloorToInt(Position.x - GridBuildingSystem.GridSize.x / 2f),

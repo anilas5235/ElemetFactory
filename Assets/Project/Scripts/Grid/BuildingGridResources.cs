@@ -9,8 +9,8 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridResources
     {
-        private static readonly float[] ResourcePatchSizeProbabilities = new[] { 0f, 30f, 40f, 15f, 10f, 5f};
-        private static readonly float[] ChunkResourceNumberProbabilities = new[] { 20f, 60f, 20f };
+        private static readonly float[] ResourcePatchSizeProbabilities = new[] { 0f, 40f, 55f, 5f};
+        private static readonly float[] ChunkResourceNumberProbabilities = new[] { 70f, 25f, 5f };
 
         public enum ResourcesType
         {
@@ -65,18 +65,14 @@ namespace Project.Scripts.Grid
             {
                 for (int y = -patchSize; y < patchSize; y++)
                 {
-                    if (Mathf.Abs(x) + Mathf.Abs(y) >= patchSize) continue;
-                    if (patchSize >= 3)
-                    {
-                        if (Mathf.Abs(x) + Mathf.Abs(y) > patchSize * 0.666f && Random.Range(0f, 1f) >= 0.5f) continue;
-                    }
-
+                    if (Mathf.Abs(x) + Mathf.Abs(y) > patchSize) continue;
+                    if (patchSize >= 3 && Mathf.Abs(x) + Mathf.Abs(y) > patchSize * 0.666f && Random.Range(0f, 1f) >= 0.5f) continue;
                     cellPositions.Add(new Vector2Int(x, y));
                 }
             }
             GridField<GridObject> buildGridField = chunk.BuildingGrid;
-            Vector2Int center = new Vector2Int(Random.Range(patchSize, GridBuildingSystem.GridSize.x-patchSize),
-                Random.Range(patchSize, GridBuildingSystem.GridSize.y-patchSize));
+            Vector2Int center = new Vector2Int(Random.Range(patchSize+1, GridBuildingSystem.GridSize.x-patchSize-1),
+                Random.Range(patchSize+1, GridBuildingSystem.GridSize.y-patchSize-1));
 
             for (int i = 0; i < cellPositions.Count; i++)
             {
