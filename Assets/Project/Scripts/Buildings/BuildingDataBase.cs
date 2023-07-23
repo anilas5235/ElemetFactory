@@ -70,7 +70,7 @@ namespace Project.Scripts.Buildings
 
         public Vector2Int[] GetGridPositionList(PlacedBuildingData data)
         {
-            return GetGridPositionList(data.origin, data.direction);
+            return GetGridPositionList(data.origin,(Directions) data.directionID);
         }
 
         public override string ToString()

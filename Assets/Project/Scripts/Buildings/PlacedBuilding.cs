@@ -19,8 +19,8 @@ namespace Project.Scripts.Buildings
             placedBuilding.PlacedBuildingData = new PlacedBuildingData()
             {
                 origin = origin,
-                buildingData = buildingData,
-                direction = direction,
+                buildingDataID =(int) buildingData,
+                directionID =(int) direction,
             };
 
             buildingTransform.SetParent(transformParent);
@@ -34,7 +34,7 @@ namespace Project.Scripts.Buildings
 
         public Vector2Int[] GetGridPositionList()
         {
-            return BuildingGridResources.GetBuildingDataBase(PlacedBuildingData.buildingData)
+            return BuildingGridResources.GetBuildingDataBase( PlacedBuildingData.buildingDataID)
                 .GetGridPositionList(PlacedBuildingData);
         }
 
@@ -45,7 +45,7 @@ namespace Project.Scripts.Buildings
 
         public override string ToString()
         {
-            return PlacedBuildingData.buildingData.ToString();
+            return PlacedBuildingData.buildingDataID.ToString();
         }
     }
 }

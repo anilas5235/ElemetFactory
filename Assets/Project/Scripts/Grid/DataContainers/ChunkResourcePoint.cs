@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.Scripts.Grid.DataContainers
 {
@@ -7,6 +8,6 @@ namespace Project.Scripts.Grid.DataContainers
     public struct ChunkResourcePoint
     {
         public Vector2Int position;
-        public BuildingGridResources.ResourcesType resource;
+        public int resourceID;
     }
 }

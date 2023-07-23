@@ -9,7 +9,6 @@ namespace Project.Scripts.Grid.DataContainers
     {
         public ChunkResourcePoint[] chunkResourcePoints;
         public PlacedBuildingData[] placedBuildingData;
-        public Vector3 localPosition;
         public Vector2Int chunkPosition;
     }
 }

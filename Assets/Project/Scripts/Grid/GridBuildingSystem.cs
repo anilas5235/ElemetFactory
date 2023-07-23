@@ -122,6 +122,11 @@ namespace Project.Scripts.Grid
                 Mathf.RoundToInt(worldPosition.y / ChunkSize.y));
         }
 
+        public static Vector3 GetChunkLocalPosition(Vector2Int chunkPosition)
+        {
+            return new Vector3(chunkPosition.x * ChunkSize.x, chunkPosition.y * ChunkSize.y);
+        }
+
         public GridChunk GetChunk(Vector2Int chunkPosition)
         {
             return Chunks.TryGetValue(chunkPosition, out var chunk) ? chunk : CreateChunk(chunkPosition);
@@ -175,8 +180,11 @@ namespace Project.Scripts.Grid
 
         private IEnumerator JobCreateChunkSave(ChunkSave[] chunkSaves, int index, GridChunk chunk, bool[] controlList)
         {
-            chunkSaves[index] = new ChunkSave(){chunkPosition = chunk.ChunkPosition, localPosition = chunk.LocalPosition, 
-               chunkResourcePoints = chunk.ChunkResources.ToArray(), placedBuildingData = chunk.BuildingsData.ToArray()};
+            chunkSaves[index] = new ChunkSave()
+            {
+                chunkPosition = chunk.ChunkPosition, chunkResourcePoints = chunk.ChunkResources.ToArray(),
+                placedBuildingData = chunk.BuildingsData.ToArray()
+            };
             controlList[index] = true;
             yield return null;
         }
@@ -212,7 +220,7 @@ namespace Project.Scripts.Grid
         private IEnumerator LoadChunkFormSave(ChunkSave chunkSave,int index,bool[] controlList)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
-            newChunk.Initialization(this,chunkSave.chunkPosition, chunkSave.localPosition, chunkSave.chunkResourcePoints);
+            newChunk.Initialization(this,chunkSave.chunkPosition, GetChunkLocalPosition(chunkSave.chunkPosition), chunkSave.chunkResourcePoints);
             newChunk.gameObject.name = $"Chunk {chunkSave.chunkPosition}";
             Chunks.Add(chunkSave.chunkPosition, newChunk);
             LoadedChunks.Add(chunkSave.chunkPosition);

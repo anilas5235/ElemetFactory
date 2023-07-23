@@ -35,7 +35,7 @@ namespace Project.Scripts.Grid.DataContainers
             {
                 foreach (ChunkResourcePoint resourcePoint in resourcePoints)
                 {
-                    BuildingGrid.GetCellData(resourcePoint.position).SetResource(resourcePoint.resource);
+                    BuildingGrid.GetCellData(resourcePoint.position).SetResource((BuildingGridResources.ResourcesType)resourcePoint.resourceID);
                 }
             }
             else
@@ -51,7 +51,7 @@ namespace Project.Scripts.Grid.DataContainers
                 foreach (PlacedBuildingData building in buildings)
                 {
                     StartCoroutine(JobPlaceBuilding(this, building.origin,
-                        building.buildingData, building.direction));
+                       (BuildingGridResources.PossibleBuildings) building.buildingDataID,(BuildingDataBase.Directions) building.directionID));
                 }
             }
         }

@@ -48,7 +48,7 @@ namespace Project.Scripts.Grid.DataContainers
             Chunk.ChunkResources.Add(new ChunkResourcePoint()
             {
                 position = Position,
-                resource = ResourceNode,
+                resourceID = (int)ResourceNode,
             });
         }
 
