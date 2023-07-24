@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48745b4fcfefa1e4790768df1d451a18, type: 3}
   m_Name: MoveToPoint
   m_EditorClassIdentifier: 
+  enterStateActions: []
   actions:
   - {fileID: 11400000, guid: 01aff420233cd8f40b665f1e997a09c6, type: 2}
-  enterStateActions: []
+  - {fileID: 11400000, guid: 718d1bd7b14adff45a251020e7fd7266, type: 2}
   exitStateActions:
   - {fileID: 11400000, guid: 51e44bf232e685c4eb9b91b7bfd720fa, type: 2}
   transitions:

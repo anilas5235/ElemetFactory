@@ -9,6 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c3d9559ee113b54590c9a53a57862e3, type: 3}
-  m_Name: Rotate Action
+  m_Script: {fileID: 11500000, guid: ac1e3d91e5494bf6b04cfe9ac4dbd385, type: 3}
+  m_Name: Rotate Z Clock
   m_EditorClassIdentifier: 
+  counterClock: 0

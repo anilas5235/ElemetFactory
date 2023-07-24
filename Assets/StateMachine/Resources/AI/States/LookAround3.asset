@@ -10,12 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48745b4fcfefa1e4790768df1d451a18, type: 3}
-  m_Name: Test1
+  m_Name: LookAround3
   m_EditorClassIdentifier: 
+  enterStateActions: []
   actions:
-  - {fileID: 11400000, guid: e0361b6d04869a248a9f36f9913695cd, type: 2}
   - {fileID: 11400000, guid: 5883ca1b69356634489e71675ce946ab, type: 2}
+  - {fileID: 11400000, guid: 1213078a6c18b5f47b13bfdc17145ea3, type: 2}
+  exitStateActions: []
   transitions:
-  - decision: {fileID: 11400000, guid: b482b05e04fce2d40ac393ffa6f7cb7d, type: 2}
-    trueState: {fileID: 11400000, guid: bc055990fb2f3584d80f612f56a35223, type: 2}
+  - decision: {fileID: 11400000, guid: 000796e2ce554094db89444ff2e71819, type: 2}
+    trueState: {fileID: 11400000, guid: 859016e8b34b09d499cd1658fb2f21dd, type: 2}
     falseState: {fileID: 0}

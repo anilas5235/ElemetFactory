@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48745b4fcfefa1e4790768df1d451a18, type: 3}
-  m_Name: Test2
+  m_Name: AnyStateForSquare
   m_EditorClassIdentifier: 
-  actions:
-  - {fileID: 11400000, guid: 5883ca1b69356634489e71675ce946ab, type: 2}
+  enterStateActions: []
+  actions: []
+  exitStateActions: []
   transitions:
-  - decision: {fileID: 11400000, guid: b482b05e04fce2d40ac393ffa6f7cb7d, type: 2}
-    trueState: {fileID: 11400000, guid: b7ee6e4f29d82b64c9fc715ebfa2bcc4, type: 2}
+  - decision: {fileID: 11400000, guid: 5499a2a444796884497a44e8e2d97003, type: 2}
+    trueState: {fileID: 11400000, guid: a8c9488184c8e9c479c1e109224b61dd, type: 2}
     falseState: {fileID: 0}

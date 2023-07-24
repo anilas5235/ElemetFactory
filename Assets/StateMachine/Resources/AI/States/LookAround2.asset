@@ -10,15 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48745b4fcfefa1e4790768df1d451a18, type: 3}
-  m_Name: CkeckOut
+  m_Name: LookAround2
   m_EditorClassIdentifier: 
-  enterStateActions:
-  - {fileID: 11400000, guid: 9700f50ab3a3b6c43a65d013b6256710, type: 2}
+  enterStateActions: []
   actions:
-  - {fileID: 11400000, guid: 01aff420233cd8f40b665f1e997a09c6, type: 2}
-  - {fileID: 11400000, guid: 718d1bd7b14adff45a251020e7fd7266, type: 2}
+  - {fileID: 11400000, guid: 5883ca1b69356634489e71675ce946ab, type: 2}
+  - {fileID: 11400000, guid: 916fc37e70fe56d45bdeab64b8869b5a, type: 2}
   exitStateActions: []
   transitions:
-  - decision: {fileID: 11400000, guid: 6abfb62212a57974da546664510f9dcf, type: 2}
-    trueState: {fileID: 11400000, guid: e2c2766a3ba41a546ae5284f15875561, type: 2}
+  - decision: {fileID: 11400000, guid: b482b05e04fce2d40ac393ffa6f7cb7d, type: 2}
+    trueState: {fileID: 11400000, guid: 14f9e4044e7381d438e22859985d199e, type: 2}
     falseState: {fileID: 0}

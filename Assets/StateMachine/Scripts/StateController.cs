@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace StateMachine.Scripts
 {
@@ -14,7 +15,7 @@ namespace StateMachine.Scripts
         public int patrolIndex;
         public Transform[] patrolPoints;
 
-        public State initialState, userClick;
+        public State initialState, anyState;
         private State currentState;
 
         [HideInInspector]
@@ -23,6 +24,7 @@ namespace StateMachine.Scripts
         private void Awake()
         {
             Nothing ??= Resources.Load<State>("AI/States/Nothing");
+            patrolIndex = Random.Range(0, patrolPoints.Length);
         }
 
         private void Start()
@@ -32,19 +34,13 @@ namespace StateMachine.Scripts
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                TransitionToState(Nothing);
-                TransitionToState(userClick);
-            }
-
             currentState.UpdateState(this);
+            if(anyState) anyState.UpdateState(this);
         }
 
         public void TransitionToState(State targetState)
         {
-            if (targetState == null || targetState == currentState) return;
-
+            if (targetState == null) return;
             currentTimer = 0;
             currentState.ExitState(this);
             currentState = targetState;

@@ -7,7 +7,7 @@ namespace StateMachine.Scripts.Actions
     {
         public override void Act(StateController controller)
         {
-            controller.transform.Translate((controller.targetPosition - controller.transform.position).normalized * (Time.deltaTime * controller.speed));
+            controller.transform.position +=(controller.targetPosition - controller.transform.position).normalized * (Time.deltaTime * controller.speed);
         }
     }
 }

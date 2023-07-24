@@ -15,8 +15,9 @@ MonoBehaviour:
   enterStateActions: []
   actions:
   - {fileID: 11400000, guid: 5883ca1b69356634489e71675ce946ab, type: 2}
+  - {fileID: 11400000, guid: 1213078a6c18b5f47b13bfdc17145ea3, type: 2}
   exitStateActions: []
   transitions:
   - decision: {fileID: 11400000, guid: 000796e2ce554094db89444ff2e71819, type: 2}
-    trueState: {fileID: 11400000, guid: 859016e8b34b09d499cd1658fb2f21dd, type: 2}
+    trueState: {fileID: 11400000, guid: 512e7bca237be904f804f1a3e685b6de, type: 2}
     falseState: {fileID: 0}
