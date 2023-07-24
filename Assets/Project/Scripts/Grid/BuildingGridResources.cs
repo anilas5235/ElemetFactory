@@ -9,8 +9,21 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridResources
     {
-        private static readonly float[] ResourcePatchSizeProbabilities = new[] { 0f, 40f, 55f, 5f};
+        private static readonly float[] ResourcePatchSizeProbabilities = new[] {40f, 55f, 5f};
         private static readonly float[] ChunkResourceNumberProbabilities = new[] { 70f, 25f, 5f };
+
+        private static readonly Vector2Int[] Patch0Positions = new Vector2Int[] { new Vector2Int(0, 0) };
+        private static readonly Vector2Int[] Patch1Positions = new Vector2Int[] { new Vector2Int(0, 1),new Vector2Int(1, 1),new Vector2Int(1, 0) };
+        private static readonly Vector2Int[] Patch2Positions = new Vector2Int[] { new Vector2Int(-1, 0),new Vector2Int(-1, -1),new Vector2Int(0, -1) };
+        private static readonly Vector2Int[] Patch3Positions = new Vector2Int[] { new Vector2Int(-2, 0),
+            new Vector2Int(-2, 1),new Vector2Int(-2, -1),new Vector2Int(2, -1),new Vector2Int(2, 1),
+            new Vector2Int(2, 0),new Vector2Int(-1, -2),new Vector2Int(1, -2),new Vector2Int(0, -2),
+            new Vector2Int(-1, 2),new Vector2Int(1, 2),new Vector2Int(0, 2),
+        };
+
+        private static readonly Vector2Int[] NeighbourOffsets = new[] { new Vector2Int(0, 1),
+            new Vector2Int(0,-1),new Vector2Int(1,0),new Vector2Int(-1,0),Vector2Int.one,
+            Vector2Int.one*-1,new Vector2Int(-1,1),new Vector2Int(1,-1),};
 
         public enum ResourcesType
         {
@@ -37,7 +50,7 @@ namespace Project.Scripts.Grid
             for (int i = 0; i < numberOfPatches; i++)
             {
                 ResourcesType type;
-                bool done = false;
+                bool done;
                 do
                 {
                     done = true;
@@ -61,15 +74,58 @@ namespace Project.Scripts.Grid
         public static void GenerateResourcePatch(GridChunk chunk, int patchSize, ResourcesType resourcesType)
         {
             List<Vector2Int> cellPositions = new List<Vector2Int>();
-            for (int x = -patchSize; x < patchSize; x++)
+            List<Vector2Int> outerCells = new List<Vector2Int>();
+            Vector2Int MinAndMax;
+
+            switch (patchSize)
             {
-                for (int y = -patchSize; y < patchSize; y++)
+                case 1:
+                    cellPositions.AddRange( Patch0Positions);
+                    cellPositions.AddRange( Patch1Positions);
+                    outerCells.AddRange(cellPositions);
+                    break;
+                case 2:
+                    cellPositions.AddRange( Patch0Positions);
+                    cellPositions.AddRange( Patch1Positions);
+                    cellPositions.AddRange( Patch2Positions);
+                    outerCells.AddRange(Patch1Positions);
+                    outerCells.AddRange(Patch2Positions);
+                    break;
+                case 3: 
+                    cellPositions.AddRange( Patch0Positions);
+                    cellPositions.AddRange( Patch1Positions);
+                    cellPositions.AddRange( Patch2Positions);
+                    cellPositions.AddRange(Patch3Positions);
+                    outerCells.AddRange(Patch3Positions);
+                    break;
+            }
+            MinAndMax = new Vector2Int((int)(outerCells.Count*1.5), (int)(cellPositions.Count*1.5));
+
+            while (cellPositions.Count <= MinAndMax.x)
+            {
+                List<Vector2Int> Remove = new List<Vector2Int>();
+                List<Vector2Int> Add = new List<Vector2Int>();
+                foreach (var outerCell in outerCells)
                 {
-                    if (Mathf.Abs(x) + Mathf.Abs(y) > patchSize) continue;
-                    if (patchSize >= 3 && Mathf.Abs(x) + Mathf.Abs(y) > patchSize * 0.666f && Random.Range(0f, 1f) >= 0.5f) continue;
-                    cellPositions.Add(new Vector2Int(x, y));
+                    if(cellPositions.Count + Add.Count >= MinAndMax.y) break;
+                    foreach (Vector2Int neighbourOffset in NeighbourOffsets)
+                    {
+                        if(cellPositions.Count + Add.Count >= MinAndMax.y) break;
+                        Vector2Int newCell = outerCell + neighbourOffset;
+                        if (cellPositions.Contains(newCell)) continue;
+                        if (Random.Range(0f,1f) >=.5f)continue;
+                        Remove.Add(outerCell);
+                        Add.Add(newCell);
+                    }
+                }
+                foreach (var t in Remove) outerCells.Remove(t);
+                foreach (var t in Add)
+                {
+                    outerCells.Add(t);
+                    cellPositions.Add(t);
                 }
             }
+
             GridField<GridObject> buildGridField = chunk.BuildingGrid;
             Vector2Int center = new Vector2Int(Random.Range(patchSize+1, GridBuildingSystem.GridSize.x-patchSize-1),
                 Random.Range(patchSize+1, GridBuildingSystem.GridSize.y-patchSize-1));
@@ -82,7 +138,6 @@ namespace Project.Scripts.Grid
                     buildGridField.GetCellData(cellPosition).SetResource(resourcesType);
                 }
             }
-
         }
 
         public static int GetNumberOfChunkResources()
