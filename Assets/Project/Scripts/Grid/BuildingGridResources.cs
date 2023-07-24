@@ -9,12 +9,13 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridResources
     {
-        private static readonly float[] ResourcePatchSizeProbabilities = new[] {40f, 55f, 5f};
+        private static readonly float[] ResourcePatchSizeProbabilities = new[] {49f, 50f, 1f};
         private static readonly float[] ChunkResourceNumberProbabilities = new[] { 70f, 25f, 5f };
 
         private static readonly Vector2Int[] Patch0Positions = new Vector2Int[] { new Vector2Int(0, 0) };
         private static readonly Vector2Int[] Patch1Positions = new Vector2Int[] { new Vector2Int(0, 1),new Vector2Int(1, 1),new Vector2Int(1, 0) };
-        private static readonly Vector2Int[] Patch2Positions = new Vector2Int[] { new Vector2Int(-1, 0),new Vector2Int(-1, -1),new Vector2Int(0, -1) };
+        private static readonly Vector2Int[] Patch2Positions = new Vector2Int[]
+            {new Vector2Int(-1, 1), new Vector2Int(-1, 0),new Vector2Int(-1, -1),new Vector2Int(0, -1),new Vector2Int(1, -1),};
         private static readonly Vector2Int[] Patch3Positions = new Vector2Int[] { new Vector2Int(-2, 0),
             new Vector2Int(-2, 1),new Vector2Int(-2, -1),new Vector2Int(2, -1),new Vector2Int(2, 1),
             new Vector2Int(2, 0),new Vector2Int(-1, -2),new Vector2Int(1, -2),new Vector2Int(0, -2),
@@ -34,9 +35,16 @@ namespace Project.Scripts.Grid
             O,
         }
 
-        public static ResourcesType GetRandom()
+        public static ResourcesType GetRandom(float distanceToCenter)
         {
             return (ResourcesType) Random.Range(1,Enum.GetNames(typeof(ResourcesType)).Length);
+        }
+
+        private static float GausFunction(float x, float a, float b, float c)
+        {
+            float frontFactor = 1 / a * Mathf.Sqrt(2 * Mathf.PI);
+            float exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
+            return frontFactor * Mathf.Exp(exponential);
         }
         
         public static void GenerateResources(GridChunk chunk)
@@ -54,7 +62,7 @@ namespace Project.Scripts.Grid
                 do
                 {
                     done = true;
-                    type = GetRandom();
+                    type = GetRandom(Vector2Int.Distance(Vector2Int.zero, chunk.ChunkPosition));
                     foreach (ResourcesType resource in chunkResources)
                     {
                         if (type != resource) continue;
@@ -99,27 +107,28 @@ namespace Project.Scripts.Grid
                     outerCells.AddRange(Patch3Positions);
                     break;
             }
-            MinAndMax = new Vector2Int((int)(outerCells.Count*1.5), (int)(cellPositions.Count*1.5));
+            MinAndMax = new Vector2Int((int)(outerCells.Count/2f+cellPositions.Count), (int)(cellPositions.Count*2f));
 
             while (cellPositions.Count <= MinAndMax.x)
             {
-                List<Vector2Int> Remove = new List<Vector2Int>();
-                List<Vector2Int> Add = new List<Vector2Int>();
+                List<Vector2Int> removeList = new List<Vector2Int>();
+                List<Vector2Int> addList = new List<Vector2Int>();
                 foreach (var outerCell in outerCells)
                 {
-                    if(cellPositions.Count + Add.Count >= MinAndMax.y) break;
+                    if(cellPositions.Count + addList.Count >= MinAndMax.y) break;
                     foreach (Vector2Int neighbourOffset in NeighbourOffsets)
                     {
-                        if(cellPositions.Count + Add.Count >= MinAndMax.y) break;
+                        if(cellPositions.Count + addList.Count >= MinAndMax.y) break;
                         Vector2Int newCell = outerCell + neighbourOffset;
-                        if (cellPositions.Contains(newCell)) continue;
-                        if (Random.Range(0f,1f) >=.5f)continue;
-                        Remove.Add(outerCell);
-                        Add.Add(newCell);
+                        if (cellPositions.Contains(newCell)|| addList.Contains(newCell)) continue;
+                        float prob = 1f / ((Vector2Int.Distance(Vector2Int.zero, newCell)+.5f)*4f);
+                        if (Random.Range(0f,1f) >=prob)continue;
+                        if(!removeList.Contains(outerCell)) removeList.Add(outerCell);
+                        addList.Add(newCell);
                     }
                 }
-                foreach (var t in Remove) outerCells.Remove(t);
-                foreach (var t in Add)
+                foreach (var t in removeList) outerCells.Remove(t);
+                foreach (var t in addList)
                 {
                     outerCells.Add(t);
                     cellPositions.Add(t);
