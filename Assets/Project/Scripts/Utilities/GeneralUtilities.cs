@@ -44,6 +44,13 @@ namespace Project.Scripts.Utilities
         {
             return Camera.main != null ? Camera.main.ScreenToWorldPoint(Input.mousePosition) : default;
         }
+        
+        public static float GausFunction(float x, float a, float b, float c)
+        {
+            float frontFactor = 1 / a * Mathf.Sqrt(2 * Mathf.PI);
+            float exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
+            return frontFactor * Mathf.Exp(exponential);
+        }
     
     }
 }

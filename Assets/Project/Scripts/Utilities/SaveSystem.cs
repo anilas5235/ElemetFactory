@@ -11,11 +11,8 @@ namespace Project.Scripts.Utilities
         public static void Save<T>(string path, T saveData) where T : class, new()
         {
             path = Application.persistentDataPath + "/" + path;
-
-            var serializer = new XmlSerializer(typeof(T));
-            var stream = new FileStream(path, FileMode.Create);
-            serializer.Serialize(stream, saveData);
-            stream.Close();
+            
+            File.WriteAllText(path, JsonUtility.ToJson(saveData,true));
 
             Debug.Log("Save was successful");
         }
@@ -29,11 +26,7 @@ namespace Project.Scripts.Utilities
             
             if (File.Exists(path))
             {
-                var serializer = new XmlSerializer(typeof(T));
-                var stream = new FileStream(path, FileMode.Open);
-                activeSave = serializer.Deserialize(stream) as T;
-                stream.Close();
-
+                activeSave = JsonUtility.FromJson<T>(File.ReadAllText(path));
                 Debug.Log("Load was successful");
             }
             else

@@ -9,22 +9,23 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridResources
     {
-        private static readonly float[] ResourcePatchSizeProbabilities = new[] {49f, 50f, 1f};
-        private static readonly float[] ChunkResourceNumberProbabilities = new[] { 70f, 25f, 5f };
+        private static readonly float[] ResourcePatchSizeProbabilities =  {49f, 50f, 1f};
+        private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
 
-        private static readonly Vector2Int[] Patch0Positions = new Vector2Int[] { new Vector2Int(0, 0) };
-        private static readonly Vector2Int[] Patch1Positions = new Vector2Int[] { new Vector2Int(0, 1),new Vector2Int(1, 1),new Vector2Int(1, 0) };
-        private static readonly Vector2Int[] Patch2Positions = new Vector2Int[]
-            {new Vector2Int(-1, 1), new Vector2Int(-1, 0),new Vector2Int(-1, -1),new Vector2Int(0, -1),new Vector2Int(1, -1),};
-        private static readonly Vector2Int[] Patch3Positions = new Vector2Int[] { new Vector2Int(-2, 0),
-            new Vector2Int(-2, 1),new Vector2Int(-2, -1),new Vector2Int(2, -1),new Vector2Int(2, 1),
-            new Vector2Int(2, 0),new Vector2Int(-1, -2),new Vector2Int(1, -2),new Vector2Int(0, -2),
-            new Vector2Int(-1, 2),new Vector2Int(1, 2),new Vector2Int(0, 2),
+        private static readonly Vector2Int[] Patch0Positions =  { new Vector2Int(0, 0) };
+        private static readonly Vector2Int[] Patch1Positions = 
+            { new Vector2Int(0, 1),new Vector2Int(1, 1),new Vector2Int(1, 0) };
+        private static readonly Vector2Int[] Patch2Positions = 
+            {new Vector2Int(-1, 1), new Vector2Int(-1, 0),new Vector2Int(-1, -1),new Vector2Int(0, -1),
+                new Vector2Int(1, -1),};
+        private static readonly Vector2Int[] Patch3Positions = 
+        { new Vector2Int(-2, 0), new Vector2Int(-2, 1),new Vector2Int(-2, -1),new Vector2Int(2, -1),
+            new Vector2Int(2, 1), new Vector2Int(2, 0),new Vector2Int(-1, -2),new Vector2Int(1, -2),
+            new Vector2Int(0, -2), new Vector2Int(-1, 2),new Vector2Int(1, 2),new Vector2Int(0, 2),
         };
 
-        private static readonly Vector2Int[] NeighbourOffsets = new[] { new Vector2Int(0, 1),
-            new Vector2Int(0,-1),new Vector2Int(1,0),new Vector2Int(-1,0),Vector2Int.one,
-            Vector2Int.one*-1,new Vector2Int(-1,1),new Vector2Int(1,-1),};
+        private static readonly Vector2Int[] NeighbourOffsets =
+        { new Vector2Int(0, 1), new Vector2Int(0,-1),new Vector2Int(1,0),new Vector2Int(-1,0),};
 
         public enum ResourcesType
         {
@@ -37,16 +38,11 @@ namespace Project.Scripts.Grid
 
         public static ResourcesType GetRandom(float distanceToCenter)
         {
-            return (ResourcesType) Random.Range(1,Enum.GetNames(typeof(ResourcesType)).Length);
+            int pool=1;
+            if (distanceToCenter >= 2f) pool+=3;
+            return (ResourcesType) Random.Range(1,pool);
         }
 
-        private static float GausFunction(float x, float a, float b, float c)
-        {
-            float frontFactor = 1 / a * Mathf.Sqrt(2 * Mathf.PI);
-            float exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
-            return frontFactor * Mathf.Exp(exponential);
-        }
-        
         public static void GenerateResources(GridChunk chunk)
         {
             float distToCenter = Vector2Int.Distance(chunk.ChunkPosition, Vector2Int.zero);
@@ -54,7 +50,7 @@ namespace Project.Scripts.Grid
             int numberOfPatches = GetNumberOfChunkResources();
             if (numberOfPatches <1)return;
             ResourcesType[] chunkResources = new ResourcesType[numberOfPatches];
-            
+
             for (int i = 0; i < numberOfPatches; i++)
             {
                 ResourcesType type;
@@ -75,7 +71,7 @@ namespace Project.Scripts.Grid
 
             foreach (ResourcesType resource in chunkResources)
             {
-                GenerateResourcePatch(chunk,GetPatchSize(),resource);
+                GenerateResourcePatch(chunk,GetPatchSize(numberOfPatches),resource);
             }
         }
 
@@ -166,10 +162,10 @@ namespace Project.Scripts.Grid
             return returnVal;
         }
 
-        public static int GetPatchSize()
+        public static int GetPatchSize(int numberOfPatches =1)
         {
             int returnVal = 1;
-            float random = Random.Range(0f, 100f);
+            float random = Random.Range(0f, 100f)-((numberOfPatches-1)*20);
             float currentStep = 0f;
             for (int i = 0; i < ResourcePatchSizeProbabilities.Length; i++)
             {
