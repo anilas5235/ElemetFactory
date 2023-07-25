@@ -18,12 +18,12 @@ namespace Project.Scripts.Grid
         private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Drill;
         private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
         
-        public static readonly Vector2Int GridSize = new Vector2Int(10, 10);
+        public static readonly Vector2Int ChunkSize = new Vector2Int(10, 10);
+        public static readonly Vector2 ChunkSizeIntUnits = new Vector2(CellSize * ChunkSize.x, CellSize * ChunkSize.y);
         public const float CellSize = 10f;
-        public static readonly Vector2 ChunkSize = new Vector2(CellSize * GridSize.x, CellSize * GridSize.y);
         private GameObject chunkPrefap;
 
-        public Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
+        private Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
         private Vector2Int chunkPosWithPlayer = new Vector2Int(-10,-10);
         private int playerViewRadius;
         private List<Vector2Int> LoadedChunks { get; } = new List<Vector2Int>();
@@ -65,14 +65,14 @@ namespace Project.Scripts.Grid
 
         private void OnApplicationQuit()
         {
-            SaveAllChunksToFile();
+            SaveAllChunksToFile(Chunks);
         }
 
         #region PlayTimeLoad&UnLoadChunksSystem
         private void UpdateLoadedChunks()
         {
             Vector2Int currentPos = GetChunkPosition(PlayerCam.transform.position);
-            int radius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSize.x);
+            int radius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSizeIntUnits.x);
             if (chunkPosWithPlayer == currentPos && playerViewRadius == radius) return;
             chunkPosWithPlayer = currentPos;
             playerViewRadius = radius;
@@ -101,16 +101,14 @@ namespace Project.Scripts.Grid
         private IEnumerator LoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
-            targetChunk.Load();
-            if(!LoadedChunks.Contains(position)) LoadedChunks.Add(position);
+            targetChunk.Load(LoadedChunks);
             yield return null;
         }
 
         private IEnumerator  UnLoadChunk(Vector2Int position)
         {
             GridChunk targetChunk = GetChunk(position);
-            targetChunk.UnLoad();
-            LoadedChunks.Remove(position);
+            targetChunk.UnLoad(LoadedChunks);
             yield return null;
         }
         #endregion
@@ -118,13 +116,13 @@ namespace Project.Scripts.Grid
         #region InfoFunctions
         public static Vector2Int GetChunkPosition(Vector3 worldPosition)
         {
-            return new Vector2Int(Mathf.RoundToInt(worldPosition.x / ChunkSize.x),
-                Mathf.RoundToInt(worldPosition.y / ChunkSize.y));
+            return new Vector2Int(Mathf.RoundToInt(worldPosition.x / ChunkSizeIntUnits.x),
+                Mathf.RoundToInt(worldPosition.y / ChunkSizeIntUnits.y));
         }
 
         public static Vector3 GetChunkLocalPosition(Vector2Int chunkPosition)
         {
-            return new Vector3(chunkPosition.x * ChunkSize.x, chunkPosition.y * ChunkSize.y);
+            return new Vector3(chunkPosition.x * ChunkSizeIntUnits.x, chunkPosition.y * ChunkSizeIntUnits.y);
         }
 
         public GridChunk GetChunk(Vector2Int chunkPosition)
@@ -140,92 +138,76 @@ namespace Project.Scripts.Grid
         #endregion
 
         #region ChunkCreationHandeling
+        /// <summary>
+        /// Places a newly generated chunk in the world
+        /// </summary>
+        /// <param name="chunkPosition">position that identifies the new chunk and determines its position</param>
+        /// <returns>Ref to the new chunk Instance</returns>
         private GridChunk CreateChunk( Vector2Int chunkPosition)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
-            Vector3 localPosition = new Vector3(chunkPosition.x * ChunkSize.x, chunkPosition.y * ChunkSize.y);
+            Vector3 localPosition = new Vector3(chunkPosition.x * ChunkSizeIntUnits.x, chunkPosition.y * ChunkSizeIntUnits.y);
             newChunk.Initialization(this,chunkPosition, localPosition);
             newChunk.gameObject.name = $"Chunk {chunkPosition}";
             Chunks.Add(chunkPosition, newChunk);
             LoadedChunks.Add(chunkPosition);
             return newChunk;
         }
-
-        private void SaveAllChunksToFile()
+        
+        /// <summary>
+        /// Saves the current world to a datafile 
+        /// </summary>
+        /// <param name="gridChunks">all the chunk data that has been generated for this world</param>
+        private static void SaveAllChunksToFile(Dictionary<Vector2Int,GridChunk> gridChunks)
         {
-            ChunkSave[] chunkSaves = new ChunkSave[Chunks.Count];
-            bool[] controlList = new bool[chunkSaves.Length];
+            ChunkSave[] chunkSaves = new ChunkSave[gridChunks.Count];
             int index = 0;
-            foreach (KeyValuePair<Vector2Int,GridChunk> chunk in Chunks)
+            foreach (KeyValuePair<Vector2Int,GridChunk> chunk in gridChunks)
             {
-                StartCoroutine(JobCreateChunkSave(chunkSaves, index, chunk.Value, controlList));
+                CreateChunkSave(chunkSaves, index, chunk.Value);
                 index++;
             }
-
-            bool done = false;
-            while (!done)
-            {
-                done = true;
-                foreach (bool job in controlList)
-                {
-                    if (job) continue;
-                    done = false;
-                    break;
-                }
-            }
-
             WorldSaveHandler.CurrentWorldSave.chunkSaves = chunkSaves;
             WorldSaveHandler.SaveWorldToFile();
         }
 
-        private IEnumerator JobCreateChunkSave(ChunkSave[] chunkSaves, int index, GridChunk chunk, bool[] controlList)
+        private static void CreateChunkSave(ChunkSave[] chunkSaves, int index, GridChunk chunk)
         {
-            chunkSaves[index] = new ChunkSave()
+            chunkSaves[index] = new ChunkSave
             {
                 chunkPosition = chunk.ChunkPosition, chunkResourcePoints = chunk.ChunkResources.ToArray(),
                 placedBuildingData = chunk.BuildingsData.ToArray()
             };
-            controlList[index] = true;
-            yield return null;
         }
-
+        
+        /// <summary>
+        /// Recreates the world from specific data 
+        /// </summary>
+        /// <param name="worldSave">data of the world to load</param>
         private void LoadAllChunksFromSave(WorldSave worldSave)
         {
             ChunkSave[] chunkSaves = worldSave.chunkSaves;
-            bool[] controlList = new bool[chunkSaves.Length];
 
-            for (int i = 0; i < chunkSaves.Length; i++)
-            {
-                StartCoroutine(LoadChunkFormSave(chunkSaves[i],i,controlList));
-            }
-
-            bool done = false;
-            while (!done)
-            {
-                done = true;
-                foreach (bool job in controlList)
-                {
-                    if (job) continue;
-                    done = false;
-                    break;
-                }
-            }
-
+            foreach (ChunkSave chunkSave in chunkSaves) LoadChunkFormSave(chunkSave);
             foreach (ChunkSave chunkSave in chunkSaves)
             {
-               GetChunk(chunkSave.chunkPosition).LoadBuildings(chunkSave.placedBuildingData);
+                GridChunk gridChunk = GetChunk(chunkSave.chunkPosition);
+                gridChunk.LoadBuildingsFromSave(chunkSave.placedBuildingData);
+                gridChunk.UnLoad(LoadedChunks);
             }
         }
-
-        private IEnumerator LoadChunkFormSave(ChunkSave chunkSave,int index,bool[] controlList)
+        
+        /// <summary>
+        /// Recreates a chunk from data and places in the world
+        /// </summary>
+        /// <param name="chunkSave">data of the chunk to load</param>
+        private void LoadChunkFormSave(ChunkSave chunkSave)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
             newChunk.Initialization(this,chunkSave.chunkPosition, GetChunkLocalPosition(chunkSave.chunkPosition), chunkSave.chunkResourcePoints);
             newChunk.gameObject.name = $"Chunk {chunkSave.chunkPosition}";
             Chunks.Add(chunkSave.chunkPosition, newChunk);
             LoadedChunks.Add(chunkSave.chunkPosition);
-            controlList[index] = true;
-            yield return null;
         }
         #endregion
     }

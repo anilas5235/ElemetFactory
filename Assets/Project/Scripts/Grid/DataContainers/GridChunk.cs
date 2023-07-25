@@ -28,7 +28,7 @@ namespace Project.Scripts.Grid.DataContainers
             transform.localPosition = LocalPosition;
             ChunkTilemap = GetComponentInChildren<Tilemap>();
             chunkTilemapRenderer = GetComponentInChildren<TilemapRenderer>();
-            BuildingGrid = new GridField<GridObject>(GridBuildingSystem.GridSize,GridBuildingSystem.CellSize, transform,
+            BuildingGrid = new GridField<GridObject>(GridBuildingSystem.ChunkSize,GridBuildingSystem.CellSize, transform,
                 (field, pos) => new GridObject(this, pos));
 
             if (resourcePoints != null)
@@ -38,12 +38,10 @@ namespace Project.Scripts.Grid.DataContainers
                     BuildingGrid.GetCellData(resourcePoint.position).SetResource((BuildingGridResources.ResourcesType)resourcePoint.resourceID);
                 }
             }
-            else
-            {
-                BuildingGridResources.GenerateResources(this);
-            }
+            else BuildingGridResources.GenerateResources(this);
+            
         }
-        public void LoadBuildings(PlacedBuildingData[] buildings)
+        public void LoadBuildingsFromSave(PlacedBuildingData[] buildings)
         {
             if (buildings == null) BuildingsData = new List<PlacedBuildingData>();
             else
@@ -129,33 +127,35 @@ namespace Project.Scripts.Grid.DataContainers
         public static Vector2Int GetChunkPositionOverflow(Vector2Int pseudoCellPosition, Vector2Int chunkPosition)
         {
             if (pseudoCellPosition.x < 0) chunkPosition.x -= 1;
-            else if (pseudoCellPosition.x >= GridBuildingSystem.GridSize.x) chunkPosition.x += 1;
+            else if (pseudoCellPosition.x >= GridBuildingSystem.ChunkSize.x) chunkPosition.x += 1;
             if (pseudoCellPosition.y < 0) chunkPosition.y -= 1;
-            else if (pseudoCellPosition.y >= GridBuildingSystem.GridSize.y) chunkPosition.y += 1;
+            else if (pseudoCellPosition.y >= GridBuildingSystem.ChunkSize.y) chunkPosition.y += 1;
             return chunkPosition;
         }
         
         public static Vector2Int GetCellPositionOverflow(Vector2Int pseudoCellPosition)
         {
-            if (pseudoCellPosition.x < 0) pseudoCellPosition.x += GridBuildingSystem.GridSize.x;
-            else if (pseudoCellPosition.x >= GridBuildingSystem.GridSize.x) pseudoCellPosition.x -= GridBuildingSystem.GridSize.x;
-            if (pseudoCellPosition.y < 0) pseudoCellPosition.y += GridBuildingSystem.GridSize.y;
-            else if (pseudoCellPosition.y >= GridBuildingSystem.GridSize.y) pseudoCellPosition.y -= GridBuildingSystem.GridSize.y;
+            if (pseudoCellPosition.x < 0) pseudoCellPosition.x += GridBuildingSystem.ChunkSize.x;
+            else if (pseudoCellPosition.x >= GridBuildingSystem.ChunkSize.x) pseudoCellPosition.x -= GridBuildingSystem.ChunkSize.x;
+            if (pseudoCellPosition.y < 0) pseudoCellPosition.y += GridBuildingSystem.ChunkSize.y;
+            else if (pseudoCellPosition.y >= GridBuildingSystem.ChunkSize.y) pseudoCellPosition.y -= GridBuildingSystem.ChunkSize.y;
             return pseudoCellPosition;
         }
 
-        public void Load()
+        public void Load(List<Vector2Int> loadedChunks)
         {
             if(Loaded) return;
             Loaded = true;
             chunkTilemapRenderer.enabled = Loaded;
+            if(!loadedChunks.Contains(ChunkPosition)) loadedChunks.Add(ChunkPosition);
         }
         
-        public void UnLoad()
+        public void UnLoad(List<Vector2Int> loadedChunks)
         {
             if(!Loaded) return;
             Loaded = false;
             chunkTilemapRenderer.enabled = Loaded;
+            if(loadedChunks.Contains(ChunkPosition))loadedChunks.Remove(ChunkPosition);
         }
     }
 }

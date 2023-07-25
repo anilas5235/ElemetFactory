@@ -32,10 +32,30 @@ namespace Project.Scripts.Buildings
 
         public PlacedBuildingData PlacedBuildingData { get; private set; }
 
+        /// <summary>
+        /// Give back a list of positions, that this building occupies
+        /// </summary>
+        /// <returns>Ary of Vector2Int positions</returns>
         public Vector2Int[] GetGridPositionList()
         {
             return BuildingGridResources.GetBuildingDataBase( PlacedBuildingData.buildingDataID)
                 .GetGridPositionList(PlacedBuildingData);
+        }
+
+        /// <summary>
+        /// Deactivates the visuals of the building
+        /// </summary>
+        public virtual void Load()
+        {
+            
+        }
+
+        /// <summary>
+        /// Activates the visuals of the building
+        /// </summary>
+        public virtual void UnLoad()
+        {
+            
         }
 
         public void Destroy()

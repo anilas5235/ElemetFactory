@@ -6,9 +6,8 @@ namespace Project.Scripts.Visualisation
 {
     public static class VisualResources
     {
-        private static TileBase[] _resourceTiles =
-            new[]
-            {
+        private static readonly TileBase[] ResourceTiles =
+        {
                 Resources.Load<TileBase>("Tiles/Red"),
                 Resources.Load<TileBase>("Tiles/Blue"),
                 Resources.Load<TileBase>("Tiles/Green"),
@@ -22,8 +21,8 @@ namespace Project.Scripts.Visualisation
 
         public static TileBase GetTileSource(BuildingGridResources.ResourcesType resourcesType)
         {
-            int index = (int)resourcesType;
-            return index < _resourceTiles.Length ? _resourceTiles[index] : DefaultTile;
+            int index = (int)resourcesType-1;
+            return index < ResourceTiles.Length ? ResourceTiles[index] : DefaultTile;
         }
     }
 }

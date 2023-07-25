@@ -42,8 +42,8 @@ namespace Project.Scripts.Grid.DataContainers
             if(ResourceNode != BuildingGridResources.ResourcesType.None || resourcesType == BuildingGridResources.ResourcesType.None)return;
             ResourceNode = resourcesType;
             Vector3Int tilePos = new Vector3Int(
-                Mathf.FloorToInt(Position.x - GridBuildingSystem.GridSize.x / 2f),
-                Mathf.FloorToInt(Position.y - GridBuildingSystem.GridSize.y / 2f),
+                Mathf.FloorToInt(Position.x - GridBuildingSystem.ChunkSize.x / 2f),
+                Mathf.FloorToInt(Position.y - GridBuildingSystem.ChunkSize.y / 2f),
                 0);
             Chunk.ChunkTilemap.SetTile(tilePos, VisualResources.GetTileSource(ResourceNode));
             Chunk.ChunkResources.Add(new ChunkResourcePoint()
