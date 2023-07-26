@@ -11,7 +11,7 @@ namespace Project.Scripts.Grid
     {
         #region ResourceGeneration
         
-        private static readonly float[] ResourcePatchSizeProbabilities =  {49f, 50f, 1f};
+        private static readonly float[] ResourcePatchSizeProbabilities =  {60f, 39f, 1f};
         private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
 
         private static readonly Vector2Int[] Patch0Positions =  { new Vector2Int(0, 0) };
