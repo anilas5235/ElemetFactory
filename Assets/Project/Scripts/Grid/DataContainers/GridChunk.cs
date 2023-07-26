@@ -32,12 +32,11 @@ namespace Project.Scripts.Grid.DataContainers
             BuildingGrid = new GridField<GridObject>(GridBuildingSystem.ChunkSize,GridBuildingSystem.CellSize, transform,
                 (field, pos) => new GridObject(this, pos));
 
-            ChunkResourcePatches ??= BuildingGridResources.GenerateResources(this);
+            ChunkResourcePatches ??= BuildingGridResources.GenerateResources(this,gridBuildingSystem.Chunks);
             
             foreach (ChunkResourcePatch chunkResourcePatch in ChunkResourcePatches)
             {
-                BuildingGridResources.ResourcesType resourceType =
-                    (BuildingGridResources.ResourcesType)chunkResourcePatch.resourceID;
+                var resourceType = (BuildingGridResources.ResourcesType)chunkResourcePatch.resourceID;
                 foreach (Vector2Int position in chunkResourcePatch.positions)
                 {
                     BuildingGrid.GetCellData(position).SetResource(resourceType);

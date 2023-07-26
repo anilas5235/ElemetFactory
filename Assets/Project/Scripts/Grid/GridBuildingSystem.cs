@@ -24,7 +24,7 @@ namespace Project.Scripts.Grid
         public const float CellSize = 10f;
         private GameObject chunkPrefap;
 
-        private Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
+        public Dictionary<Vector2Int, GridChunk> Chunks { get; } = new Dictionary<Vector2Int, GridChunk>();
         private Vector2Int chunkPosWithPlayer = new Vector2Int(-10,-10);
         private int playerViewRadius;
         private List<Vector2Int> LoadedChunks { get; } = new List<Vector2Int>();

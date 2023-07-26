@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings;
 using Project.Scripts.Grid.DataContainers;
+using Project.Scripts.Utilities;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -28,10 +29,7 @@ namespace Project.Scripts.Grid
             new Vector2Int(2, 1), new Vector2Int(2, 0),new Vector2Int(-1, -2),new Vector2Int(1, -2),
             new Vector2Int(0, -2), new Vector2Int(-1, 2),new Vector2Int(1, 2),new Vector2Int(0, 2),
         };
-
-        private static readonly Vector2Int[] NeighbourOffsets =
-        { new Vector2Int(0, 1), new Vector2Int(0,-1),new Vector2Int(1,0),new Vector2Int(-1,0),};
-
+        
         public enum ResourcesType
         {
             None,
@@ -48,12 +46,12 @@ namespace Project.Scripts.Grid
             return (ResourcesType) Random.Range(1,pool);
         }
 
-        public static ChunkResourcePatch[] GenerateResources(GridChunk chunk)
+        public static ChunkResourcePatch[] GenerateResources(GridChunk chunk,Dictionary<Vector2Int,GridChunk> gridChunks)
         {
             List<ChunkResourcePatch> patches = new List<ChunkResourcePatch>();
             float distToCenter = Vector2Int.Distance(chunk.ChunkPosition, Vector2Int.zero);
             if(distToCenter < 2f ) return patches.ToArray();
-            int numberOfPatches = GetNumberOfChunkResources();
+            int numberOfPatches = GetNumberOfChunkResources(gridChunks,chunk,7f);
             if (numberOfPatches <1)return patches.ToArray();
             ResourcesType[] chunkResources = new ResourcesType[numberOfPatches];
             List<Vector2Int> blockPositions = new List<Vector2Int>();
@@ -155,7 +153,7 @@ namespace Project.Scripts.Grid
                 {
                     if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
                     if(blocked.Contains(outerCell)){removeList.Add(outerCell); continue;}
-                    foreach (Vector2Int neighbourOffset in NeighbourOffsets)
+                    foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D4)
                     {
                         if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
                         Vector2Int newCell = outerCell + neighbourOffset;
@@ -184,10 +182,20 @@ namespace Project.Scripts.Grid
             return cellPositions;
         }
 
-        private static int GetNumberOfChunkResources()
+        private static int GetNumberOfChunkResources(Dictionary<Vector2Int,GridChunk> gridChunks, GridChunk chunk, float antiCrowdingMultiplier)
         {
             int returnVal = 0;
             float random = Random.Range(0f, 100f);
+
+            foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
+            {
+                Vector2Int chunkPos = neighbourOffset + chunk.ChunkPosition;
+                if (gridChunks.ContainsKey(chunkPos))
+                {
+                    random -= gridChunks[chunkPos].ChunkResourcePatches.Length * antiCrowdingMultiplier;
+                }
+            }
+            
             float currentStep = 0f;
             for (int i = 0; i < ChunkResourceNumberProbabilities.Length; i++)
             {
