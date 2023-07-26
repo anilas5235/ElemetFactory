@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings;
@@ -34,6 +35,10 @@ namespace Project.Scripts.Grid
         {
             chunkPrefap = Resources.Load<GameObject>("Prefaps/chunk");
             GetComponent<UnityEngine.Grid>().cellSize = new Vector3(CellSize, CellSize, 0);
+        }
+
+        private void OnEnable()
+        {
             LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
         }
 
@@ -175,7 +180,7 @@ namespace Project.Scripts.Grid
         {
             chunkSaves[index] = new ChunkSave
             {
-                chunkPosition = chunk.ChunkPosition, chunkResourcePoints = chunk.ChunkResources.ToArray(),
+                chunkPosition = chunk.ChunkPosition, chunkResourcePatches = chunk.ChunkResourcePatches,
                 placedBuildingData = chunk.BuildingsData.ToArray()
             };
         }
@@ -204,7 +209,7 @@ namespace Project.Scripts.Grid
         private void LoadChunkFormSave(ChunkSave chunkSave)
         {
             GridChunk newChunk = Instantiate(chunkPrefap,transform).GetComponent<GridChunk>();
-            newChunk.Initialization(this,chunkSave.chunkPosition, GetChunkLocalPosition(chunkSave.chunkPosition), chunkSave.chunkResourcePoints);
+            newChunk.Initialization(this,chunkSave.chunkPosition, GetChunkLocalPosition(chunkSave.chunkPosition), chunkSave.chunkResourcePatches);
             newChunk.gameObject.name = $"Chunk {chunkSave.chunkPosition}";
             Chunks.Add(chunkSave.chunkPosition, newChunk);
             LoadedChunks.Add(chunkSave.chunkPosition);

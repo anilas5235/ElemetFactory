@@ -13,33 +13,36 @@ namespace Project.Scripts.Grid.DataContainers
 
         public GridBuildingSystem myGridBuildingSystem;
         public Tilemap ChunkTilemap { get; private set; }
-        public List<ChunkResourcePoint> ChunkResources { get; } = new List<ChunkResourcePoint>();
+        public ChunkResourcePatch[] ChunkResourcePatches { get; private set; }
 
         private TilemapRenderer chunkTilemapRenderer;
         public Vector3 LocalPosition { get; private set; }
         public Vector2Int ChunkPosition { get; private set; }
         public bool Loaded { get; private set; } = true;
 
-        public void Initialization(GridBuildingSystem gridBuildingSystem, Vector2Int chunkPosition, Vector3 localPosition, ChunkResourcePoint[] resourcePoints = null)
+        public void Initialization(GridBuildingSystem gridBuildingSystem, Vector2Int chunkPosition, Vector3 localPosition, ChunkResourcePatch[] resourcePatches = null)
         {
             myGridBuildingSystem = gridBuildingSystem;
             ChunkPosition = chunkPosition;
             LocalPosition = localPosition;
+            ChunkResourcePatches = resourcePatches;
             transform.localPosition = LocalPosition;
             ChunkTilemap = GetComponentInChildren<Tilemap>();
             chunkTilemapRenderer = GetComponentInChildren<TilemapRenderer>();
             BuildingGrid = new GridField<GridObject>(GridBuildingSystem.ChunkSize,GridBuildingSystem.CellSize, transform,
                 (field, pos) => new GridObject(this, pos));
 
-            if (resourcePoints != null)
+            ChunkResourcePatches ??= BuildingGridResources.GenerateResources(this);
+            
+            foreach (ChunkResourcePatch chunkResourcePatch in ChunkResourcePatches)
             {
-                foreach (ChunkResourcePoint resourcePoint in resourcePoints)
+                BuildingGridResources.ResourcesType resourceType =
+                    (BuildingGridResources.ResourcesType)chunkResourcePatch.resourceID;
+                foreach (Vector2Int position in chunkResourcePatch.positions)
                 {
-                    BuildingGrid.GetCellData(resourcePoint.position).SetResource((BuildingGridResources.ResourcesType)resourcePoint.resourceID);
+                    BuildingGrid.GetCellData(position).SetResource(resourceType);
                 }
             }
-            else BuildingGridResources.GenerateResources(this);
-            
         }
         public void LoadBuildingsFromSave(PlacedBuildingData[] buildings)
         {

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings;
@@ -10,6 +9,8 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridResources
     {
+        #region ResourceGeneration
+        
         private static readonly float[] ResourcePatchSizeProbabilities =  {49f, 50f, 1f};
         private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
 
@@ -39,8 +40,7 @@ namespace Project.Scripts.Grid
             N,
             O,
         }
-
-        public static ResourcesType GetRandom(float distanceToCenter)
+        private static ResourcesType GetRandom(float distanceToCenter)
         {
             int pool=1;
             if (distanceToCenter >= 2f) pool+=3;
@@ -48,12 +48,13 @@ namespace Project.Scripts.Grid
             return (ResourcesType) Random.Range(1,pool);
         }
 
-        public static void GenerateResources(GridChunk chunk)
+        public static ChunkResourcePatch[] GenerateResources(GridChunk chunk)
         {
+            List<ChunkResourcePatch> patches = new List<ChunkResourcePatch>();
             float distToCenter = Vector2Int.Distance(chunk.ChunkPosition, Vector2Int.zero);
-            if(distToCenter < 2f ) return;
+            if(distToCenter < 2f ) return patches.ToArray();
             int numberOfPatches = GetNumberOfChunkResources();
-            if (numberOfPatches <1)return;
+            if (numberOfPatches <1)return patches.ToArray();
             ResourcesType[] chunkResources = new ResourcesType[numberOfPatches];
             List<Vector2Int> blockPositions = new List<Vector2Int>();
 
@@ -77,25 +78,24 @@ namespace Project.Scripts.Grid
 
             foreach (ResourcesType resource in chunkResources)
             {
-                GenerateResourcePatch(chunk,GetPatchSize(numberOfPatches),resource,blockPositions);
+                patches.Add(GenerateResourcePatch(chunk,GetPatchSize(numberOfPatches),resource,blockPositions));
             }
+
+            return patches.ToArray();
         }
 
-        public static void GenerateResourcePatch(GridChunk chunk, int patchSize, ResourcesType resourcesType,
+        private static ChunkResourcePatch GenerateResourcePatch(GridChunk chunk, int patchSize, ResourcesType resourcesType,
             List<Vector2Int> blocked)
         {
-            Vector2Int[] cellPositions = GeneratePatchShape(patchSize, blocked);
+            List<Vector2Int> cellPositions = GeneratePatchShape(patchSize, blocked,chunk);
 
-            GridField<GridObject> buildGridField = chunk.BuildingGrid;
-
-            foreach (var cellPosition in cellPositions)
+            foreach (Vector2Int cellPosition in cellPositions) blocked.Add(cellPosition);
+            
+            return new ChunkResourcePatch
             {
-                if (buildGridField.IsValidPosition(cellPosition))
-                {
-                    buildGridField.GetCellData(cellPosition).SetResource(resourcesType);
-                    blocked.Add(cellPosition);
-                }
-            }
+                resourceID = (int)resourcesType,
+                positions = cellPositions.ToArray()
+            };
         }
 
         private static void GetPathBaseShape(int patchSize, out List<Vector2Int> cellPositions,out List<Vector2Int> outerCells)
@@ -127,7 +127,7 @@ namespace Project.Scripts.Grid
             }
         }
 
-        private static Vector2Int[] GeneratePatchShape(int patchSize,List<Vector2Int> blocked)
+        private static List<Vector2Int> GeneratePatchShape(int patchSize,List<Vector2Int> blocked, GridChunk chunk)
         {
             
             GetPathBaseShape(patchSize,out List<Vector2Int> cellPositions, out List<Vector2Int> outerCells);
@@ -160,7 +160,7 @@ namespace Project.Scripts.Grid
                         if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
                         Vector2Int newCell = outerCell + neighbourOffset;
                         if (cellPositions.Contains(newCell) || addList.Contains(newCell) ||
-                            blocked.Contains(newCell+center)) continue;
+                            blocked.Contains(newCell+center)|| !chunk.BuildingGrid.IsValidPosition(newCell)) continue;
                         float prob = 1f / ((Vector2Int.Distance(Vector2Int.zero, newCell) + .5f) * 4f);
                         if (Random.Range(0f, 1f) >= prob) continue;
                         if (!removeList.Contains(outerCell)) removeList.Add(outerCell);
@@ -181,7 +181,7 @@ namespace Project.Scripts.Grid
 
             } while (!done);
 
-            return cellPositions.ToArray();
+            return cellPositions;
         }
 
         private static int GetNumberOfChunkResources()
@@ -218,13 +218,16 @@ namespace Project.Scripts.Grid
             return returnVal;
         }
         
+        #endregion
+
+        #region BuildingHandeling
         public enum PossibleBuildings
         {
             Drill,
             Smelter,
         }
 
-        private static BuildingDataBase[] possibleBuildingData =
+        private static readonly BuildingDataBase[] PossibleBuildingData =
         {
             Resources.Load<BuildingDataBase>("Buildings/Data/test")
         };
@@ -236,7 +239,8 @@ namespace Project.Scripts.Grid
         
         public static BuildingDataBase GetBuildingDataBase(int buildingTypeID)
         {
-            return possibleBuildingData[buildingTypeID];
+            return PossibleBuildingData[buildingTypeID];
         }
+        #endregion
     }
 }

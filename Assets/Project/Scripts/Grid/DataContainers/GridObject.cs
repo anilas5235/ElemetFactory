@@ -46,11 +46,6 @@ namespace Project.Scripts.Grid.DataContainers
                 Mathf.FloorToInt(Position.y - GridBuildingSystem.ChunkSize.y / 2f),
                 0);
             Chunk.ChunkTilemap.SetTile(tilePos, VisualResources.GetTileSource(ResourceNode));
-            Chunk.ChunkResources.Add(new ChunkResourcePoint()
-            {
-                position = Position,
-                resourceID = (int)ResourceNode,
-            });
         }
 
         public override string ToString()

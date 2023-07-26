@@ -1,13 +1,12 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Project.Scripts.Grid.DataContainers
 {
     [Serializable]
-    public struct ChunkResourcePoint
+    public struct ChunkResourcePatch
     {
-        public Vector2Int position;
+        public Vector2Int[] positions;
         public int resourceID;
     }
 }

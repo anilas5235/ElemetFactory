@@ -7,7 +7,7 @@ namespace Project.Scripts.Grid.DataContainers
     [Serializable]
     public class ChunkSave
     {
-        public ChunkResourcePoint[] chunkResourcePoints;
+        public ChunkResourcePatch[] chunkResourcePatches;
         public PlacedBuildingData[] placedBuildingData;
         public Vector2Int chunkPosition;
     }
