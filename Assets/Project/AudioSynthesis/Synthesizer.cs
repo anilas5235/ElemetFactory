@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.AudioSynthesis
 {
@@ -15,36 +16,62 @@ namespace Project.AudioSynthesis
             RufSin,
         }
 
-        private System.Random random;
-
         [Range(220, 1760)] public double frequency = 440;
+        [Range(0, 1f)] public float amplitude = 0.1f;
 
-        [Range(0, 1f)] public float gain = 0.5f;
-
-        public WaveTypes WaveType;
+        public WaveTypes waveType;
 
         public bool frequencyShifter;
-        public Vector2 Range = new Vector2(440,880);
+        public Vector2 range = new Vector2(440,880);
         public float shiftingSpeed = 10;
 
-        private int bufferLength,numBuffers, sampleRate;
+        private int _bufferLength,_numBuffers, _sampleRate;
 
-        private double phase, increment;
+        private double _phase, _increment;
+        
+        private void OnAudioFilterRead(float[] buffer, int channels)
+        {
+            _increment = frequency/_sampleRate;
+
+            for (int sample = 0; sample < buffer.Length; sample += channels)
+            {
+                _phase = (_phase + _increment) % 1;
+                
+                float t = (float) _phase *2* Mathf.PI;
+
+                float sampleValue = 0;
+
+                switch (waveType)
+                {
+                    case WaveTypes.Sin:sampleValue = Mathf.Sin(t);
+                        break;
+                    case WaveTypes.Square:sampleValue = Mathf.Sin(t) >= 0 ? 1 : -1;
+                        break;
+                    case WaveTypes.Triangle:sampleValue = Mathf.PingPong(t, 2) - 1;
+                        break;
+                    case WaveTypes.RufSin: sampleValue = Mathf.Sin(t + .1f* Mathf.Cos(t));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                sampleValue *= amplitude;
+                buffer[sample] = buffer[sample + 1] = sampleValue;
+            }
+        }
 
         private void Start()
         {
-            random = new System.Random();
 
-            AudioSettings.GetDSPBufferSize(out bufferLength, out numBuffers);
-            sampleRate = AudioSettings.outputSampleRate;
+            AudioSettings.GetDSPBufferSize(out _bufferLength, out _numBuffers);
+            _sampleRate = AudioSettings.outputSampleRate;
 
-            print($"sampleRate = {sampleRate} | bufferLength = {bufferLength} | numBuffers = {numBuffers}");
+            print($"sampleRate = {_sampleRate} | bufferLength = {_bufferLength} | numBuffers = {_numBuffers}");
             
         }
 
         private void OnEnable()
         {
-            if(frequencyShifter) StartCoroutine(FrequencyShifter(Range.x, Range.y,shiftingSpeed));
+            if(frequencyShifter) StartCoroutine(FrequencyShifter(range.x, range.y,shiftingSpeed));
         }
 
         private IEnumerator FrequencyShifter(float minRange, float maxRange, float speed)
@@ -57,34 +84,5 @@ namespace Project.AudioSynthesis
             } while (true);
         }
 
-        private void OnAudioFilterRead(float[] buffer, int channels)
-        {
-            increment = frequency * 2 * Math.PI / sampleRate;
-
-            for (int i = 0; i < buffer.Length; i += channels)
-            {
-                phase += increment;
-                if (phase > Math.PI * 2) phase -= Math.PI * 2;
-
-                float sampleValue = 0;
-
-
-                switch (WaveType)
-                {
-                    case WaveTypes.Sin:sampleValue = Mathf.Sin((float)phase);
-                        break;
-                    case WaveTypes.Square:sampleValue = Mathf.Sin((float)phase) >= 0 ? 1 : -1;
-                        break;
-                    case WaveTypes.Triangle:sampleValue = Mathf.PingPong((float)phase, 2) - 1;
-                        break;
-                    case WaveTypes.RufSin: sampleValue = Mathf.Sin((float)phase + .1f* Mathf.Sin((float) (phase * increment)));
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                sampleValue *= gain;
-                buffer[i] = buffer[i + 1] = sampleValue;
-            }
-        }
     }
 }

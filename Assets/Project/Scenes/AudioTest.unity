@@ -153,11 +153,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1677ae055e40269429f125d2dd9a115d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  frequency: 440
-  gain: 0.1
-  WaveType: 0
-  frequencyShifter: 1
-  Range: {x: 220, y: 440}
+  frequency: 220
+  amplitude: 0.1
+  waveType: 3
+  frequencyShifter: 0
+  range: {x: 440, y: 880}
   shiftingSpeed: 20
 --- !u!82 &1649723111
 AudioSource:
