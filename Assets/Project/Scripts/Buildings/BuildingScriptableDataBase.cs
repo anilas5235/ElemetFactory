@@ -7,12 +7,19 @@ namespace Project.Scripts.Buildings
      * Code based on the work of Code Monkey
      */
     [CreateAssetMenu]
-    public class BuildingDataBase : ScriptableObject
+    public class BuildingScriptableDataBase : ScriptableObject
     {
-        public static Directions GetNextDirection(Directions direction)
+        public static Directions GetNextDirectionClockwise(Directions direction)
         {
             int id = (int) direction +1;
             if (id > 3) id = 0;
+            return (Directions)id;
+        }
+        
+        public static Directions GetNextDirectionCounterClockwise(Directions direction)
+        {
+            int id = (int) direction -1;
+            if (id < 0) id = 3;
             return (Directions)id;
         }
         

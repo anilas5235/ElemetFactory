@@ -1,45 +1,64 @@
 using Project.Scripts.Grid;
+using Project.Scripts.Grid.DataContainers;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
 {
-    public class PlacedBuilding : MonoBehaviour
+    public abstract class PlacedBuilding : MonoBehaviour
     {
-        public static PlacedBuilding CreateBuilding(Vector3 localPosition, Vector2Int origin,
-            BuildingDataBase.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
+        /// <summary>
+        /// Creates a specified Building with the input parameters  
+        /// </summary>
+        /// /// <param name="chunk">the Chunk the building is placed in</param>
+        /// <param name="localPosition">3D Position in relation to the Chunks Center</param>
+        /// <param name="origin">Coordinates of the cell in the Chunk that the building is placed on</param>
+        /// <param name="direction">The facing direction of the building</param>
+        /// <param name="buildingData">The type Data of the building</param>
+        /// <param name="transformParent">Reference to parent in hierarchy</param>
+        /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
+        /// <returns>Reference to the newly created PlacedBuilding</returns>
+        public static PlacedBuilding CreateBuilding(GridChunk chunk,Vector3 localPosition, Vector2Int origin,
+            BuildingScriptableDataBase.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
             Transform transformParent,
             float cellSize)
         {
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
-                Quaternion.Euler(0, 0, BuildingDataBase.GetRotation(direction))).transform;
+                Quaternion.Euler(0, 0, BuildingScriptableDataBase.GetRotation(direction))).transform;
 
             PlacedBuilding placedBuilding = buildingTransform.GetComponent<PlacedBuilding>();
 
-            placedBuilding.PlacedBuildingData = new PlacedBuildingData()
+            placedBuilding.MyPlacedBuildingData = new PlacedBuildingData()
             {
                 origin = origin,
                 buildingDataID =(int) buildingData,
                 directionID =(int) direction,
             };
 
+            placedBuilding.MyChunk = chunk;
+            placedBuilding.visualParent = buildingTransform.GetChild(0).gameObject;
+
             buildingTransform.SetParent(transformParent);
             buildingTransform.localScale = new Vector3(cellSize, cellSize);
             buildingTransform.localPosition = localPosition;
-
+            
+            placedBuilding.StartWorking();
             return placedBuilding;
         }
 
-        public PlacedBuildingData PlacedBuildingData { get; private set; }
+        public PlacedBuildingData MyPlacedBuildingData { get; private set; }
+        public GridChunk MyChunk { get; private set; }
+
+        private GameObject visualParent;
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
         /// </summary>
-        /// <returns>Ary of Vector2Int positions</returns>
+        /// <returns>Ary of Vector2Int pseudo positions, not all maybe in the same Chunk</returns>
         public Vector2Int[] GetGridPositionList()
         {
-            return BuildingGridResources.GetBuildingDataBase( PlacedBuildingData.buildingDataID)
-                .GetGridPositionList(PlacedBuildingData);
+            return BuildingGridResources.GetBuildingDataBase( MyPlacedBuildingData.buildingDataID)
+                .GetGridPositionList(MyPlacedBuildingData);
         }
 
         /// <summary>
@@ -47,7 +66,7 @@ namespace Project.Scripts.Buildings
         /// </summary>
         public virtual void Load()
         {
-            
+            visualParent.SetActive(true);
         }
 
         /// <summary>
@@ -55,7 +74,7 @@ namespace Project.Scripts.Buildings
         /// </summary>
         public virtual void UnLoad()
         {
-            
+            visualParent.SetActive(false);
         }
 
         public void Destroy()
@@ -63,9 +82,14 @@ namespace Project.Scripts.Buildings
             Destroy(gameObject);
         }
 
+        protected virtual void StartWorking()
+        {
+            
+        } 
+
         public override string ToString()
         {
-            return PlacedBuildingData.buildingDataID.ToString();
+            return MyPlacedBuildingData.buildingDataID.ToString();
         }
     }
 }

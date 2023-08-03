@@ -158,7 +158,7 @@ namespace Project.Scripts.Grid
                         if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
                         Vector2Int newCell = outerCell + neighbourOffset;
                         if (cellPositions.Contains(newCell) || addList.Contains(newCell) ||
-                            blocked.Contains(newCell+center)|| !chunk.BuildingGrid.IsValidPosition(newCell)) continue;
+                            blocked.Contains(newCell+center)|| !chunk.ChunkBuildingGrid.IsValidPosition(newCell)) continue;
                         float prob = 1f / ((Vector2Int.Distance(Vector2Int.zero, newCell) + .5f) * 4f);
                         if (Random.Range(0f, 1f) >= prob) continue;
                         if (!removeList.Contains(outerCell)) removeList.Add(outerCell);
@@ -231,21 +231,21 @@ namespace Project.Scripts.Grid
         #region BuildingHandeling
         public enum PossibleBuildings
         {
-            Drill,
+            Extractor,
             Smelter,
         }
 
-        private static readonly BuildingDataBase[] PossibleBuildingData =
+        private static readonly BuildingScriptableDataBase[] PossibleBuildingData =
         {
-            Resources.Load<BuildingDataBase>("Buildings/Data/test")
+            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Extractor")
         };
 
-        public static BuildingDataBase GetBuildingDataBase(PossibleBuildings buildingType)
+        public static BuildingScriptableDataBase GetBuildingDataBase(PossibleBuildings buildingType)
         {
             return GetBuildingDataBase((int)buildingType);
         }
         
-        public static BuildingDataBase GetBuildingDataBase(int buildingTypeID)
+        public static BuildingScriptableDataBase GetBuildingDataBase(int buildingTypeID)
         {
             return PossibleBuildingData[buildingTypeID];
         }

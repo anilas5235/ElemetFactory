@@ -16,8 +16,8 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
-        private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Drill;
-        private BuildingDataBase.Directions _direction = BuildingDataBase.Directions.Down;
+        private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
+        private BuildingScriptableDataBase.Directions _direction = BuildingScriptableDataBase.Directions.Down;
         
         public static readonly Vector2Int ChunkSize = new Vector2Int(10, 10);
         public static readonly Vector2 ChunkSizeIntUnits = new Vector2(CellSize * ChunkSize.x, CellSize * ChunkSize.y);
@@ -46,7 +46,7 @@ namespace Project.Scripts.Grid
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                _direction = BuildingDataBase.GetNextDirection(_direction);
+                _direction = BuildingScriptableDataBase.GetNextDirectionClockwise(_direction);
                 Debug.Log($"rotation: {_direction}");
             }
 

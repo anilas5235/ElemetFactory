@@ -6,7 +6,7 @@ namespace Project.Scripts.Grid.DataContainers
 {
     public class GridObject
     {
-        private GridField<GridObject> GridField => Chunk.BuildingGrid;
+        private GridField<GridObject> GridField => Chunk.ChunkBuildingGrid;
         public Vector2Int Position { get; }
         public bool Occupied => Building;
         public PlacedBuilding Building { get; private set; }
