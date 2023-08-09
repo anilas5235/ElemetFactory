@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 1649723112}
   - component: {fileID: 1649723111}
   - component: {fileID: 1649723110}
+  - component: {fileID: 1649723113}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -153,12 +154,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1677ae055e40269429f125d2dd9a115d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  frequency: 220
-  amplitude: 0.1
-  waveType: 3
-  frequencyShifter: 0
-  range: {x: 440, y: 880}
-  shiftingSpeed: 20
+  waveType: 2
+  gain: 0.05
 --- !u!82 &1649723111
 AudioSource:
   m_ObjectHideFlags: 0
@@ -171,7 +168,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.333
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -269,6 +266,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1649723113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1649723109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac58862f165dff84cb386c875c80b2a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1885039405
 GameObject:
   m_ObjectHideFlags: 0
