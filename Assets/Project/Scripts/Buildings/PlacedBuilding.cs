@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace Project.Scripts.Buildings
         /// <param name="transformParent">Reference to parent in hierarchy</param>
         /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
         /// <returns>Reference to the newly created PlacedBuilding</returns>
-        public static PlacedBuilding CreateBuilding(GridChunk chunk,Vector3 localPosition, Vector2Int origin,
+        public static PlacedBuilding CreateBuilding(GridChunk chunk,GridObject gridObject,Vector3 localPosition, Vector2Int origin,
             BuildingScriptableDataBase.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
             Transform transformParent, float cellSize)
         {
@@ -35,6 +36,7 @@ namespace Project.Scripts.Buildings
             };
 
             placedBuilding.MyChunk = chunk;
+            placedBuilding.MyGridObject = gridObject;
             placedBuilding.visualParent = buildingTransform.GetChild(0).gameObject;
 
             buildingTransform.SetParent(transformParent);
@@ -46,9 +48,13 @@ namespace Project.Scripts.Buildings
         }
 
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
-        public GridChunk MyChunk { get; private set; }
+        protected GridChunk MyChunk { get; private set; }
+        
+        protected GridObject MyGridObject { get; private set; }
 
         private GameObject visualParent;
+
+        protected List<Vector2Int> validInputSorource, validOutputSorource;
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
@@ -82,6 +88,10 @@ namespace Project.Scripts.Buildings
         }
 
         protected abstract void StartWorking();
+
+        protected abstract Slot GetInputSlot(GridObject callerPosition);
+
+        protected abstract Slot GetOutputSlot(GridObject callerPosition);
 
         public override string ToString()
         {

@@ -25,10 +25,11 @@ namespace Project.Scripts.Buildings
         
         public enum Directions
         {
+            Up,
+            Right,
             Down,
             Left,
-            Up,
-            Right
+            
         }
 
         public string nameString;

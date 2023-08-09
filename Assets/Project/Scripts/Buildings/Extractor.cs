@@ -1,5 +1,6 @@
 using System.Collections;
 using Project.Scripts.Grid;
+using Project.Scripts.Grid.DataContainers;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -21,6 +22,16 @@ namespace Project.Scripts.Buildings
             outputSlot.FillSlot(new Item(new int[]{(int)generatedResource}));
             outputSlot.OnSlotContentChanged += Change;
             StartCoroutine(ResourceGeneration(ExtractionSpeed));
+        }
+
+        protected override Slot GetInputSlot(GridObject callerPosition)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override Slot GetOutputSlot(GridObject callerPosition)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void Change(bool fillStatus)

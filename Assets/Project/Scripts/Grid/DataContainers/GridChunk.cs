@@ -89,7 +89,7 @@ namespace Project.Scripts.Grid.DataContainers
             Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, direction);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;
 
-            PlacedBuilding building = PlacedBuilding.CreateBuilding(chunk,
+            PlacedBuilding building = PlacedBuilding.CreateBuilding(chunk, buildGridField.GetCellData(cellPos),
                 buildGridField.GetLocalPosition(cellPos), cellPos, direction, buildingData,
                 chunk.transform, chunk.ChunkBuildingGrid.CellSize);
 
