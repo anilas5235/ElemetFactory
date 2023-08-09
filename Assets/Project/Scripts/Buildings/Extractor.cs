@@ -7,26 +7,29 @@ namespace Project.Scripts.Buildings
     public class Extractor : PlacedBuilding
     {
         private const int ExtractorStorageCapacity = 5;
-        private const float ExtractionSpeed = .5f;
+        private static float ExtractionSpeed = .5f;
+        
 
         [SerializeField] private BuildingGridResources.ResourcesType generatedResource;
         [SerializeField] private int storedResources = 0;
-
+        public Slot outputSlot;
 
         protected override void StartWorking()
         {
-            base.StartWorking();
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
+            outputSlot = new Slot(Slot.SlotBehaviour.Output);
+            outputSlot.FillSlot(new Item(new int[]{(int)generatedResource}));
+            outputSlot.OnSlotContentChanged += Change;
             StartCoroutine(ResourceGeneration(ExtractionSpeed));
         }
 
-        public bool OutputResources(int amount, out BuildingGridResources.ResourcesType type)
+        private void Change(bool fillStatus)
         {
-            type = generatedResource;
-            if (storedResources < amount) return false;
-
-            storedResources -= amount;
-            return true;
+            if (!fillStatus && storedResources > 0)
+            {
+                outputSlot.FillSlot(new Item(new int[]{(int)generatedResource}));
+                storedResources--;
+            }
         }
 
         private IEnumerator ResourceGeneration(float ratePerSecond)

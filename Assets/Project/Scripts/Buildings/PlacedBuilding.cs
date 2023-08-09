@@ -19,8 +19,7 @@ namespace Project.Scripts.Buildings
         /// <returns>Reference to the newly created PlacedBuilding</returns>
         public static PlacedBuilding CreateBuilding(GridChunk chunk,Vector3 localPosition, Vector2Int origin,
             BuildingScriptableDataBase.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
-            Transform transformParent,
-            float cellSize)
+            Transform transformParent, float cellSize)
         {
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
@@ -82,10 +81,7 @@ namespace Project.Scripts.Buildings
             Destroy(gameObject);
         }
 
-        protected virtual void StartWorking()
-        {
-            
-        } 
+        protected abstract void StartWorking();
 
         public override string ToString()
         {
