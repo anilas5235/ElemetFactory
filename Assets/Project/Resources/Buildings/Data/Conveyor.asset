@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f964f8eb78a906f4a83b6436e693696f, type: 3}
-  m_Name: test
+  m_Name: Conveyor
   m_EditorClassIdentifier: 
-  nameString: dummi
-  prefab: {fileID: 7629801001596649829, guid: f772defb543ef8644ae561158ba5650d, type: 3}
-  visual: {fileID: 0}
-  size: {x: 2, y: 1}
+  nameString: Conveyor
+  prefab: {fileID: 3936481805910539201, guid: 657d717545afce94d98b9f9a3cb5ce73, type: 3}
+  size: {x: 1, y: 1}

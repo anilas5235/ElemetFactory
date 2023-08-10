@@ -23,7 +23,7 @@ namespace Project.Scripts.Buildings
         }
         
         public Slot flowSlot1, flowSlot2;
-        public Slot destinationSlot;
+        public Slot sourceSlot;
         protected override void StartWorking()
         {
             flowSlot1 = new Slot();
@@ -36,7 +36,7 @@ namespace Project.Scripts.Buildings
             validInputSorource = new List<Vector2Int>() 
                 { -1*GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin };
             
-            CheckForDestination();
+            CheckForSource();
         }
 
         protected override Slot GetInputSlot(GridObject callerPosition)
@@ -49,21 +49,23 @@ namespace Project.Scripts.Buildings
             return validInputSorource.Contains(callerPosition.Position) ? flowSlot2 : null;
         }
 
-        public void CheckForDestination()
+        public void CheckForSource()
         {
-            GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validOutputSorource[0]);
-            if (cell.Building.MyPlacedBuildingData.buildingDataID == 1)
+            GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validInputSorource[0]);
+            PlacedBuilding cellBuild = cell.Building;
+            if(!cellBuild) return;
+            if (cellBuild.MyPlacedBuildingData.buildingDataID == 1)
             {
-                ConveyorBelt next = cell.Building as ConveyorBelt;
-                if (next != null) destinationSlot = next.GetInputSlot(MyGridObject);
+                ConveyorBelt next = cellBuild as ConveyorBelt;
+                if (next != null) sourceSlot = next.GetInputSlot(MyGridObject);
             }
         }
 
         private void Tick()
         {
             Item item;
-            if (flowSlot2.ExtractFromSlot(out item) && destinationSlot is { IsOccupied: false })
-                destinationSlot.PutIntoSlot(item);
+            if (sourceSlot.ExtractFromSlot(out item) && flowSlot1 is { IsOccupied: false })
+                flowSlot1.PutIntoSlot(item);
             if (flowSlot1.ExtractFromSlot(out item) && !flowSlot2.IsOccupied)
                 flowSlot2.PutIntoSlot(item);
         }

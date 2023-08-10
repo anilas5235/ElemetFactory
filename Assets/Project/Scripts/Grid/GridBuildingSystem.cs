@@ -61,6 +61,10 @@ namespace Project.Scripts.Grid
                 Vector3 mousePos =GeneralUtilities.GetMousePosition();
                 GridChunk.TryToDeleteBuilding(GetChunk(mousePos),mousePos);
             }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
+            if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Conveyor;
+            
         }
 
         private void FixedUpdate()

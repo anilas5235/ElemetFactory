@@ -232,12 +232,15 @@ namespace Project.Scripts.Grid
         public enum PossibleBuildings
         {
             Extractor,
-            Smelter,
+            Conveyor,
+            Separator,
+            Combiner
         }
 
         private static readonly BuildingScriptableDataBase[] PossibleBuildingData =
         {
-            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Extractor")
+            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Extractor"),
+            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Conveyor"),
         };
 
         public static BuildingScriptableDataBase GetBuildingDataBase(PossibleBuildings buildingType)

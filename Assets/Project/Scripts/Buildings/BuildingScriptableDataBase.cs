@@ -33,7 +33,7 @@ namespace Project.Scripts.Buildings
         }
 
         public string nameString;
-        public Transform prefab, visual;
+        public Transform prefab;
         public Vector2Int size;
 
         public static int GetRotation(Directions direction)
