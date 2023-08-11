@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
+using Project.Scripts.Utilities;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -22,16 +24,20 @@ namespace Project.Scripts.Buildings
             outputSlot.FillSlot(new Item(new int[]{(int)generatedResource}));
             outputSlot.OnSlotContentChanged += Change;
             StartCoroutine(ResourceGeneration(ExtractionSpeed));
+            validOutputSorource = new List<Vector2Int>()
+            {
+               -1* GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin,
+            };
         }
 
         protected override Slot GetInputSlot(GridObject callerPosition)
         {
-            throw new System.NotImplementedException();
+            return null;
         }
 
         protected override Slot GetOutputSlot(GridObject callerPosition)
         {
-            throw new System.NotImplementedException();
+            return validInputSorource.Contains(callerPosition.Position) ? outputSlot : null;
         }
 
         private void Change(bool fillStatus)

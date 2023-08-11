@@ -54,7 +54,7 @@ namespace Project.Scripts.Buildings
 
         private GameObject visualParent;
 
-        protected List<Vector2Int> validInputSorource, validOutputSorource;
+        [SerializeField] protected List<Vector2Int> validInputSorource, validOutputSorource;
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
