@@ -300,8 +300,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 767f8167b9884fa429b671742ea8655e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Size: {x: 100, y: 100}
-  PositionOffset: {x: 0, y: 0}
-  zoom: 20
-  thresholdA: 0.8
-  thresholdB: 0.2
+  size: {x: 100, y: 100}
+  positionOffset: {x: 254.5, y: -100}
+  zoom: 49.5
+  thresholdA: 0.901
+  thresholdB: 0.099
+  autoUpdate: 1
+  myRenderer: {fileID: 1618608442}
