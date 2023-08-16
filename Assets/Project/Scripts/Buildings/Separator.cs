@@ -23,28 +23,28 @@ namespace Project.Scripts.Buildings
             int directionId = MyPlacedBuildingData.directionID;
             directionId--;
             if (directionId < 0) directionId = 3;
-            validOutputSorource = new List<Vector2Int>()
+            validOutputPositions = new List<Vector2Int>()
             {
                 outputpos1,
                 outputpos1 + GeneralConstants.NeighbourOffsets2D4[directionId]
             };
-            validInputSorource = new List<Vector2Int>()
+            validInputPositions = new List<Vector2Int>()
             {
                 -1 * GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] +
                 MyPlacedBuildingData.origin,
             };
         }
 
-        protected override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition)
         {
-            return validInputSorource.Any(i => callerPosition.Position == i) ? InputSlot : null;
+            return validInputPositions.Any(i => callerPosition.Position == i) ? InputSlot : null;
         }
 
-        protected override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition)
         {
-            for (int i = 0; i < validOutputSorource.Count; i++)
+            for (int i = 0; i < validOutputPositions.Count; i++)
             {
-                if (callerPosition.Position == validOutputSorource[i])
+                if (callerPosition.Position == validOutputPositions[i])
                 {
                     return i == 0 ? Output1Slot : Output2Slot;
                 }

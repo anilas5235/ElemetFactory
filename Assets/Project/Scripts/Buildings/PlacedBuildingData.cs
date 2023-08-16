@@ -1,7 +1,5 @@
 ﻿using System;
-using Project.Scripts.Grid;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Project.Scripts.Buildings
 {

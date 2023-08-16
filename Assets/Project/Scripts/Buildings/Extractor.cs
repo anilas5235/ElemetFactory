@@ -9,13 +9,13 @@ namespace Project.Scripts.Buildings
 {
     public class Extractor : PlacedBuilding
     {
-        private const int ExtractorStorageCapacity = 5;
+        private const int StorageCapacity = 5;
         private static float ExtractionSpeed = .5f;
         
 
         [SerializeField] private BuildingGridResources.ResourcesType generatedResource;
         [SerializeField] private int storedResources = 0;
-        public Slot outputSlot;
+        private Slot outputSlot;
 
         protected override void StartWorking()
         {
@@ -24,20 +24,20 @@ namespace Project.Scripts.Buildings
             outputSlot.FillSlot(new Item(new int[]{(int)generatedResource}));
             outputSlot.OnSlotContentChanged += Change;
             StartCoroutine(ResourceGeneration(ExtractionSpeed));
-            validOutputSorource = new List<Vector2Int>()
+            validOutputPositions = new List<Vector2Int>()
             {
                -1* GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin,
             };
         }
 
-        protected override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition)
         {
             return null;
         }
 
-        protected override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition)
         {
-            return validInputSorource.Contains(callerPosition.Position) ? outputSlot : null;
+            return validInputPositions.Contains(callerPosition.Position) ? outputSlot : null;
         }
 
         private void Change(bool fillStatus)
@@ -51,7 +51,7 @@ namespace Project.Scripts.Buildings
 
         private IEnumerator ResourceGeneration(float ratePerSecond)
         {
-            while (storedResources < ExtractorStorageCapacity)
+            while (storedResources < StorageCapacity)
             {
                 storedResources++;
                 yield return new WaitForSeconds(1 / ratePerSecond);

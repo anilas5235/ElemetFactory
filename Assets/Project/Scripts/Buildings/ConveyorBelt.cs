@@ -22,36 +22,36 @@ namespace Project.Scripts.Buildings
             }
         }
         
-        public Slot flowSlot1, flowSlot2;
-        public Slot sourceSlot;
+        private Slot flowSlot1, flowSlot2;
+        private Slot sourceSlot;
         protected override void StartWorking()
         {
             flowSlot1 = new Slot();
             flowSlot2 = new Slot();
             ConveyorTick += Tick;
             runningTickClock ??= StartCoroutine(TickClock());
-            validOutputSorource = new List<Vector2Int>() 
+            validOutputPositions = new List<Vector2Int>() 
                 { GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin };
 
-            validInputSorource = new List<Vector2Int>() 
+            validInputPositions = new List<Vector2Int>() 
                 { -1*GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin };
             
             CheckForSource();
         }
 
-        protected override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition)
         {
-            return validOutputSorource.Contains(callerPosition.Position) ? flowSlot1 : null;
+            return validOutputPositions.Contains(callerPosition.Position) ? flowSlot1 : null;
         }
 
-        protected override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition)
         {
-            return validInputSorource.Contains(callerPosition.Position) ? flowSlot2 : null;
+            return validInputPositions.Contains(callerPosition.Position) ? flowSlot2 : null;
         }
 
         public void CheckForSource()
         {
-            GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validInputSorource[0]);
+            GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validInputPositions[0]);
             PlacedBuilding cellBuild = cell.Building;
             if(!cellBuild) return;
             if (cellBuild.MyPlacedBuildingData.buildingDataID == 1)

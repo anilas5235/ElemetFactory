@@ -54,7 +54,7 @@ namespace Project.Scripts.Buildings
 
         private GameObject visualParent;
 
-        [SerializeField] protected List<Vector2Int> validInputSorource, validOutputSorource;
+        [SerializeField] protected List<Vector2Int> validInputPositions, validOutputPositions;
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
@@ -89,9 +89,9 @@ namespace Project.Scripts.Buildings
 
         protected abstract void StartWorking();
 
-        protected abstract Slot GetInputSlot(GridObject callerPosition);
+        public abstract Slot GetInputSlot(GridObject callerPosition);
 
-        protected abstract Slot GetOutputSlot(GridObject callerPosition);
+        public abstract Slot GetOutputSlot(GridObject callerPosition);
 
         public override string ToString()
         {
