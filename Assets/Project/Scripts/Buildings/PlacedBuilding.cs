@@ -19,12 +19,12 @@ namespace Project.Scripts.Buildings
         /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
         /// <returns>Reference to the newly created PlacedBuilding</returns>
         public static PlacedBuilding CreateBuilding(GridChunk chunk,GridObject gridObject,Vector3 localPosition, Vector2Int origin,
-            BuildingScriptableDataBase.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
+            BuildingScriptableData.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
             Transform transformParent, float cellSize)
         {
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
-                Quaternion.Euler(0, 0, BuildingScriptableDataBase.GetRotation(direction))).transform;
+                Quaternion.Euler(0, 0, BuildingScriptableData.GetRotation(direction))).transform;
 
             PlacedBuilding placedBuilding = buildingTransform.GetComponent<PlacedBuilding>();
 
@@ -38,11 +38,12 @@ namespace Project.Scripts.Buildings
             placedBuilding.MyChunk = chunk;
             placedBuilding.MyGridObject = gridObject;
             placedBuilding.visualParent = buildingTransform.GetChild(0).gameObject;
+            placedBuilding.SetUpSlots(direction);
 
             buildingTransform.SetParent(transformParent);
             buildingTransform.localScale = new Vector3(cellSize, cellSize);
             buildingTransform.localPosition = localPosition;
-            
+
             placedBuilding.StartWorking();
             return placedBuilding;
         }
@@ -52,9 +53,13 @@ namespace Project.Scripts.Buildings
         
         protected GridObject MyGridObject { get; private set; }
 
+<<<<<<< Updated upstream
         private GameObject visualParent;
 
         [SerializeField] protected List<Vector2Int> validInputPositions, validOutputPositions;
+=======
+        [SerializeField] private GameObject visualParent;
+>>>>>>> Stashed changes
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
@@ -82,7 +87,7 @@ namespace Project.Scripts.Buildings
             visualParent.SetActive(false);
         }
 
-        public void Destroy()
+        public virtual void Destroy()
         {
             Destroy(gameObject);
         }
@@ -92,6 +97,15 @@ namespace Project.Scripts.Buildings
         public abstract Slot GetInputSlot(GridObject callerPosition);
 
         public abstract Slot GetOutputSlot(GridObject callerPosition);
+<<<<<<< Updated upstream
+=======
+
+        protected abstract void SetUpSlots(BuildingScriptableData.Directions direction);
+
+        public abstract void CheckForInputs();
+
+        public abstract void CheckForOutputs();
+>>>>>>> Stashed changes
 
         public override string ToString()
         {

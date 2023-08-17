@@ -51,20 +51,20 @@ namespace Project.Scripts.Grid.DataContainers
                 foreach (PlacedBuildingData building in buildings)
                 {
                     StartCoroutine(JobPlaceBuilding(this, building.origin,
-                       (BuildingGridResources.PossibleBuildings) building.buildingDataID,(BuildingScriptableDataBase.Directions) building.directionID));
+                       (BuildingGridResources.PossibleBuildings) building.buildingDataID,(BuildingScriptableData.Directions) building.directionID));
                 }
             }
         }
 
         private IEnumerator JobPlaceBuilding(GridChunk chunk, Vector2Int cellPos, BuildingGridResources.PossibleBuildings buildingData,
-            BuildingScriptableDataBase.Directions direction)
+            BuildingScriptableData.Directions direction)
         {
             PlaceBuilding(chunk,cellPos,buildingData,direction);
             yield return null;
         }
 
         public static void TryToPlaceBuilding( GridChunk chunk,BuildingGridResources.PossibleBuildings  buildingData, Vector3 mousePosition,
-            BuildingScriptableDataBase.Directions direction)
+            BuildingScriptableData.Directions direction)
         {
             if (!chunk)return;
             GridField<GridObject> buildingGrid = chunk.ChunkBuildingGrid;
@@ -84,7 +84,7 @@ namespace Project.Scripts.Grid.DataContainers
             PlaceBuilding(chunk, cellPos, buildingData, direction);
         }
         private static void PlaceBuilding(GridChunk chunk, Vector2Int cellPos, BuildingGridResources.PossibleBuildings  buildingData,
-            BuildingScriptableDataBase.Directions direction)
+            BuildingScriptableData.Directions direction)
         {
             Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, direction);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;
@@ -118,6 +118,7 @@ namespace Project.Scripts.Grid.DataContainers
             GridObject gridObject = buildingGrid.GetCellData(mousePosition);
             if(!(gridObject is { Occupied: true })) return;
             PlacedBuilding placedBuilding = gridObject.Building;
+            chunk.BuildingsData.Remove(placedBuilding.MyPlacedBuildingData);
             placedBuilding.Destroy();
                     
             foreach (Vector2Int occupiedCell in placedBuilding.GetGridPositionList())

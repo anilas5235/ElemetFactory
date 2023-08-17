@@ -18,6 +18,24 @@ namespace Project.Scripts.Buildings
         }
 
         public override Slot GetOutputSlot(GridObject callerPosition)
+<<<<<<< Updated upstream
+=======
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void CheckForInputs()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void CheckForOutputs()
+>>>>>>> Stashed changes
         {
             throw new System.NotImplementedException();
         }

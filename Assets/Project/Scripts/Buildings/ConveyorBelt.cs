@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Project.Scripts.Grid.DataContainers;
-using Project.Scripts.Utilities;
+using Project.Scripts.Visualisation;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -12,6 +11,7 @@ namespace Project.Scripts.Buildings
         private static Action ConveyorTick;
         private static float itemsPerSecond = 1;
         private static Coroutine runningTickClock;
+        private static SlotValidationHandler[] SlotValidationHandlers;
 
         private static IEnumerator TickClock()
         {
@@ -22,14 +22,19 @@ namespace Project.Scripts.Buildings
             }
         }
         
+<<<<<<< Updated upstream
         private Slot flowSlot1, flowSlot2;
         private Slot sourceSlot;
+=======
+        [SerializeField]private Slot flowSlot1, flowSlot2,sourceSlot;
+
+        private SlotValidationHandler mySlotValidationHandler;
+>>>>>>> Stashed changes
         protected override void StartWorking()
         {
-            flowSlot1 = new Slot();
-            flowSlot2 = new Slot();
             ConveyorTick += Tick;
             runningTickClock ??= StartCoroutine(TickClock());
+<<<<<<< Updated upstream
             validOutputPositions = new List<Vector2Int>() 
                 { GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin };
 
@@ -37,37 +42,89 @@ namespace Project.Scripts.Buildings
                 { -1*GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin };
             
             CheckForSource();
+=======
+           
+            CheckForInputs();
+            CheckForOutputs();
+>>>>>>> Stashed changes
         }
 
         public override Slot GetInputSlot(GridObject callerPosition)
         {
+<<<<<<< Updated upstream
             return validOutputPositions.Contains(callerPosition.Position) ? flowSlot1 : null;
+=======
+            return mySlotValidationHandler.ValidateInputSlotRequest(MyGridObject.Position,callerPosition.Position) ? flowSlot1 : null;
+>>>>>>> Stashed changes
         }
 
         public override Slot GetOutputSlot(GridObject callerPosition)
         {
+<<<<<<< Updated upstream
             return validInputPositions.Contains(callerPosition.Position) ? flowSlot2 : null;
+=======
+            return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position,callerPosition.Position) ? flowSlot2 : null;
+>>>>>>> Stashed changes
         }
 
-        public void CheckForSource()
+        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
         {
+<<<<<<< Updated upstream
             GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validInputPositions[0]);
             PlacedBuilding cellBuild = cell.Building;
             if(!cellBuild) return;
             if (cellBuild.MyPlacedBuildingData.buildingDataID == 1)
+=======
+            SlotValidationHandlers ??= new[]
+>>>>>>> Stashed changes
             {
-                ConveyorBelt next = cellBuild as ConveyorBelt;
-                if (next != null) sourceSlot = next.GetInputSlot(MyGridObject);
+                Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/1x1StandartUp"),
+                Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/1x1StandartRight"),
+                Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/1x1StandartDown"),
+                Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/1x1StandartLeft"),
+            };
+
+            mySlotValidationHandler = SlotValidationHandlers[(int)direction];
+        }
+
+        public override void CheckForInputs()
+        {
+            foreach (Vector2Int validInputPosition in mySlotValidationHandler.ValidInputPositions)
+            {
+                GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validInputPosition + MyGridObject.Position);
+                if(cell == null) return;
+                PlacedBuilding cellBuild = cell.Building;
+                if (!cellBuild) return;
+
+                Slot next = cellBuild.GetOutputSlot(MyGridObject);
+                if (next != null) sourceSlot = next;
+            }
+        }
+
+        public override void CheckForOutputs()
+        {
+            foreach (Vector2Int validOutputPosition in mySlotValidationHandler.ValidOutputPositions)
+            {
+                GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validOutputPosition + MyGridObject.Position);
+                PlacedBuilding cellBuild = cell.Building;
+                if (!cellBuild) return;
+                cellBuild.CheckForInputs();
             }
         }
 
         private void Tick()
         {
-            Item item;
-            if (sourceSlot.ExtractFromSlot(out item) && flowSlot1 is { IsOccupied: false })
-                flowSlot1.PutIntoSlot(item);
-            if (flowSlot1.ExtractFromSlot(out item) && !flowSlot2.IsOccupied)
-                flowSlot2.PutIntoSlot(item);
+            if (flowSlot1.IsOccupied && !flowSlot2.IsOccupied)
+                flowSlot2.PutIntoSlot(flowSlot1.ExtractFromSlot());
+
+            if (sourceSlot is { IsOccupied: true } && !flowSlot1.IsOccupied)
+                flowSlot1.PutIntoSlot(sourceSlot.ExtractFromSlot());
+        }
+
+        public override void Destroy()
+        {
+            ConveyorTick -= Tick;
+            base.Destroy();
         }
     }
 }

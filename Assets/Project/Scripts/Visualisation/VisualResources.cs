@@ -20,6 +20,8 @@ namespace Project.Scripts.Visualisation
 
         public static TileBase DefaultTile { get; } = Resources.Load<TileBase>("Tiles/Gray");
 
+        public static readonly GameObject ItemContainer = Resources.Load<GameObject>("Prefaps/ItemContainer");
+
         public static TileBase GetTileSource(BuildingGridResources.ResourcesType resourcesType)
         {
             int index = (int)resourcesType-1;

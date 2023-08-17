@@ -1,15 +1,15 @@
 using System;
+using Project.Scripts.Visualisation;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
 {
-    [Serializable]
-    public class Slot
+    public class Slot : MonoBehaviour
     {
         [SerializeField] private SlotBehaviour mySlotBehaviour;
-        [SerializeField] private Item slotContent;
+        [SerializeField] private ItemContainer slotContent;
 
-        public Item SlotContent => slotContent;
+        public ItemContainer SlotContent => slotContent;
         public bool IsOccupied => slotContent != null;
         public Action<bool> OnSlotContentChanged;
         
@@ -20,41 +20,41 @@ namespace Project.Scripts.Buildings
             Output
         }
 
-        public Slot(SlotBehaviour slotBehaviour = SlotBehaviour.InAndOutput, Item item = null)
+        public Slot(SlotBehaviour slotBehaviour = SlotBehaviour.InAndOutput, ItemContainer item = null)
         {
             mySlotBehaviour = slotBehaviour;
             slotContent = item;
         }
 
-        public bool PutIntoSlot(Item item)
+        public void PutIntoSlot(ItemContainer item)
         {
-            if (IsOccupied|| mySlotBehaviour == SlotBehaviour.Output) return false;
+            if (IsOccupied || mySlotBehaviour == SlotBehaviour.Output) return;
             slotContent = item;
+            slotContent.transform.position = transform.position;
             OnSlotContentChanged?.Invoke(IsOccupied);
-            return true;
         }
 
-        public bool ExtractFromSlot(out Item item)
+        public ItemContainer  ExtractFromSlot()
         {
-            item = null;
-            if (!IsOccupied|| mySlotBehaviour == SlotBehaviour.Input) return false;
-            item = slotContent;
+            if (!IsOccupied|| mySlotBehaviour == SlotBehaviour.Input) return null;
+            ItemContainer item = slotContent;
             slotContent = null;
             OnSlotContentChanged?.Invoke(IsOccupied);
-            return true;
+            return item;
         }
 
-        public Item EmptySlot()
+        public ItemContainer EmptySlot()
         {
-            Item result = slotContent;
+            ItemContainer result = slotContent;
             slotContent = null;
             OnSlotContentChanged?.Invoke(IsOccupied);
             return result;
         }
 
-        public void FillSlot(Item item)
+        public void FillSlot(ItemContainer item)
         {
             slotContent = item;
+            slotContent.transform.position = transform.position;
             OnSlotContentChanged?.Invoke(IsOccupied);
         }
     }

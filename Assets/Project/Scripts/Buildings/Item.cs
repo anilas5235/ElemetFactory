@@ -4,7 +4,7 @@ using Project.Scripts.Grid;
 namespace Project.Scripts.Buildings
 {
     [Serializable]
-    public class Item
+    public struct Item
     {
         public int[] ResourceIDs;
 

@@ -237,18 +237,18 @@ namespace Project.Scripts.Grid
             Combiner
         }
 
-        private static readonly BuildingScriptableDataBase[] PossibleBuildingData =
+        private static readonly BuildingScriptableData[] PossibleBuildingData =
         {
-            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Extractor"),
-            Resources.Load<BuildingScriptableDataBase>("Buildings/Data/Conveyor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
         };
 
-        public static BuildingScriptableDataBase GetBuildingDataBase(PossibleBuildings buildingType)
+        public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
         {
             return GetBuildingDataBase((int)buildingType);
         }
         
-        public static BuildingScriptableDataBase GetBuildingDataBase(int buildingTypeID)
+        public static BuildingScriptableData GetBuildingDataBase(int buildingTypeID)
         {
             return PossibleBuildingData[buildingTypeID];
         }

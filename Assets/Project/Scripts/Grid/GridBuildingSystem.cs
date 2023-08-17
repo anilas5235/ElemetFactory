@@ -17,7 +17,7 @@ namespace Project.Scripts.Grid
     public class GridBuildingSystem : MonoBehaviour
     {
         private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
-        private BuildingScriptableDataBase.Directions _direction = BuildingScriptableDataBase.Directions.Down;
+        private BuildingScriptableData.Directions _direction = BuildingScriptableData.Directions.Down;
         
         public static readonly Vector2Int ChunkSize = new Vector2Int(10, 10);
         public static readonly Vector2 ChunkSizeIntUnits = new Vector2(CellSize * ChunkSize.x, CellSize * ChunkSize.y);
@@ -46,7 +46,7 @@ namespace Project.Scripts.Grid
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                _direction = BuildingScriptableDataBase.GetNextDirectionClockwise(_direction);
+                _direction = BuildingScriptableData.GetNextDirectionClockwise(_direction);
                 Debug.Log($"rotation: {_direction}");
             }
 
