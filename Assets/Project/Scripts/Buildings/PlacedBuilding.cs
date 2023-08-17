@@ -53,13 +53,8 @@ namespace Project.Scripts.Buildings
         
         protected GridObject MyGridObject { get; private set; }
 
-<<<<<<< Updated upstream
-        private GameObject visualParent;
-
-        [SerializeField] protected List<Vector2Int> validInputPositions, validOutputPositions;
-=======
         [SerializeField] private GameObject visualParent;
->>>>>>> Stashed changes
+
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
@@ -97,15 +92,12 @@ namespace Project.Scripts.Buildings
         public abstract Slot GetInputSlot(GridObject callerPosition);
 
         public abstract Slot GetOutputSlot(GridObject callerPosition);
-<<<<<<< Updated upstream
-=======
 
         protected abstract void SetUpSlots(BuildingScriptableData.Directions direction);
 
         public abstract void CheckForInputs();
 
         public abstract void CheckForOutputs();
->>>>>>> Stashed changes
 
         public override string ToString()
         {

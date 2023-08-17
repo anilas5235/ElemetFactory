@@ -1,9 +1,5 @@
 ﻿using System;
 using UnityEngine;
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
 namespace Project.Scripts.Buildings
 {

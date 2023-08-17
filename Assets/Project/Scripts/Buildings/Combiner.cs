@@ -18,8 +18,6 @@ namespace Project.Scripts.Buildings
         }
 
         public override Slot GetOutputSlot(GridObject callerPosition)
-<<<<<<< Updated upstream
-=======
         {
             throw new System.NotImplementedException();
         }
@@ -35,7 +33,6 @@ namespace Project.Scripts.Buildings
         }
 
         public override void CheckForOutputs()
->>>>>>> Stashed changes
         {
             throw new System.NotImplementedException();
         }

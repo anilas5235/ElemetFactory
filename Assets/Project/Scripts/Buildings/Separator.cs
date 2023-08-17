@@ -13,52 +13,16 @@ namespace Project.Scripts.Buildings
 
         protected override void StartWorking()
         {
-            InputSlot = new Slot(Slot.SlotBehaviour.Input);
-            InputSlot.OnSlotContentChanged += InputSlotChanged;
-            Output1Slot = new Slot(Slot.SlotBehaviour.Output);
-            Output2Slot = new Slot(Slot.SlotBehaviour.Output);
-            Vector2Int outputpos1 =
-                GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] + MyPlacedBuildingData.origin;
-            int directionId = MyPlacedBuildingData.directionID;
-            directionId--;
-            if (directionId < 0) directionId = 3;
-<<<<<<< Updated upstream
-            validOutputPositions = new List<Vector2Int>()
-            {
-                outputpos1,
-                outputpos1 + GeneralConstants.NeighbourOffsets2D4[directionId]
-            };
-            validInputPositions = new List<Vector2Int>()
-            {
-                -1 * GeneralConstants.NeighbourOffsets2D4[MyPlacedBuildingData.directionID] +
-                MyPlacedBuildingData.origin,
-            };
-=======
->>>>>>> Stashed changes
+            
         }
 
         public override Slot GetInputSlot(GridObject callerPosition)
         {
-<<<<<<< Updated upstream
-            return validInputPositions.Any(i => callerPosition.Position == i) ? InputSlot : null;
-=======
-            return  null;
->>>>>>> Stashed changes
+            return null;
         }
 
         public override Slot GetOutputSlot(GridObject callerPosition)
         {
-<<<<<<< Updated upstream
-            for (int i = 0; i < validOutputPositions.Count; i++)
-            {
-                if (callerPosition.Position == validOutputPositions[i])
-                {
-                    return i == 0 ? Output1Slot : Output2Slot;
-                }
-            }
-=======
->>>>>>> Stashed changes
-            
             return null;
         }
 
