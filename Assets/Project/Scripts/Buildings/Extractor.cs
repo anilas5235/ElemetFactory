@@ -22,17 +22,17 @@ namespace Project.Scripts.Buildings
         protected override void StartWorking()
         {
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
-            outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource })));
+            outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource }),outputSlot));
             outputSlot.OnSlotContentChanged += TryPushItemToOutput;
             StartCoroutine(ResourceGeneration(ExtractionSpeed));
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
         {
             return null;
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
         {
             return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position, callerPosition.Position)
                 ? outputSlot
@@ -72,7 +72,7 @@ namespace Project.Scripts.Buildings
         {
             if (!outputSlot) return;
             if (fillStatus || storedResources <= 0) return;
-            outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource })));
+            outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource }),outputSlot));
             storedResources--;
         }
 

@@ -1,4 +1,5 @@
 using System.Linq;
+using Project.Scripts.Grid;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -12,9 +13,9 @@ namespace Project.Scripts.Buildings
         public Vector2Int[] ValidInputPositions => validInputPositions;
         public Vector2Int[] ValidOutputPositions => validOutputPositions;
 
-        public bool ValidateInputSlotRequest(Vector2Int ownOrigin,Vector2Int originOfRequest)
+        public bool ValidateInputSlotRequest(Vector2Int ownOrigin,Vector2Int originPseudoOfRequest)
         {
-            Vector2Int search = originOfRequest - ownOrigin;
+            Vector2Int search = originPseudoOfRequest - ownOrigin;
             return validInputPositions.Contains(search);
         }
         

@@ -176,9 +176,8 @@ namespace Project.Scripts.Grid
 
         public bool IsValidPosition(Vector2Int position)
         {
-            return (position.x >= 0 && position.y >= 0 && position.x < Width && position.y < Height);
+            return IsValidPosition(position.x, position.y);
         }
-
         #endregion
     }
 }

@@ -16,12 +16,12 @@ namespace Project.Scripts.Buildings
             
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
         {
             return null;
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
         {
             return null;
         }
@@ -56,8 +56,8 @@ namespace Project.Scripts.Buildings
                     else contentItem2[i-item1Length] = item.Item.ResourceIDs[i];
                 }
 
-                Output1Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1)));
-                Output2Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2)));
+                Output1Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1),Output1Slot));
+                Output2Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2),Output2Slot));
             }
         }
     }

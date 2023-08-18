@@ -89,9 +89,9 @@ namespace Project.Scripts.Buildings
 
         protected abstract void StartWorking();
 
-        public abstract Slot GetInputSlot(GridObject callerPosition);
+        public abstract Slot GetInputSlot(GridObject callerPosition, Slot destination);
 
-        public abstract Slot GetOutputSlot(GridObject callerPosition);
+        public abstract Slot GetOutputSlot(GridObject callerPosition, Slot destination);
 
         protected abstract void SetUpSlots(BuildingScriptableData.Directions direction);
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings;
@@ -7,6 +6,7 @@ using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
 using Project.Scripts.Utilities;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 namespace Project.Scripts.Grid
 {
@@ -64,7 +64,6 @@ namespace Project.Scripts.Grid
 
             if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
             if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Conveyor;
-            
         }
 
         private void FixedUpdate()
@@ -132,6 +131,19 @@ namespace Project.Scripts.Grid
         public static Vector3 GetChunkLocalPosition(Vector2Int chunkPosition)
         {
             return new Vector3(chunkPosition.x * ChunkSizeIntUnits.x, chunkPosition.y * ChunkSizeIntUnits.y);
+        }
+
+        public GridObject GetGridObjectFormPseudoPosition(Vector2Int position, GridChunk originChunk)
+        {
+            Vector2Int chunkOffset = new Vector2Int( Mathf.FloorToInt((float)position.x / ChunkSize.x), Mathf.FloorToInt((float)position.y / ChunkSize.y));
+            Vector2Int newPos = new Vector2Int(position.x - chunkOffset.x * ChunkSize.x, position.y - chunkOffset.y * ChunkSize.y);
+            return GetChunk(originChunk.ChunkPosition + chunkOffset).ChunkBuildingGrid.GetCellData(newPos);
+        }
+        
+        public static Vector2Int GetPseudoPosition(GridChunk chunk, GridChunk myChunk, Vector2Int position)
+        {
+            Vector2Int chunkOffset = chunk.ChunkPosition - myChunk.ChunkPosition;
+            return position + chunkOffset * ChunkSize;
         }
 
         public GridChunk GetChunk(Vector2Int chunkPosition)

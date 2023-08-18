@@ -12,12 +12,12 @@ namespace Project.Scripts.Buildings
             throw new System.NotImplementedException();
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition)
+        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition)
+        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
         {
             throw new System.NotImplementedException();
         }

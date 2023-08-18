@@ -30,7 +30,7 @@ namespace Project.Scripts.Buildings
         {
             if (IsOccupied || mySlotBehaviour == SlotBehaviour.Output) return;
             slotContent = item;
-            slotContent.transform.position = transform.position;
+            slotContent.SetSlot(this);
             OnSlotContentChanged?.Invoke(IsOccupied);
         }
 
@@ -54,8 +54,13 @@ namespace Project.Scripts.Buildings
         public void FillSlot(ItemContainer item)
         {
             slotContent = item;
-            slotContent.transform.position = transform.position;
+            slotContent.SetSlot(this);
             OnSlotContentChanged?.Invoke(IsOccupied);
+        }
+
+        private void OnDestroy()
+        {
+            if (slotContent) Destroy(slotContent.gameObject);
         }
     }
 }
