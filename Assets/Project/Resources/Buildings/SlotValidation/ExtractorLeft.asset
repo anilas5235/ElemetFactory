@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1979c1b49a5084942b340594d0dfb564, type: 3}
   m_Name: ExtractorLeft
   m_EditorClassIdentifier: 
+  ownFacingDirection: 3
   validInputPositions: []
   validOutputPositions:
   - {x: -1, y: 0}

@@ -1133,9 +1133,9 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -10
+  m_SortingOrder: -100
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 4.5, y: 4.5, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -1186,3 +1186,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f214fddd6967fd448a20665eab61f8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  myGridBuildingSystem: {fileID: 0}

@@ -1,5 +1,3 @@
-using Project.Scripts.Grid.DataContainers;
-using Project.Scripts.Utilities;
 using Project.Scripts.Visualisation;
 using UnityEngine;
 
@@ -16,27 +14,27 @@ namespace Project.Scripts.Buildings
             
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
         {
             return null;
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
             return null;
         }
 
-        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
+        protected override void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection)
         {
             throw new System.NotImplementedException();
         }
 
-        public override void CheckForInputs()
+        public override void CheckForSlotToPullForm()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void CheckForOutputs()
+        public override void CheckForSlotsToPushTo()
         {
             throw new System.NotImplementedException();
         }

@@ -18,28 +18,31 @@ namespace Project.Scripts.Buildings
         [SerializeField] private Slot outputSlot;
 
         private SlotValidationHandler mySlotValidationHandler;
+        private Coroutine generation;
 
         protected override void StartWorking()
         {
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
+            if (generatedResource == BuildingGridResources.ResourcesType.None) return;
             outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource }),outputSlot));
             outputSlot.OnSlotContentChanged += TryPushItemToOutput;
-            StartCoroutine(ResourceGeneration(ExtractionSpeed));
+            generation = StartCoroutine(ResourceGeneration());
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
         {
             return null;
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
-            return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position, callerPosition.Position)
+            return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position, caller.origin,
+                (BuildingScriptableData.FacingDirection)caller.directionID)
                 ? outputSlot
                 : null;
         }
 
-        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
+        protected override void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection)
         {
             SlotValidationHandlers ??= new[]
             {
@@ -49,41 +52,39 @@ namespace Project.Scripts.Buildings
                 Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/ExtractorLeft"),
             };
 
-            mySlotValidationHandler = SlotValidationHandlers[(int)direction];
+            mySlotValidationHandler = SlotValidationHandlers[(int)facingDirection];
         }
 
-        public override void CheckForInputs()
+        public override void CheckForSlotToPullForm()
         {
-            return;
+            throw new System.NotImplementedException();
         }
 
-        public override void CheckForOutputs()
+        public override void CheckForSlotsToPushTo()
         {
-            foreach (Vector2Int validOutputPosition in mySlotValidationHandler.ValidOutputPositions)
-            {
-                GridObject cell = MyChunk.ChunkBuildingGrid.GetCellData(validOutputPosition + MyGridObject.Position);
-                PlacedBuilding cellBuild = cell.Building;
-                if (!cellBuild) return;
-                cellBuild.CheckForInputs();
-            }
+            throw new System.NotImplementedException();
         }
+
 
         private void TryPushItemToOutput(bool fillStatus)
         {
-            if (!outputSlot) return;
-            if (fillStatus || storedResources <= 0) return;
+            if (!outputSlot|| fillStatus) return;
+            if (storedResources <= 0) return;
             outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource }),outputSlot));
             storedResources--;
+            if (generation == null) generation = StartCoroutine(ResourceGeneration());
         }
 
-        private IEnumerator ResourceGeneration(float ratePerSecond)
+        private IEnumerator ResourceGeneration()
         {
             while (storedResources < StorageCapacity)
             {
                 storedResources++;
                 TryPushItemToOutput(outputSlot.IsOccupied);
-                yield return new WaitForSeconds(1 / ratePerSecond);
+                yield return new WaitForSeconds(1 / ExtractionSpeed);
             }
+
+            generation = null;
         }
     }
 }

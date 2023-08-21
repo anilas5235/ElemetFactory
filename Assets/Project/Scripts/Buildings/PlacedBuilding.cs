@@ -13,18 +13,18 @@ namespace Project.Scripts.Buildings
         /// /// <param name="chunk">the Chunk the building is placed in</param>
         /// <param name="localPosition">3D Position in relation to the Chunks Center</param>
         /// <param name="origin">Coordinates of the cell in the Chunk that the building is placed on</param>
-        /// <param name="direction">The facing direction of the building</param>
+        /// <param name="facingDirection">The facing direction of the building</param>
         /// <param name="buildingData">The type Data of the building</param>
         /// <param name="transformParent">Reference to parent in hierarchy</param>
         /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
         /// <returns>Reference to the newly created PlacedBuilding</returns>
         public static PlacedBuilding CreateBuilding(GridChunk chunk,GridObject gridObject,Vector3 localPosition, Vector2Int origin,
-            BuildingScriptableData.Directions direction, BuildingGridResources.PossibleBuildings buildingData,
+            BuildingScriptableData.FacingDirection facingDirection, BuildingGridResources.PossibleBuildings buildingData,
             Transform transformParent, float cellSize)
         {
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
-                Quaternion.Euler(0, 0, BuildingScriptableData.GetRotation(direction))).transform;
+                Quaternion.Euler(0, 0, BuildingScriptableData.GetRotation(facingDirection))).transform;
 
             PlacedBuilding placedBuilding = buildingTransform.GetComponent<PlacedBuilding>();
 
@@ -32,13 +32,13 @@ namespace Project.Scripts.Buildings
             {
                 origin = origin,
                 buildingDataID =(int) buildingData,
-                directionID =(int) direction,
+                directionID =(int) facingDirection,
             };
 
             placedBuilding.MyChunk = chunk;
             placedBuilding.MyGridObject = gridObject;
             placedBuilding.visualParent = buildingTransform.GetChild(0).gameObject;
-            placedBuilding.SetUpSlots(direction);
+            placedBuilding.SetUpSlots(facingDirection);
 
             buildingTransform.SetParent(transformParent);
             buildingTransform.localScale = new Vector3(cellSize, cellSize);
@@ -89,15 +89,15 @@ namespace Project.Scripts.Buildings
 
         protected abstract void StartWorking();
 
-        public abstract Slot GetInputSlot(GridObject callerPosition, Slot destination);
+        public abstract Slot GetInputSlot(PlacedBuildingData caller, Slot destination);
 
-        public abstract Slot GetOutputSlot(GridObject callerPosition, Slot destination);
+        public abstract Slot GetOutputSlot(PlacedBuildingData caller, Slot destination);
 
-        protected abstract void SetUpSlots(BuildingScriptableData.Directions direction);
+        protected abstract void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection);
 
-        public abstract void CheckForInputs();
+        public abstract void CheckForSlotToPullForm();
 
-        public abstract void CheckForOutputs();
+        public abstract void CheckForSlotsToPushTo();
 
         public override string ToString()
         {

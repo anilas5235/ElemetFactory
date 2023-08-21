@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Utilities;
-using Project.Scripts.Visualisation;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -31,63 +29,59 @@ namespace Project.Scripts.Buildings
             ConveyorTick += Tick;
             runningTickClock ??= StartCoroutine(TickClock());
 
-            CheckForInputs();
-            CheckForOutputs();
+            CheckForSlotsToPushTo();
+            CheckForSlotToPullForm();
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
         {
             if (slotToPullForm != null) return null;
             slotToPullForm = destination;
             return flowSlot1;
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
             if (slotToPushTo!= null) return null;
             slotToPushTo = destination;
             return flowSlot2;
         }
 
-        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
+        protected override void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection)
         {
         }
 
-        public override void CheckForInputs()
+        public override void CheckForSlotToPullForm()
         {
-            BuildingScriptableData.Directions direction = BuildingScriptableData.Directions.Right;
-            foreach (Vector2Int validInputPosition in GeneralConstants.NeighbourOffsets2D4)
-            {
-                direction = BuildingScriptableData.GetNextDirectionClockwise(direction);
-                Vector2Int targetPos = validInputPosition + MyGridObject.Position;
-                GridObject cell = MyChunk.ChunkBuildingGrid.IsValidPosition(targetPos) ? MyChunk.ChunkBuildingGrid.GetCellData(targetPos) :
-                    MyChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, MyChunk);
-                PlacedBuilding cellBuild = cell.Building;
-                if (!cellBuild) continue;
-                if(cellBuild.MyPlacedBuildingData.directionID != (int)direction) continue;
-                Slot next = cellBuild.GetOutputSlot(MyGridObject,flowSlot1);
-                if (next == null) continue;
-                slotToPullForm = next;
-                break;
-            }
+            if (slotToPushTo) return;
+            Vector2Int targetPos =
+                BuildingScriptableData.FacingDirectionToVector(
+                    BuildingScriptableData.GetOppositeDirection(MyPlacedBuildingData.directionID)) +
+                MyGridObject.Position;
+            GridObject cell = MyChunk.ChunkBuildingGrid.IsValidPosition(targetPos)
+                ? MyChunk.ChunkBuildingGrid.GetCellData(targetPos)
+                : MyChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, MyChunk);
+            PlacedBuilding cellBuild = cell.Building;
+            if (!cellBuild) return;
+            if (cellBuild.MyPlacedBuildingData.directionID ==
+                (int)BuildingScriptableData.GetOppositeDirection(MyPlacedBuildingData.directionID)) return;
+            Slot next = cellBuild.GetOutputSlot(MyPlacedBuildingData, flowSlot1);
+            if (next == null) return;
+            slotToPullForm = next;
         }
 
-        public override void CheckForOutputs()
+        public override void CheckForSlotsToPushTo()
         {
-            BuildingScriptableData.Directions direction = BuildingScriptableData.Directions.Left;
-            foreach (Vector2Int validOutputPosition in GeneralConstants.NeighbourOffsets2D4)
-            {
-                Vector2Int targetPos = validOutputPosition + MyGridObject.Position;
-                var cell = MyChunk.ChunkBuildingGrid.IsValidPosition(targetPos) ? MyChunk.ChunkBuildingGrid.GetCellData(targetPos) :
-                    MyChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, MyChunk);
-                PlacedBuilding cellBuild = cell.Building;
-                if (!cellBuild) continue;
-                if(cellBuild.MyPlacedBuildingData.directionID != (int)direction) continue;
-                Slot next = cellBuild.GetOutputSlot(MyGridObject,flowSlot2);
-                if (next == null) continue;
-                slotToPullForm = next;
-                break;
-            }
+            if(slotToPullForm) return;
+            Vector2Int targetPos = BuildingScriptableData.FacingDirectionToVector(MyPlacedBuildingData.directionID)+ MyGridObject.Position;
+            var cell = MyChunk.ChunkBuildingGrid.IsValidPosition(targetPos)
+                ? MyChunk.ChunkBuildingGrid.GetCellData(targetPos)
+                : MyChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, MyChunk);
+            PlacedBuilding cellBuild = cell.Building;
+            if (!cellBuild) return;
+            Slot next = cellBuild.GetInputSlot(MyPlacedBuildingData, flowSlot2);
+            if (next == null) return;
+            slotToPushTo = next;
         }
 
         private void Tick()

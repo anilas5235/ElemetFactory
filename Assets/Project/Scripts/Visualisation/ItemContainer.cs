@@ -10,7 +10,7 @@ namespace Project.Scripts.Visualisation
         private Item item;
         public Item Item => item;
 
-        private Slot mySlot; 
+        [SerializeField]private Slot mySlot; 
 
         public void SetItem(Item newItem)
         {

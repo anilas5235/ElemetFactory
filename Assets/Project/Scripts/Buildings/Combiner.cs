@@ -12,27 +12,27 @@ namespace Project.Scripts.Buildings
             throw new System.NotImplementedException();
         }
 
-        public override Slot GetInputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
         {
             throw new System.NotImplementedException();
         }
 
-        public override Slot GetOutputSlot(GridObject callerPosition, Slot destination)
+        public override Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override void SetUpSlots(BuildingScriptableData.Directions direction)
+        protected override void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection)
         {
             throw new System.NotImplementedException();
         }
 
-        public override void CheckForInputs()
+        public override void CheckForSlotToPullForm()
         {
             throw new System.NotImplementedException();
         }
 
-        public override void CheckForOutputs()
+        public override void CheckForSlotsToPushTo()
         {
             throw new System.NotImplementedException();
         }

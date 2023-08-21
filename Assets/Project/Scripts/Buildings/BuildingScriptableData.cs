@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,21 +15,21 @@ namespace Project.Scripts.Buildings
         public Vector2Int size;
 
         #region Rotations
-        public static Directions GetNextDirectionClockwise(Directions direction)
+        public static FacingDirection GetNextDirectionClockwise(FacingDirection facingDirection)
         {
-            int id = (int) direction +1;
+            int id = (int) facingDirection +1;
             if (id > 3) id = 0;
-            return (Directions)id;
+            return (FacingDirection)id;
         }
 
-        public static Directions GetNextDirectionCounterClockwise(Directions direction)
+        public static FacingDirection GetNextDirectionCounterClockwise(FacingDirection facingDirection)
         {
-            int id = (int) direction -1;
+            int id = (int) facingDirection -1;
             if (id < 0) id = 3;
-            return (Directions)id;
+            return (FacingDirection)id;
         }
 
-        public enum Directions
+        public enum FacingDirection
         {
             Up,
             Right,
@@ -36,9 +37,57 @@ namespace Project.Scripts.Buildings
             Left,
         }
 
-        public static int GetRotation(Directions direction)
+        public static FacingDirection GetOppositeDirection(FacingDirection facingDirection)
         {
-            return GetRotation((int)direction);
+            return facingDirection switch
+            {
+                FacingDirection.Up => FacingDirection.Down,
+                FacingDirection.Right => FacingDirection.Left,
+                FacingDirection.Down => FacingDirection.Up,
+                FacingDirection.Left => FacingDirection.Right,
+                _ => throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null)
+            };
+        }
+        
+        public static FacingDirection GetOppositeDirection(int facingDirectionID)
+        {
+            return facingDirectionID switch
+            {
+                0=> FacingDirection.Down,
+                1 => FacingDirection.Left, 
+                2 => FacingDirection.Up,
+                3 => FacingDirection.Right,
+                _ => throw new ArgumentOutOfRangeException(nameof(facingDirectionID), facingDirectionID, null)
+            };
+        }
+
+        public static Vector2Int FacingDirectionToVector(FacingDirection facingDirection)
+        {
+            return facingDirection switch
+            {
+                FacingDirection.Up => Vector2Int.up,
+                FacingDirection.Right => Vector2Int.right,
+                FacingDirection.Down => Vector2Int.down,
+                FacingDirection.Left => Vector2Int.left,
+                _ => throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null)
+            };
+        }
+        
+        public static Vector2Int FacingDirectionToVector(int facingDirectionID)
+        {
+            return facingDirectionID switch
+            {
+                0 => Vector2Int.up,
+                1 => Vector2Int.right,
+                2 => Vector2Int.down,
+                3 => Vector2Int.left,
+                _ => throw new ArgumentOutOfRangeException(nameof(facingDirectionID), facingDirectionID, null)
+            };
+        }
+
+        public static int GetRotation(FacingDirection facingDirection)
+        {
+            return GetRotation((int)facingDirection);
         }
         
         public static int GetRotation(int directionID)
@@ -49,21 +98,21 @@ namespace Project.Scripts.Buildings
         #endregion
 
         #region Positions
-        public Vector2Int[] GetGridPositionList(Vector2Int offset, Directions direction)
+        public Vector2Int[] GetGridPositionList(Vector2Int offset, FacingDirection facingDirection)
         {
             List<Vector2Int> gridPositions = new List<Vector2Int>();
-            switch (direction)
+            switch (facingDirection)
             {
-                case Directions.Down:
+                case FacingDirection.Down:
                     SetPosition(size.x, size.y, false, false);
                     break;
-                case Directions.Up:
+                case FacingDirection.Up:
                     SetPosition(size.x, size.y, true, false);
                     break;
-                case Directions.Left:
+                case FacingDirection.Left:
                     SetPosition(size.y, size.x, false, true);
                     break;
-                case Directions.Right:
+                case FacingDirection.Right:
                     SetPosition(size.y, size.x, false, false);
                     break;
             }
@@ -87,7 +136,7 @@ namespace Project.Scripts.Buildings
 
         public Vector2Int[] GetGridPositionList(PlacedBuildingData data)
         {
-            return GetGridPositionList(data.origin,(Directions) data.directionID);
+            return GetGridPositionList(data.origin,(FacingDirection) data.directionID);
         }
         
         #endregion
