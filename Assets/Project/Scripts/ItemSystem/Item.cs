@@ -1,7 +1,6 @@
 using System;
-using Project.Scripts.Grid;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.ItemSystem
 {
     [Serializable]
     public struct Item

@@ -1,4 +1,5 @@
 using Project.Scripts.Grid.DataContainers;
+using Project.Scripts.SlotSystem;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings

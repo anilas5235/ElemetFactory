@@ -1,8 +1,8 @@
 using System.Linq;
-using Project.Scripts.Grid;
+using Project.Scripts.Buildings;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.SlotSystem
 {
     [CreateAssetMenu(menuName = "BuildingSystem/SlotValidationHandler")]
     public class SlotValidationHandler : ScriptableObject

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Project.Scripts.Grid.DataContainers;
+using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
 using UnityEngine;
 

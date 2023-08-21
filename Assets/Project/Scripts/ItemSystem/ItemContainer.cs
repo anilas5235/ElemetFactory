@@ -1,9 +1,10 @@
-using System;
 using Project.Scripts.Buildings;
 using Project.Scripts.Grid;
+using Project.Scripts.SlotSystem;
+using Project.Scripts.Visualisation;
 using UnityEngine;
 
-namespace Project.Scripts.Visualisation
+namespace Project.Scripts.ItemSystem
 {
     public class ItemContainer : MonoBehaviour
     {

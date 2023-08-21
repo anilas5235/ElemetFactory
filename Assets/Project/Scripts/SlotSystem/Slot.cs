@@ -1,8 +1,8 @@
 using System;
-using Project.Scripts.Visualisation;
+using Project.Scripts.ItemSystem;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.SlotSystem
 {
     public class Slot : MonoBehaviour
     {
