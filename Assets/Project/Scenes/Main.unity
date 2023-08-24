@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a4590404057a34c98f9de8dd2a1b22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectToPool: {fileID: 0}
+  objectToPool: {fileID: 4496602034380196625, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
 --- !u!4 &235048774
 Transform:
   m_ObjectHideFlags: 0

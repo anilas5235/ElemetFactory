@@ -17,14 +17,24 @@ namespace Project.Scripts.Buildings
         #region Rotations
         public static FacingDirection GetNextDirectionClockwise(FacingDirection facingDirection)
         {
-            int id = (int) facingDirection +1;
+           return GetNextDirectionClockwise((int)facingDirection);
+        }
+        
+        public static FacingDirection GetNextDirectionClockwise(int facingDirectionID)
+        {
+            int id = facingDirectionID +1;
             if (id > 3) id = 0;
             return (FacingDirection)id;
         }
 
         public static FacingDirection GetNextDirectionCounterClockwise(FacingDirection facingDirection)
         {
-            int id = (int) facingDirection -1;
+            return GetNextDirectionCounterClockwise((int)facingDirection);
+        }
+        
+        public static FacingDirection GetNextDirectionCounterClockwise(int facingDirectionID)
+        {
+            int id = facingDirectionID -1;
             if (id < 0) id = 3;
             return (FacingDirection)id;
         }

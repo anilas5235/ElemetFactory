@@ -26,7 +26,18 @@ namespace Project.Scripts.Buildings
         {
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
             if (generatedResource == BuildingGridResources.ResourcesType.None) return;
-            outputSlot.FillSlot(ItemContainer.CreateNewContainer(new Item(new int[] { (int)generatedResource }),outputSlot));
+            foreach (Vector2Int validOutputPosition in mySlotValidationHandler.ValidOutputPositions)
+            {
+                if (PlacedBuildingUtility.CheckForBuilding(MyGridObject.Position + validOutputPosition, MyChunk,
+                        out PlacedBuilding building))
+                {
+                    building.CheckForSlotToPullForm();
+                }
+            }
+
+            outputSlot.FillSlot(ItemContainer.SetContainer(
+                ItemPool.Instance.GetObjectFromPool().GetComponent<ItemContainer>(),
+                new Item(new int[] { (int)generatedResource }), outputSlot));
             outputSlot.OnSlotContentChanged += TryPushItemToOutput;
             generation = StartCoroutine(ResourceGeneration());
         }

@@ -55,6 +55,7 @@ namespace Project.Scripts.Buildings
                     if (i < item1Length) contentItem1[i] = item.Item.ResourceIDs[i];
                     else contentItem2[i-item1Length] = item.Item.ResourceIDs[i];
                 }
+                item.Destroy();
 
                 Output1Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1),Output1Slot));
                 Output2Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2),Output2Slot));

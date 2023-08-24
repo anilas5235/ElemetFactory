@@ -43,6 +43,7 @@ namespace Project.Scripts.General
 
         public virtual GameObject GetObjectFromPool()
         {
+            objectPool ??= new List<GameObject>();
             GameObject returnObj;
             if (!objectPool.Any())
             {

@@ -11,7 +11,8 @@ namespace Project.Scripts.ItemSystem
         private Item item;
         public Item Item => item;
 
-        [SerializeField]private Slot mySlot; 
+        [SerializeField]private Slot mySlot;
+        public bool InView = true;
 
         public void SetItem(Item newItem)
         {
@@ -25,19 +26,27 @@ namespace Project.Scripts.ItemSystem
 
         private void FixedUpdate()
         {
+            if(!mySlot) return;
             if (Vector3.Distance(transform.position, mySlot.transform.position) > .1f)
-            {
-                transform.position += (mySlot.transform.position - transform.position).normalized * (Time.fixedDeltaTime * ConveyorBelt.ItemsPerSecond * GridBuildingSystem.CellSize);
-            }
-            else
-            {
-                transform.position = mySlot.transform.position;
-            }
+                if (InView)
+                {
+                    transform.position += (mySlot.transform.position - transform.position).normalized *
+                                          (Time.fixedDeltaTime * ConveyorBelt.ItemsPerSecond *
+                                           GridBuildingSystem.CellSize);
+                }
+                else transform.position = mySlot.transform.position;
+
+            else transform.position = mySlot.transform.position;
         }
 
         public static ItemContainer CreateNewContainer(Item content, Slot slot)
         {
             ItemContainer container = Instantiate(VisualResources.ItemContainer).GetComponent<ItemContainer>();
+            return SetContainer(container, content, slot);
+        }
+
+        public static ItemContainer SetContainer(ItemContainer container, Item content, Slot slot)
+        {
             container.SetItem(content);
             container.SetSlot(slot);
             container.transform.position = slot.transform.position;
@@ -45,9 +54,10 @@ namespace Project.Scripts.ItemSystem
             return container;
         }
 
-        public void OnDestroy()
+        public void Destroy()
         {
-            Destroy(gameObject);
+            mySlot = null;
+            ItemPool.Instance.AddObjectToPool(gameObject);
         }
     }
 }
