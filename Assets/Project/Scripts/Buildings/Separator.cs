@@ -1,3 +1,4 @@
+using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Visualisation;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace Project.Scripts.Buildings
 {
-    public class Separator : PlacedBuilding
+    public class Separator : PlacedBuilding, IHaveOutput,IHaveInput
     {
         private static float SepartionPerSecond = 0.25f;
 
@@ -16,17 +17,17 @@ namespace Project.Scripts.Buildings
             
         }
 
-        public override Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
+        public Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
         {
             return null;
         }
 
-        public override Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
+        public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
             return null;
         }
 
-        protected override void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection)
+        protected override void SetUpSlots(FacingDirection facingDirection)
         {
             throw new System.NotImplementedException();
         }

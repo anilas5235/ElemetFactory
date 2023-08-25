@@ -16,8 +16,8 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
-        private BuildingGridResources.PossibleBuildings _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
-        private BuildingScriptableData.FacingDirection _facingDirection = BuildingScriptableData.FacingDirection.Down;
+        private PossibleBuildings _selectedBuilding = PossibleBuildings.Extractor;
+        private FacingDirection _facingDirection = FacingDirection.Down;
         
         public static readonly Vector2Int ChunkSize = new Vector2Int(10, 10);
         public static readonly Vector2 ChunkSizeIntUnits = new Vector2(CellSize * ChunkSize.x, CellSize * ChunkSize.y);
@@ -46,7 +46,7 @@ namespace Project.Scripts.Grid
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                _facingDirection = BuildingScriptableData.GetNextDirectionClockwise(_facingDirection);
+                _facingDirection = PlacedBuildingUtility.GetNextDirectionClockwise(_facingDirection);
                 Debug.Log($"rotation: {_facingDirection}");
             }
 
@@ -62,8 +62,8 @@ namespace Project.Scripts.Grid
                 GridChunk.TryToDeleteBuilding(GetChunk(mousePos),mousePos);
             }
 
-            if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Extractor;
-            if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = BuildingGridResources.PossibleBuildings.Conveyor;
+            if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = PossibleBuildings.Extractor;
+            if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
         }
 
         private void FixedUpdate()

@@ -20,12 +20,12 @@ namespace Project.Scripts.Buildings
         /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
         /// <returns>Reference to the newly created PlacedBuilding</returns>
         public static PlacedBuilding CreateBuilding(GridChunk chunk,GridObject gridObject,Vector3 localPosition, Vector2Int origin,
-            BuildingScriptableData.FacingDirection facingDirection, BuildingGridResources.PossibleBuildings buildingData,
+            FacingDirection facingDirection, PossibleBuildings buildingData,
             Transform transformParent, float cellSize)
         {
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
-                Quaternion.Euler(0, 0, BuildingScriptableData.GetRotation(facingDirection))).transform;
+                Quaternion.Euler(0, 0, PlacedBuildingUtility.GetRotation(facingDirection))).transform;
 
             PlacedBuilding placedBuilding = buildingTransform.GetComponent<PlacedBuilding>();
 
@@ -90,11 +90,7 @@ namespace Project.Scripts.Buildings
 
         protected abstract void StartWorking();
 
-        public abstract Slot GetInputSlot(PlacedBuildingData caller, Slot destination);
-
-        public abstract Slot GetOutputSlot(PlacedBuildingData caller, Slot destination);
-
-        protected abstract void SetUpSlots(BuildingScriptableData.FacingDirection facingDirection);
+        protected abstract void SetUpSlots(FacingDirection facingDirection);
 
         public abstract void CheckForSlotToPullForm();
 

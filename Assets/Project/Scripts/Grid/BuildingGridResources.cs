@@ -8,6 +8,14 @@ using Random = UnityEngine.Random;
 
 namespace Project.Scripts.Grid
 {
+    public enum PossibleBuildings
+    {
+        Extractor,
+        Conveyor,
+        Separator,
+        Combiner
+    }
+
     public static class BuildingGridResources
     {
         #region ResourceGeneration
@@ -229,13 +237,7 @@ namespace Project.Scripts.Grid
         #endregion
 
         #region BuildingHandeling
-        public enum PossibleBuildings
-        {
-            Extractor,
-            Conveyor,
-            Separator,
-            Combiner
-        }
+        
 
         private static readonly BuildingScriptableData[] PossibleBuildingData =
         {

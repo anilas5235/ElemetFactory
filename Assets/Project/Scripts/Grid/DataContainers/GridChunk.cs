@@ -51,20 +51,20 @@ namespace Project.Scripts.Grid.DataContainers
                 foreach (PlacedBuildingData building in buildings)
                 {
                     StartCoroutine(JobPlaceBuilding(this, building.origin,
-                       (BuildingGridResources.PossibleBuildings) building.buildingDataID,(BuildingScriptableData.FacingDirection) building.directionID));
+                       (PossibleBuildings) building.buildingDataID,(FacingDirection) building.directionID));
                 }
             }
         }
 
-        private IEnumerator JobPlaceBuilding(GridChunk chunk, Vector2Int cellPos, BuildingGridResources.PossibleBuildings buildingData,
-            BuildingScriptableData.FacingDirection facingDirection)
+        private IEnumerator JobPlaceBuilding(GridChunk chunk, Vector2Int cellPos, PossibleBuildings buildingData,
+            FacingDirection facingDirection)
         {
             PlaceBuilding(chunk,cellPos,buildingData,facingDirection);
             yield return null;
         }
 
-        public static void TryToPlaceBuilding( GridChunk chunk,BuildingGridResources.PossibleBuildings  buildingData, Vector3 mousePosition,
-            BuildingScriptableData.FacingDirection facingDirection)
+        public static void TryToPlaceBuilding( GridChunk chunk,PossibleBuildings  buildingData, Vector3 mousePosition,
+            FacingDirection facingDirection)
         {
             if (!chunk)return;
             GridField<GridObject> buildingGrid = chunk.ChunkBuildingGrid;
@@ -83,8 +83,8 @@ namespace Project.Scripts.Grid.DataContainers
 
             PlaceBuilding(chunk, cellPos, buildingData, facingDirection);
         }
-        private static void PlaceBuilding(GridChunk chunk, Vector2Int cellPos, BuildingGridResources.PossibleBuildings  buildingData,
-            BuildingScriptableData.FacingDirection facingDirection)
+        private static void PlaceBuilding(GridChunk chunk, Vector2Int cellPos, PossibleBuildings  buildingData,
+            FacingDirection facingDirection)
         {
             Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;

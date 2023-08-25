@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1979c1b49a5084942b340594d0dfb564, type: 3}
-  m_Name: 1x1StandartLeft
+  m_Name: CombinerRight
   m_EditorClassIdentifier: 
-  ownFacingDirection: 3
+  ownFacingDirection: 1
   validInputPositions:
-  - {x: 1, y: 0}
-  validOutputPositions:
   - {x: -1, y: 0}
+  validOutputPositions:
+  - {x: 1, y: 0}
+  - {x: 1, y: -1}
