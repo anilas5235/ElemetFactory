@@ -23,7 +23,7 @@ namespace Project.Scripts.Visualisation
 
         public static readonly GameObject ItemContainer = Resources.Load<GameObject>("Prefaps/ItemContainer");
         
-        public static TileBase GetTileSource(BuildingGridResources.ResourcesType resourcesType)
+        public static TileBase GetTileSource(ResourcesType resourcesType)
         {
             return  ResourceTiles[(int) resourcesType];
         }

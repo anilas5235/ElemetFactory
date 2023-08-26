@@ -96,5 +96,18 @@ namespace Project.Scripts.Buildings
         {
             return -90 * directionID +180;
         }
+
+        public static bool DoYouPointAtMe(FacingDirection facingDirectionOfTarget, Vector2Int realtivPositionOfTarget)
+        {
+            if (realtivPositionOfTarget.x == 0 && realtivPositionOfTarget.y > 0 && facingDirectionOfTarget == FacingDirection.Down) return true;
+            if (realtivPositionOfTarget.x == 0 && realtivPositionOfTarget.y < 0 && facingDirectionOfTarget == FacingDirection.Up) return true;
+            if (realtivPositionOfTarget.x > 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Left) return true;
+            if (realtivPositionOfTarget.x < 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Right) return true;
+            return false;
+        }
+        public static bool DoYouPointAtMe(int facingDirectionOfTargetID, Vector2Int realtivPositionOfTarget)
+        {
+            return DoYouPointAtMe((FacingDirection)facingDirectionOfTargetID, realtivPositionOfTarget);
+        }
     }
 }

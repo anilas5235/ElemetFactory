@@ -25,7 +25,7 @@ namespace Project.Scripts.Buildings
             }
         }
 
-        [SerializeField]private Slot flowSlot1, flowSlot2,slotToPullForm, slotToPushTo;
+        [SerializeField]private Slot slotToPullForm, slotToPushTo;
         protected override void StartWorking()
         {
             ConveyorTick += Tick;
@@ -39,14 +39,14 @@ namespace Project.Scripts.Buildings
         {
             if (slotToPullForm != null) return null;
             slotToPullForm = destination;
-            return flowSlot1;
+            return inputs[0];
         }
 
         public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
         {
             if (slotToPushTo!= null) return null;
             slotToPushTo = destination;
-            return flowSlot2;
+            return outputs[0];
         }
 
         protected override void SetUpSlots(FacingDirection facingDirection)
@@ -69,9 +69,8 @@ namespace Project.Scripts.Buildings
                         out PlacedBuilding cellBuild)) continue;
                 IHaveOutput buildingOut = cellBuild.GetComponent<IHaveOutput>();
                 if(buildingOut == null)continue;
-                if (cellBuild.MyPlacedBuildingData.directionID ==
-                    (int)PlacedBuildingUtility.GetOppositeDirection(MyPlacedBuildingData.directionID)) continue;
-                Slot next = buildingOut.GetOutputSlot(MyPlacedBuildingData, flowSlot1);
+                if (!PlacedBuildingUtility.DoYouPointAtMe(cellBuild.MyPlacedBuildingData.directionID,offset)) continue;
+                Slot next = buildingOut.GetOutputSlot(MyPlacedBuildingData, inputs[0]);
                 if (next == null) continue;
                 slotToPullForm = next;
                 break;
@@ -85,18 +84,18 @@ namespace Project.Scripts.Buildings
             if(!PlacedBuildingUtility.CheckForBuilding(targetPos,MyChunk,out PlacedBuilding cellBuild)) return;
             IHaveInput buildingIn = cellBuild.GetComponent<IHaveInput>();
             if(buildingIn == null)return;
-            Slot next = buildingIn.GetInputSlot(MyPlacedBuildingData, flowSlot2);
+            Slot next = buildingIn.GetInputSlot(MyPlacedBuildingData, outputs[0]);
             if (next == null) return;
             slotToPushTo = next;
         }
 
         private void Tick()
         {
-            if (flowSlot1.IsOccupied && !flowSlot2.IsOccupied)
-                flowSlot2.PutIntoSlot(flowSlot1.ExtractFromSlot());
+            if (inputs[0].IsOccupied && !outputs[0].IsOccupied)
+                outputs[0].PutIntoSlot(inputs[0].ExtractFromSlot());
 
-            if (slotToPullForm is { IsOccupied: true } && !flowSlot1.IsOccupied)
-                flowSlot1.PutIntoSlot(slotToPullForm.ExtractFromSlot());
+            if (slotToPullForm is { IsOccupied: true } && !inputs[0].IsOccupied)
+                inputs[0].PutIntoSlot(slotToPullForm.ExtractFromSlot());
         }
 
         public override void Destroy()

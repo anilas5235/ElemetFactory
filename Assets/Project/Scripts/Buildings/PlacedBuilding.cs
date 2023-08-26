@@ -56,6 +56,12 @@ namespace Project.Scripts.Buildings
 
         [SerializeField] private GameObject visualParent;
 
+        [SerializeField]protected Slot[] inputs;
+
+        [SerializeField]protected Slot[] outputs;
+        
+        protected SlotValidationHandler mySlotValidationHandler;
+
 
         /// <summary>
         /// Give back a list of positions, that this building occupies
@@ -92,9 +98,31 @@ namespace Project.Scripts.Buildings
 
         protected abstract void SetUpSlots(FacingDirection facingDirection);
 
-        public abstract void CheckForSlotToPullForm();
+        public virtual void CheckForSlotToPullForm()
+        {
+            foreach (Vector2Int validInputPosition in mySlotValidationHandler.ValidInputPositions)
+            {
+                if (PlacedBuildingUtility.CheckForBuilding(
+                        MyPlacedBuildingData.origin + validInputPosition,
+                        MyChunk, out PlacedBuilding building))
+                {
+                    building.CheckForSlotsToPushTo();
+                }
+            }
+        }
 
-        public abstract void CheckForSlotsToPushTo();
+        public virtual void CheckForSlotsToPushTo()
+        {
+            foreach (Vector2Int validOutputPosition in mySlotValidationHandler.ValidOutputPositions)
+            {
+                if (PlacedBuildingUtility.CheckForBuilding(
+                        MyPlacedBuildingData.origin + validOutputPosition,
+                        MyChunk, out PlacedBuilding building))
+                {
+                    building.CheckForSlotToPullForm();
+                }
+            }
+        }
 
         public override string ToString()
         {

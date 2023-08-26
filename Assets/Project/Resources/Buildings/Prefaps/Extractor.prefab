@@ -46,6 +46,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualParent: {fileID: 7519518000641016576}
+  inputs: []
+  outputs:
+  - {fileID: 1076591525162721901}
   storage:
     containedType:
       ResourceIDs: 

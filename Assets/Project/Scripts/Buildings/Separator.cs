@@ -10,8 +10,6 @@ namespace Project.Scripts.Buildings
     {
         private static float SepartionPerSecond = 0.25f;
 
-        private Slot InputSlot, Output1Slot, Output2Slot;
-
         protected override void StartWorking()
         {
             
@@ -44,12 +42,12 @@ namespace Project.Scripts.Buildings
 
         private void InputSlotChanged(bool fillStatus)
         {
-            if (fillStatus && !Output1Slot.IsOccupied && !Output2Slot.IsOccupied)
+            if (fillStatus && !outputs[0].IsOccupied && !outputs[1].IsOccupied)
             {
-                int itemLength = InputSlot.SlotContent.Item.ResourceIDs.Length;
+                int itemLength = inputs[0].SlotContent.Item.ResourceIDs.Length;
                 if(itemLength < 1) return;
                 int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = item1Length - item1Length;
-                ItemContainer item = InputSlot.EmptySlot();
+                ItemContainer item = inputs[0].EmptySlot();
                 int[] contentItem1= new int[item1Length], contentItem2=new int[item2Length];
                 for (int i = 0; i < itemLength; i++)
                 {
@@ -58,8 +56,8 @@ namespace Project.Scripts.Buildings
                 }
                 item.Destroy();
 
-                Output1Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1),Output1Slot));
-                Output2Slot.FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2),Output2Slot));
+                outputs[0].FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1),outputs[0]));
+                outputs[1].FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2),outputs[1]));
             }
         }
     }

@@ -15,16 +15,14 @@ namespace Project.Scripts.Buildings
         private static SlotValidationHandler[] SlotValidationHandlers;
         [SerializeField] private Container<Item> storage;
 
-        [SerializeField] private BuildingGridResources.ResourcesType generatedResource;
-        [SerializeField] private Slot outputSlot;
+        [SerializeField] private ResourcesType generatedResource;
 
-        protected SlotValidationHandler mySlotValidationHandler;
         private Coroutine generation;
 
         protected override void StartWorking()
         {
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
-            if (generatedResource == BuildingGridResources.ResourcesType.None) return;
+            if (generatedResource == ResourcesType.None) return;
             storage = new Container<Item>(new Item(new int[] { (int)generatedResource }), 1, StorageCapacity);
 
             if (PlacedBuildingUtility.CheckForBuilding(
@@ -35,7 +33,7 @@ namespace Project.Scripts.Buildings
                 if (building.MyPlacedBuildingData.buildingDataID == MyPlacedBuildingData.directionID)
                     building.CheckForSlotToPullForm();
             }
-
+            CheckForSlotsToPushTo();
             TryPushItemToOutput(false);
             generation = StartCoroutine(ResourceGeneration());
         }
@@ -44,7 +42,7 @@ namespace Project.Scripts.Buildings
         {
             return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position, caller.origin,
                 (FacingDirection)caller.directionID)
-                ? outputSlot
+                ? outputs[0]
                 : null;
         }
         protected override void SetUpSlots(FacingDirection facingDirection)
@@ -57,24 +55,16 @@ namespace Project.Scripts.Buildings
                 3 => Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/Extractor/ExtractorLeft"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            outputSlot.OnSlotContentChanged += TryPushItemToOutput;
+            outputs[0].OnSlotContentChanged += TryPushItemToOutput;
         }
 
-        public override void CheckForSlotToPullForm()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override void CheckForSlotsToPushTo()
-        {
-            throw new System.NotImplementedException();
-        }
+        public override void CheckForSlotToPullForm() { }
 
         private void TryPushItemToOutput(bool fillStatus)
         {
-            if (!outputSlot|| fillStatus) return;
+            if (!outputs[0]|| fillStatus) return;
             if (storage.ContainedAmount <= 0) return;
-            outputSlot.FillSlot(ItemContainer.CreateNewContainer(storage.Extract()[0],outputSlot));
+            outputs[0].FillSlot(ItemContainer.CreateNewContainer(storage.Extract()[0],outputs[0]));
             generation ??= StartCoroutine(ResourceGeneration());
         }
 
@@ -83,7 +73,7 @@ namespace Project.Scripts.Buildings
             while (storage.ContainedAmount < storage.MaxContainableAmount)
             {
                 storage.AddAmount();
-                TryPushItemToOutput(outputSlot.IsOccupied);
+                TryPushItemToOutput(outputs[0].IsOccupied);
                 yield return new WaitForSeconds(1 / ExtractionSpeed);
             }
             generation = null;

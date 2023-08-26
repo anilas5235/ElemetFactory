@@ -9,12 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1979c1b49a5084942b340594d0dfb564, type: 3}
-  m_Name: CombinerUp
+  m_Script: {fileID: 11500000, guid: f964f8eb78a906f4a83b6436e693696f, type: 3}
+  m_Name: Combiner
   m_EditorClassIdentifier: 
-  ownFacingDirection: 0
-  validInputPositions:
-  - {x: 0, y: 1}
-  - {x: 1, y: 1}
-  validOutputPositions:
-  - {x: 0, y: -1}
+  nameString: Combiner
+  prefab: {fileID: 1207112208540549613, guid: 6c8e8456ea8d68242a288ec636d8f6be, type: 3}
+  size: {x: 2, y: 1}

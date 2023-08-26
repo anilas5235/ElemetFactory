@@ -12,8 +12,17 @@ namespace Project.Scripts.Grid
     {
         Extractor,
         Conveyor,
+        Combiner,
         Separator,
-        Combiner
+    }
+
+    public enum ResourcesType
+    {
+        None,
+        H,
+        C,
+        N,
+        O,
     }
 
     public static class BuildingGridResources
@@ -38,14 +47,7 @@ namespace Project.Scripts.Grid
             new Vector2Int(0, -2), new Vector2Int(-1, 2),new Vector2Int(1, 2),new Vector2Int(0, 2),
         };
         
-        public enum ResourcesType
-        {
-            None,
-            H,
-            C,
-            N,
-            O,
-        }
+      
         private static ResourcesType GetRandom(float distanceToCenter)
         {
             int pool=1;
@@ -243,6 +245,7 @@ namespace Project.Scripts.Grid
         {
             Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
         };
 
         public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)

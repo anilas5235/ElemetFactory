@@ -63,7 +63,8 @@ namespace Project.Scripts.Grid
             }
 
             if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = PossibleBuildings.Extractor;
-            if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
+            else if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
+            else if (Input.GetKeyDown(KeyCode.Alpha3)) _selectedBuilding = PossibleBuildings.Combiner;
         }
 
         private void FixedUpdate()
