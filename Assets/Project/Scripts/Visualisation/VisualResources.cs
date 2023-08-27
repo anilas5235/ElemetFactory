@@ -14,7 +14,7 @@ namespace Project.Scripts.Visualisation
         {
             new ResourceData(ResourcesType.None,Resources.Load<TileBase>("Tiles/None"),new Color(171/255f,171/255f,171/255f),ItemForm.Solid),
             new ResourceData(ResourcesType.H,Resources.Load<TileBase>("Tiles/H"),new Color(0/255f,0/255f,255/255f), ItemForm.Gas),
-            new ResourceData(ResourcesType.C,Resources.Load<TileBase>("Tiles/C"),new Color(0/255f,0/255f,0/255f), ItemForm.Solid),
+            new ResourceData(ResourcesType.C,Resources.Load<TileBase>("Tiles/C"),new Color(25/255f,25/255f,25/255f), ItemForm.Solid),
             new ResourceData(ResourcesType.O,Resources.Load<TileBase>("Tiles/O"),new Color(0/255f,255/255f,0/255f), ItemForm.Gas),
             new ResourceData(ResourcesType.N,Resources.Load<TileBase>("Tiles/N"),new Color(255/255f,0/255f,0/255f), ItemForm.Gas),
             new ResourceData(ResourcesType.S,Resources.Load<TileBase>("Tiles/S"),new Color(255/255f,255/255f,0/255f), ItemForm.Solid),
