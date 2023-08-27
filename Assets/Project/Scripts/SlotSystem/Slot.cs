@@ -55,6 +55,7 @@ namespace Project.Scripts.SlotSystem
         {
             slotContent = item;
             slotContent.SetSlot(this);
+            slotContent.transform.position = transform.position;
             OnSlotContentChanged?.Invoke(IsOccupied);
         }
 

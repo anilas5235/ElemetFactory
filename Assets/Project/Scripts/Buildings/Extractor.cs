@@ -64,7 +64,7 @@ namespace Project.Scripts.Buildings
         {
             if (!outputs[0]|| fillStatus) return;
             if (storage.ContainedAmount <= 0) return;
-            outputs[0].FillSlot(ItemContainer.CreateNewContainer(storage.Extract()[0],outputs[0]));
+            outputs[0].FillSlot(ItemUtility.GetItemContainerWith(storage.Extract()[0],outputs[0]));
             generation ??= StartCoroutine(ResourceGeneration());
         }
 

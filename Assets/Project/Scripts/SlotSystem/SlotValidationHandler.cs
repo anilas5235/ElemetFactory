@@ -17,7 +17,7 @@ namespace Project.Scripts.SlotSystem
         public bool ValidateInputSlotRequest(Vector2Int ownOrigin,Vector2Int originOfRequest,FacingDirection requestDirection)
         {
             Vector2Int search = originOfRequest - ownOrigin;
-            return validInputPositions.Contains(search)&& requestDirection == ownFacingDirection;
+            return (validInputPositions.Contains(search)&& requestDirection == ownFacingDirection);
         }
         
         public bool ValidateOutputSlotRequest(Vector2Int ownOrigin,Vector2Int originOfRequest, FacingDirection requestDirection)

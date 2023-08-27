@@ -47,7 +47,7 @@ namespace Project.Scripts.General
             GameObject returnObj;
             if (!objectPool.Any())
             {
-                returnObj = Instantiate(objectToPool, transform.position, Quaternion.identity);
+                returnObj = CreateNewPoolObject();
                 returnObj.gameObject.name = $"{objectToPool.name}({totalObjectCount})";
                 totalObjectCount++;
             }
@@ -61,6 +61,11 @@ namespace Project.Scripts.General
             
             UpdateName();
             return returnObj;
+        }
+
+        protected virtual GameObject CreateNewPoolObject()
+        {
+            return Instantiate(objectToPool, transform.position, Quaternion.identity);
         }
         
         protected virtual void GetObjectExtraCommands(GameObject obj)

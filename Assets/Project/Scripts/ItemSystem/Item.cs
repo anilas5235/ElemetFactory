@@ -3,6 +3,14 @@ using System.Linq;
 
 namespace Project.Scripts.ItemSystem
 {
+    public enum ItemForm
+    {
+        Gas,
+        Fluid,
+        Solid,
+    }
+        
+        
     [Serializable]
     public struct Item
     {

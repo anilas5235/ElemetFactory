@@ -91,6 +91,9 @@ namespace Project.Scripts.Buildings
 
         private void Tick()
         {
+            if (slotToPushTo is { IsOccupied: false } && outputs[0].IsOccupied)
+                slotToPushTo.PutIntoSlot(outputs[0].ExtractFromSlot());
+
             if (inputs[0].IsOccupied && !outputs[0].IsOccupied)
                 outputs[0].PutIntoSlot(inputs[0].ExtractFromSlot());
 

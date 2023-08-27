@@ -21,8 +21,14 @@ namespace Project.Scripts.Grid
         None,
         H,
         C,
-        N,
         O,
+        N,
+        S,
+        Al,
+        Fe,
+        Na,
+        Cl,
+        
     }
 
     public static class BuildingGridResources

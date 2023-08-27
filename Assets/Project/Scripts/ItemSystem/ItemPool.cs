@@ -1,13 +1,13 @@
 using Project.Scripts.General;
+using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
 {
     public class ItemPool : ObjectPooling<ItemPool>
     {
-        protected override void Start()
+        protected override GameObject CreateNewPoolObject()
         {
-            base.Start();
-            
+            return ItemContainer.CreateNewContainer().gameObject;
         }
     }
 }

@@ -55,7 +55,6 @@ MonoBehaviour:
     containedAmount: 0
     maxContainableAmount: 2147483647
   generatedResource: 0
-  outputSlot: {fileID: 1076591525162721901}
 --- !u!1 &3301005367922775763
 GameObject:
   m_ObjectHideFlags: 0
@@ -171,7 +170,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 4
   m_Sprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
   m_Color: {r: 0.05660379, g: 0.0542008, b: 0.0542008, a: 1}
   m_FlipX: 0
@@ -286,7 +285,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 6
   m_Sprite: {fileID: -2413806693520163455, guid: ebe73ca9363db456bacf42c025bb4847, type: 3}
   m_Color: {r: 1, g: 0.504717, b: 0.504717, a: 1}
   m_FlipX: 0
@@ -368,7 +367,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
   m_Color: {r: 0.1792453, g: 0.16994482, b: 0.16994482, a: 1}
   m_FlipX: 0
