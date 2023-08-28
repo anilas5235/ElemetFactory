@@ -998,7 +998,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector2MaterialSlot",
     "m_ObjectId": "84657e49f8c545998a45448fcc85a6ac",
     "m_Id": 0,
-    "m_DisplayName": "Scroll",
+    "m_DisplayName": "ScrollDirection",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",

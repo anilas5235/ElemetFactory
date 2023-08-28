@@ -79,7 +79,7 @@ namespace Project.Scripts.Buildings
 
         public override void CheckForSlotsToPushTo()
         {
-            if(slotToPullForm) return;
+            if(slotToPushTo) return;
             Vector2Int targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID)+ MyGridObject.Position;
             if(!PlacedBuildingUtility.CheckForBuilding(targetPos,MyChunk,out PlacedBuilding cellBuild)) return;
             IHaveInput buildingIn = cellBuild.GetComponent<IHaveInput>();
