@@ -15,16 +15,6 @@ namespace Project.Scripts.Buildings
             
         }
 
-        public Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
-        {
-            return null;
-        }
-
-        public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
-        {
-            return null;
-        }
-
         protected override void SetUpSlots(FacingDirection facingDirection)
         {
             throw new System.NotImplementedException();
@@ -59,6 +49,16 @@ namespace Project.Scripts.Buildings
                 outputs[0].FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem1),outputs[0]));
                 outputs[1].FillSlot(ItemContainer.CreateNewContainer(new Item(contentItem2),outputs[1]));
             }
+        }
+
+        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -35,24 +35,6 @@ namespace Project.Scripts.Buildings
             CheckForSlotToPullForm();
         }
 
-        public Slot GetInputSlot(PlacedBuildingData caller, Slot destination)
-        {
-            if (slotToPullForm != null) return null;
-            slotToPullForm = destination;
-            return inputs[0];
-        }
-
-        public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
-        {
-            if (slotToPushTo!= null) return null;
-            slotToPushTo = destination;
-            return outputs[0];
-        }
-
-        protected override void SetUpSlots(FacingDirection facingDirection)
-        {
-        }
-
         public override void CheckForSlotToPullForm()
         {
             if (slotToPullForm) return;
@@ -70,7 +52,7 @@ namespace Project.Scripts.Buildings
                 IHaveOutput buildingOut = cellBuild.GetComponent<IHaveOutput>();
                 if(buildingOut == null)continue;
                 if (!PlacedBuildingUtility.DoYouPointAtMe(cellBuild.MyPlacedBuildingData.directionID,offset)) continue;
-                Slot next = buildingOut.GetOutputSlot(MyPlacedBuildingData, inputs[0]);
+                Slot next = buildingOut.GetOutputSlot(this, inputs[0]);
                 if (next == null) continue;
                 slotToPullForm = next;
                 break;
@@ -84,7 +66,7 @@ namespace Project.Scripts.Buildings
             if(!PlacedBuildingUtility.CheckForBuilding(targetPos,MyChunk,out PlacedBuilding cellBuild)) return;
             IHaveInput buildingIn = cellBuild.GetComponent<IHaveInput>();
             if(buildingIn == null)return;
-            Slot next = buildingIn.GetInputSlot(MyPlacedBuildingData, outputs[0]);
+            Slot next = buildingIn.GetInputSlot(this, outputs[0]);
             if (next == null) return;
             slotToPushTo = next;
         }
@@ -105,6 +87,20 @@ namespace Project.Scripts.Buildings
         {
             ConveyorTick -= Tick;
             base.Destroy();
+        }
+
+        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
+        {
+            if (slotToPushTo!= null) return null;
+            slotToPushTo = destination;
+            return outputs[0];
+        }
+
+        public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
+        {
+            if (slotToPullForm != null) return null;
+            slotToPullForm = destination;
+            return inputs[0];
         }
     }
 }

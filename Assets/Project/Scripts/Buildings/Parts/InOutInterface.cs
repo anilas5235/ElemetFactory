@@ -4,11 +4,11 @@ namespace Project.Scripts.Buildings.Parts
 {
     public interface IHaveInput
     {
-        public Slot GetInputSlot(PlacedBuildingData caller, Slot destination);
+        public Slot GetInputSlot(PlacedBuilding caller, Slot destination);
     }
 
     public interface IHaveOutput
     {
-        public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination);
+        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination);
     }
 }

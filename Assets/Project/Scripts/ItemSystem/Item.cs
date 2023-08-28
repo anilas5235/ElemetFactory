@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Project.Scripts.Grid;
 
 namespace Project.Scripts.ItemSystem
 {
@@ -27,6 +28,11 @@ namespace Project.Scripts.ItemSystem
             Item target = (Item) obj;
             if (ResourceIDs.Length != target.ResourceIDs.Length) return false;
             return !ResourceIDs.Where((t, i) => t != target.ResourceIDs[i]).Any();
+        }
+
+        public override string ToString()
+        {
+            return ResourceIDs.Aggregate(string.Empty, (current, resourceID) => current + (ResourceType)resourceID);
         }
     }
 }

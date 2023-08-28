@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Project.Scripts.Buildings;
 using Project.Scripts.Grid;
@@ -16,22 +15,36 @@ namespace Project.Scripts.SlotSystem
         public Vector2Int[] ValidInputPositions => validInputPositions;
         public Vector2Int[] ValidOutputPositions => validOutputPositions;
 
-        public bool ValidateInputSlotRequest(Vector2Int ownOrigin, Vector2Int originOfRequest,
-            FacingDirection requestDirection)
+        public bool ValidateInputSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index)
         {
-            if (ownOrigin.y >= GridBuildingSystem.ChunkSize.y-1) ownOrigin.y -= GridBuildingSystem.ChunkSize.y;
-            else if (ownOrigin.y <= 0) ownOrigin.y += GridBuildingSystem.ChunkSize.y;
-            if (ownOrigin.x >= GridBuildingSystem.ChunkSize.x-1) ownOrigin.x -= GridBuildingSystem.ChunkSize.x;
-            else if (ownOrigin.x <= 0) ownOrigin.x += GridBuildingSystem.ChunkSize.x;
-
-            Vector2Int search = originOfRequest - ownOrigin;
-            return (validInputPositions.Contains(search) && requestDirection == ownFacingDirection);
+            return ValidateSlotRequest(me, requester, out index, true);
         }
 
-        public bool ValidateOutputSlotRequest(Vector2Int ownOrigin,Vector2Int originOfRequest, FacingDirection requestDirection)
+        public bool ValidateOutputSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index)
         {
-            Vector2Int search = originOfRequest - ownOrigin;
-            return validOutputPositions.Contains(search)&& requestDirection == ownFacingDirection;
+            return ValidateSlotRequest(me, requester, out index, false);
+        }
+
+        private bool ValidateSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index, bool input)
+        {
+            index = 0;
+            if (requester.MyPlacedBuildingData.directionID != (int)ownFacingDirection) return false;
+
+            Vector2Int chunkOffset = me.MyChunk.ChunkPosition - requester.MyChunk.ChunkPosition;
+            Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * GridBuildingSystem.ChunkSize;
+
+            Vector2Int search = newPos - me.MyGridObject.Position;
+
+            Vector2Int[] validSlots = input ? validInputPositions : validOutputPositions;
+
+            for (int i = 0; i < validSlots.Length; i++)
+            {
+                if (validSlots[i] != search) continue;
+                index = i;
+                return true;
+            }
+
+            return false;
         }
     }
 }

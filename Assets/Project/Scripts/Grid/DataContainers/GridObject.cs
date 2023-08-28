@@ -10,16 +10,16 @@ namespace Project.Scripts.Grid.DataContainers
         public Vector2Int Position { get; }
         public bool Occupied => Building;
         public PlacedBuilding Building { get; private set; }
-        public ResourcesType ResourceNode { get; private set; }
+        public ResourceType ResourceNode { get; private set; }
         public GridChunk Chunk { get; }
 
-        public GridObject(GridChunk chunk, Vector2Int position, ResourcesType resource = ResourcesType.None)
+        public GridObject(GridChunk chunk, Vector2Int position, ResourceType resource = ResourceType.None)
         {
             Chunk = chunk;
             Position = position;
             ResourceNode = resource;
 
-            if (ResourceNode != ResourcesType.None) SetResource(ResourceNode);
+            if (ResourceNode != ResourceType.None) SetResource(ResourceNode);
         }
 
         #region Functions
@@ -37,10 +37,10 @@ namespace Project.Scripts.Grid.DataContainers
             GridField.TriggerGridObjectChanged(Position);
         }
 
-        public void SetResource(ResourcesType resourcesType)
+        public void SetResource(ResourceType resourceType)
         {
-            if(ResourceNode != ResourcesType.None || resourcesType == ResourcesType.None)return;
-            ResourceNode = resourcesType;
+            if(ResourceNode != ResourceType.None || resourceType == ResourceType.None)return;
+            ResourceNode = resourceType;
             Vector3Int tilePos = new Vector3Int(
                 Mathf.FloorToInt(Position.x - GridBuildingSystem.ChunkSize.x / 2f),
                 Mathf.FloorToInt(Position.y - GridBuildingSystem.ChunkSize.y / 2f),

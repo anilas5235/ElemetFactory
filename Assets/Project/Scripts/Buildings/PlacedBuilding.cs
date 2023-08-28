@@ -50,9 +50,9 @@ namespace Project.Scripts.Buildings
         }
 
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
-        protected GridChunk MyChunk { get; private set; }
+        public GridChunk MyChunk { get; private set; }
         
-        protected GridObject MyGridObject { get; private set; }
+        public GridObject MyGridObject { get; private set; }
 
         [SerializeField] private GameObject visualParent;
 
@@ -96,7 +96,7 @@ namespace Project.Scripts.Buildings
 
         protected abstract void StartWorking();
 
-        protected abstract void SetUpSlots(FacingDirection facingDirection);
+        protected virtual void SetUpSlots(FacingDirection facingDirection){}
 
         public virtual void CheckForSlotToPullForm()
         {

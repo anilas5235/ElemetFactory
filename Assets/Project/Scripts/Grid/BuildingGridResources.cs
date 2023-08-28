@@ -16,7 +16,7 @@ namespace Project.Scripts.Grid
         Separator,
     }
 
-    public enum ResourcesType
+    public enum ResourceType
     {
         None,
         H,
@@ -54,12 +54,12 @@ namespace Project.Scripts.Grid
         };
         
       
-        private static ResourcesType GetRandom(float distanceToCenter)
+        private static ResourceType GetRandom(float distanceToCenter)
         {
             int pool=1;
             if (distanceToCenter >= 2f) pool+=3;
             if (distanceToCenter >= 5f) pool+=1;
-            return (ResourcesType) Random.Range(1,pool);
+            return (ResourceType) Random.Range(1,pool);
         }
 
         public static ChunkResourcePatch[] GenerateResources(GridChunk chunk,Dictionary<Vector2Int,GridChunk> gridChunks)
@@ -69,18 +69,18 @@ namespace Project.Scripts.Grid
             if(distToCenter < 2f ) return patches.ToArray();
             int numberOfPatches = GetNumberOfChunkResources(gridChunks,chunk,7f);
             if (numberOfPatches <1)return patches.ToArray();
-            ResourcesType[] chunkResources = new ResourcesType[numberOfPatches];
+            ResourceType[] chunkResources = new ResourceType[numberOfPatches];
             List<Vector2Int> blockPositions = new List<Vector2Int>();
 
             for (int i = 0; i < numberOfPatches; i++)
             {
-                ResourcesType type;
+                ResourceType type;
                 bool done;
                 do
                 {
                     done = true;
                     type = GetRandom(Vector2Int.Distance(Vector2Int.zero, chunk.ChunkPosition));
-                    foreach (ResourcesType resource in chunkResources)
+                    foreach (ResourceType resource in chunkResources)
                     {
                         if (type != resource) continue;
                         done = false;
@@ -90,7 +90,7 @@ namespace Project.Scripts.Grid
                 chunkResources[i] = type;
             }
 
-            foreach (ResourcesType resource in chunkResources)
+            foreach (ResourceType resource in chunkResources)
             {
                 patches.Add(GenerateResourcePatch(chunk,GetPatchSize(numberOfPatches),resource,blockPositions));
             }
@@ -98,7 +98,7 @@ namespace Project.Scripts.Grid
             return patches.ToArray();
         }
 
-        private static ChunkResourcePatch GenerateResourcePatch(GridChunk chunk, int patchSize, ResourcesType resourcesType,
+        private static ChunkResourcePatch GenerateResourcePatch(GridChunk chunk, int patchSize, ResourceType resourceType,
             List<Vector2Int> blocked)
         {
             List<Vector2Int> cellPositions = GeneratePatchShape(patchSize, blocked,chunk);
@@ -107,7 +107,7 @@ namespace Project.Scripts.Grid
             
             return new ChunkResourcePatch
             {
-                resourceID = (int)resourcesType,
+                resourceID = (int)resourceType,
                 positions = cellPositions.ToArray()
             };
         }

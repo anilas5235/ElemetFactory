@@ -5,6 +5,7 @@ using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.Scripts.Buildings
 {
@@ -15,14 +16,14 @@ namespace Project.Scripts.Buildings
         private static SlotValidationHandler[] SlotValidationHandlers;
         [SerializeField] private Container<Item> storage;
 
-        [SerializeField] private ResourcesType generatedResource;
+        [FormerlySerializedAs("generatedResource")] [SerializeField] private ResourceType generatedResource;
 
         private Coroutine generation;
 
         protected override void StartWorking()
         {
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
-            if (generatedResource == ResourcesType.None) return;
+            if (generatedResource == ResourceType.None) return;
             storage = new Container<Item>(new Item(new int[] { (int)generatedResource }), 1, StorageCapacity);
 
             if (PlacedBuildingUtility.CheckForBuilding(
@@ -38,13 +39,13 @@ namespace Project.Scripts.Buildings
             generation = StartCoroutine(ResourceGeneration());
         }
 
-        public Slot GetOutputSlot(PlacedBuildingData caller, Slot destination)
+        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
         {
-            return mySlotValidationHandler.ValidateOutputSlotRequest(MyGridObject.Position, caller.origin,
-                (FacingDirection)caller.directionID)
-                ? outputs[0]
+            return mySlotValidationHandler.ValidateOutputSlotRequest(this,caller,out int index)
+                ? outputs[index]
                 : null;
         }
+
         protected override void SetUpSlots(FacingDirection facingDirection)
         {
             mySlotValidationHandler = MyPlacedBuildingData.directionID switch

@@ -36,7 +36,7 @@ namespace Project.Scripts.Grid.DataContainers
             
             foreach (ChunkResourcePatch chunkResourcePatch in ChunkResourcePatches)
             {
-                var resourceType = (ResourcesType)chunkResourcePatch.resourceID;
+                var resourceType = (ResourceType)chunkResourcePatch.resourceID;
                 foreach (Vector2Int position in chunkResourcePatch.positions)
                 {
                     ChunkBuildingGrid.GetCellData(position).SetResource(resourceType);

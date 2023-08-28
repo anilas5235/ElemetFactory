@@ -112,5 +112,15 @@ namespace Project.Scripts.ItemSystem
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        private void OnMouseDown()
+        {
+            Debug.Log(this.ToString());
+        }
+
+        public override string ToString()
+        {
+            return item.ToString();
+        }
     }
 }
