@@ -65,14 +65,7 @@ namespace Project.Scripts.Buildings
 
         public static Vector2Int FacingDirectionToVector(FacingDirection facingDirection)
         {
-            return facingDirection switch
-            {
-                FacingDirection.Up => Vector2Int.up,
-                FacingDirection.Right => Vector2Int.right,
-                FacingDirection.Down => Vector2Int.down,
-                FacingDirection.Left => Vector2Int.left,
-                _ => throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null)
-            };
+            return FacingDirectionToVector((int)facingDirection);
         }
         
         public static Vector2Int FacingDirectionToVector(int facingDirectionID)

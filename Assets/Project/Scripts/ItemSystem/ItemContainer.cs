@@ -19,6 +19,7 @@ namespace Project.Scripts.ItemSystem
 
         [SerializeField] private ItemForm myItemForm;
 
+        [SerializeField] private GameObject mainVisualParent;
         [SerializeField] private GameObject visualParentGas, visualParentFluid, visualParentSolid;
 
         public void SetItem(Item newItem)
@@ -33,6 +34,7 @@ namespace Project.Scripts.ItemSystem
 
         private void FixedUpdate()
         {
+            VisibilityCheck();
             if(!mySlot) return;
             if (Vector3.Distance(transform.position, mySlot.transform.position) > .1f)
                 if (InView)
@@ -46,11 +48,16 @@ namespace Project.Scripts.ItemSystem
             else transform.position = mySlot.transform.position;
         }
 
+        private void VisibilityCheck()
+        {
+            if (mySlot.MyBuilding.MyChunk.Loaded == InView) return;
+            InView = !InView;
+            mainVisualParent.SetActive(InView);
+        }
+
         public static ItemContainer CreateNewContainer(Item content, Slot slot)
         {
-            ItemContainer container = Instantiate(VisualResources.ItemContainer).GetComponent<ItemContainer>();
-            container.transform.localScale = new Vector3(GridBuildingSystem.CellSize, GridBuildingSystem.CellSize);
-            return SetContainer(container, content, slot);
+            return SetContainer(CreateNewContainer(), content, slot);
         }
         
         public static ItemContainer CreateNewContainer()
@@ -65,6 +72,7 @@ namespace Project.Scripts.ItemSystem
             container.SetItem(content);
             container.SetSlot(slot);
             container.transform.position = slot.transform.position;
+            container.VisibilityCheck();
             return container;
         }
 

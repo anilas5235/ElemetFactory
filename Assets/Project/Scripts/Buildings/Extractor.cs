@@ -5,7 +5,6 @@ using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Project.Scripts.Buildings
 {
@@ -16,7 +15,7 @@ namespace Project.Scripts.Buildings
         private static SlotValidationHandler[] SlotValidationHandlers;
         [SerializeField] private Container<Item> storage;
 
-        [FormerlySerializedAs("generatedResource")] [SerializeField] private ResourceType generatedResource;
+        [SerializeField] private ResourceType generatedResource;
 
         private Coroutine generation;
 
@@ -58,8 +57,6 @@ namespace Project.Scripts.Buildings
             };
             outputs[0].OnSlotContentChanged += TryPushItemToOutput;
         }
-
-        public override void CheckForSlotToPullForm() { }
 
         private void TryPushItemToOutput(bool fillStatus)
         {

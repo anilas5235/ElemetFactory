@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;

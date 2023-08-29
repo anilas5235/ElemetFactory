@@ -1,4 +1,5 @@
 using System;
+using Project.Scripts.Buildings;
 using Project.Scripts.ItemSystem;
 using UnityEngine;
 
@@ -8,10 +9,11 @@ namespace Project.Scripts.SlotSystem
     {
         [SerializeField] private SlotBehaviour mySlotBehaviour;
         [SerializeField] private ItemContainer slotContent;
-
         public ItemContainer SlotContent => slotContent;
         public bool IsOccupied => slotContent != null;
         public Action<bool> OnSlotContentChanged;
+
+        public PlacedBuilding MyBuilding;
         
         public enum SlotBehaviour
         {

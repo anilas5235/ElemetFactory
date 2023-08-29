@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 2
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 8194100694563874470}
 --- !u!1 &1404813164442881486
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +372,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 1
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 8194100694563874470}
 --- !u!1 &6178806662654874775
 GameObject:
   m_ObjectHideFlags: 0
@@ -551,6 +553,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 1
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 8194100694563874470}
 --- !u!1 &7870597635211363639
 GameObject:
   m_ObjectHideFlags: 0

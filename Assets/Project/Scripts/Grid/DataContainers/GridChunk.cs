@@ -9,7 +9,7 @@ namespace Project.Scripts.Grid.DataContainers
     public class GridChunk : MonoBehaviour
     {
         public GridField<GridObject> ChunkBuildingGrid { get; private set; }
-        public List<PlacedBuildingData> BuildingsData { get; private set; } = new List<PlacedBuildingData>();
+        public List<PlacedBuilding> Buildings { get; private set; } = new List<PlacedBuilding>();
 
         public GridBuildingSystem myGridBuildingSystem;
         public Tilemap ChunkTilemap { get; private set; }
@@ -45,14 +45,11 @@ namespace Project.Scripts.Grid.DataContainers
         }
         public void LoadBuildingsFromSave(PlacedBuildingData[] buildings)
         {
-            if (buildings == null) BuildingsData = new List<PlacedBuildingData>();
-            else
+            if (buildings == null) return;
+            foreach (PlacedBuildingData building in buildings)
             {
-                foreach (PlacedBuildingData building in buildings)
-                {
-                    StartCoroutine(JobPlaceBuilding(this, building.origin,
-                       (PossibleBuildings) building.buildingDataID,(FacingDirection) building.directionID));
-                }
+                StartCoroutine(JobPlaceBuilding(this, building.origin,
+                    (PossibleBuildings) building.buildingDataID,(FacingDirection) building.directionID));
             }
         }
 
@@ -109,7 +106,7 @@ namespace Project.Scripts.Grid.DataContainers
                 }
             }
 
-            chunk.BuildingsData.Add(building.MyPlacedBuildingData);
+            chunk.Buildings.Add(building);
         }
         public static void TryToDeleteBuilding(GridChunk chunk, Vector3 mousePosition)
         {
@@ -118,7 +115,7 @@ namespace Project.Scripts.Grid.DataContainers
             GridObject gridObject = buildingGrid.GetCellData(mousePosition);
             if(!(gridObject is { Occupied: true })) return;
             PlacedBuilding placedBuilding = gridObject.Building;
-            chunk.BuildingsData.Remove(placedBuilding.MyPlacedBuildingData);
+            chunk.Buildings.Remove(placedBuilding);
             placedBuilding.Destroy();
                     
             foreach (Vector2Int occupiedCell in placedBuilding.GetGridPositionList())
@@ -151,6 +148,7 @@ namespace Project.Scripts.Grid.DataContainers
             Loaded = true;
             chunkTilemapRenderer.enabled = Loaded;
             if(!loadedChunks.Contains(ChunkPosition)) loadedChunks.Add(ChunkPosition);
+            foreach (PlacedBuilding building in Buildings) building.Load();
         }
         
         public void UnLoad(List<Vector2Int> loadedChunks)
@@ -159,6 +157,7 @@ namespace Project.Scripts.Grid.DataContainers
             Loaded = false;
             chunkTilemapRenderer.enabled = Loaded;
             if(loadedChunks.Contains(ChunkPosition))loadedChunks.Remove(ChunkPosition);
+            foreach (PlacedBuilding building in Buildings) building.UnLoad();
         }
     }
 }

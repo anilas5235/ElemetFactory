@@ -100,6 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 2
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 2753152083352382502}
 --- !u!1 &3691701943240341754
 GameObject:
   m_ObjectHideFlags: 0

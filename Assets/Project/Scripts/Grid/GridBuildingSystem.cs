@@ -195,10 +195,14 @@ namespace Project.Scripts.Grid
 
         private static void CreateChunkSave(ChunkSave[] chunkSaves, int index, GridChunk chunk)
         {
+
+            PlacedBuildingData[] placedBuildingData = new PlacedBuildingData[chunk.Buildings.Count];
+            for (int i = 0; i < placedBuildingData.Length; i++) placedBuildingData[i] = chunk.Buildings[i].MyPlacedBuildingData;
+
             chunkSaves[index] = new ChunkSave
             {
                 chunkPosition = chunk.ChunkPosition, chunkResourcePatches = chunk.ChunkResourcePatches,
-                placedBuildingData = chunk.BuildingsData.ToArray()
+                placedBuildingData = placedBuildingData,
             };
         }
         

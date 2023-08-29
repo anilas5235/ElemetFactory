@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Project.Scripts.Buildings.Parts;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
@@ -100,26 +101,26 @@ namespace Project.Scripts.Buildings
 
         public virtual void CheckForSlotToPullForm()
         {
-            foreach (Vector2Int validInputPosition in mySlotValidationHandler.ValidInputPositions)
+            for (int i = 0; i < mySlotValidationHandler.ValidInputPositions.Length; i++)
             {
                 if (PlacedBuildingUtility.CheckForBuilding(
-                        MyPlacedBuildingData.origin + validInputPosition,
+                        MyPlacedBuildingData.origin + mySlotValidationHandler.ValidInputPositions[i],
                         MyChunk, out PlacedBuilding building))
                 {
-                    building.CheckForSlotsToPushTo();
+                    building.GetComponent<IHaveInput>()?.GetInputSlot(this, inputs[i]);
                 }
             }
         }
 
         public virtual void CheckForSlotsToPushTo()
         {
-            foreach (Vector2Int validOutputPosition in mySlotValidationHandler.ValidOutputPositions)
+            for (int i = 0; i < mySlotValidationHandler.ValidOutputPositions.Length; i++)
             {
                 if (PlacedBuildingUtility.CheckForBuilding(
-                        MyPlacedBuildingData.origin + validOutputPosition,
+                        MyPlacedBuildingData.origin + mySlotValidationHandler.ValidOutputPositions[i],
                         MyChunk, out PlacedBuilding building))
                 {
-                    building.CheckForSlotToPullForm();
+                    building.GetComponent<IHaveInput>()?.GetInputSlot(this, outputs[i]);
                 }
             }
         }

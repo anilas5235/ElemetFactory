@@ -347,6 +347,7 @@ MonoBehaviour:
   - {fileID: 552734881893318638}
   - {fileID: 2653959678709018608}
   myItemForm: 0
+  mainVisualParent: {fileID: 3920012260365943199}
   visualParentGas: {fileID: 1802192395731420433}
   visualParentFluid: {fileID: 2201874854527541079}
   visualParentSolid: {fileID: 2675485857621926355}

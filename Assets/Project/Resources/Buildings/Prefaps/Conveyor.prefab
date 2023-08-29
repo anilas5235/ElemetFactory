@@ -45,6 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 0
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 734946545394490128}
 --- !u!1 &5127798110144095246
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,6 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mySlotBehaviour: 0
   slotContent: {fileID: 0}
+  MyBuilding: {fileID: 734946545394490128}
 --- !u!1 &6974487970941358564
 GameObject:
   m_ObjectHideFlags: 0
