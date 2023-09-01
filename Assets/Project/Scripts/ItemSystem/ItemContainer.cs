@@ -22,6 +22,10 @@ namespace Project.Scripts.ItemSystem
         [SerializeField] private GameObject mainVisualParent;
         [SerializeField] private GameObject visualParentGas, visualParentFluid, visualParentSolid;
 
+        private Vector3 previousPos;
+        private bool arrived = true;
+        private float progress = 0;
+
         public void SetItem(Item newItem)
         {
             item = newItem;
@@ -29,27 +33,34 @@ namespace Project.Scripts.ItemSystem
 
         public void SetSlot(Slot slot)
         {
+            if(slot == mySlot)return;
+            if (mySlot)
+            {
+               previousPos = mySlot.transform.position;
+               arrived = false;
+               progress = 0;
+            }
             mySlot = slot;
         }
 
         private void FixedUpdate()
         {
             VisibilityCheck();
-            if(!mySlot) return;
-            if (Vector3.Distance(transform.position, mySlot.transform.position) > .1f)
-                if (InView)
-                {
-                    transform.position += (mySlot.transform.position - transform.position).normalized *
-                                          (Time.fixedDeltaTime * ConveyorBelt.ItemsPerSecond *
-                                           GridBuildingSystem.CellSize);
-                }
-                else transform.position = mySlot.transform.position;
+            if (!mySlot || arrived) return;
+            if (Vector3.Distance(transform.position, mySlot.transform.position) > .01f && InView)
+            {
+                progress += Time.fixedDeltaTime * ConveyorBelt.ItemsPerSecond;
+                transform.position = Vector3.Lerp(previousPos, mySlot.transform.position, progress);
+                return;
+            }
 
-            else transform.position = mySlot.transform.position;
+            transform.position = mySlot.transform.position;
+            arrived = true;
         }
 
         private void VisibilityCheck()
         {
+            if(!mySlot) return;
             if (mySlot.MyBuilding.MyChunk.Loaded == InView) return;
             InView = !InView;
             mainVisualParent.SetActive(InView);
@@ -84,10 +95,7 @@ namespace Project.Scripts.ItemSystem
 
         public void SetColor(Color color)
         {
-            foreach (SpriteRenderer itemContentRender in itemContentRenders)
-            {
-                itemContentRender.color = color;
-            }
+            foreach (SpriteRenderer itemContentRender in itemContentRenders) itemContentRender.color = color;
         }
 
         public void SetItemForm(ItemForm itemForm)

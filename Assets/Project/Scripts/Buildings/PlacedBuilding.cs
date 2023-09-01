@@ -27,6 +27,7 @@ namespace Project.Scripts.Buildings
             Transform buildingTransform = Instantiate(BuildingGridResources.GetBuildingDataBase(buildingData).prefab,
                 localPosition,
                 Quaternion.Euler(0, 0, PlacedBuildingUtility.GetRotation(facingDirection))).transform;
+            buildingTransform.name = $"{buildingData}({numberOfBuildings++})";
 
             PlacedBuilding placedBuilding = buildingTransform.GetComponent<PlacedBuilding>();
 
@@ -49,6 +50,8 @@ namespace Project.Scripts.Buildings
             placedBuilding.StartWorking();
             return placedBuilding;
         }
+
+        protected static int numberOfBuildings;
 
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
         public GridChunk MyChunk { get; private set; }
