@@ -4,26 +4,37 @@ using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.Scripts.Buildings
 {
-    public class Combiner : PlacedBuilding,IHaveInput,IHaveOutput
+    public class Combiner : PlacedBuilding,IHaveInput,IHaveOutput,IConveyorDestination
     {
         private static float CombinationsPerSecond = .25f;
 
         private Coroutine CombineProcess;
 
+        private IReceiveConveyorChainTickUpdate[] ReceiveConveyorChainTickUpdates;
+        [SerializeField] private bool subedToConveyorTick = false;
+
         protected override void StartWorking()
         {
+            ReceiveConveyorChainTickUpdates = new IReceiveConveyorChainTickUpdate[inputs.Length];
             CheckForSlotToPullForm();
             CheckForSlotsToPushTo();
         }
 
         public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
         {
-            return mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out int index)
-                ? inputs[index]
-                : null;
+            if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out int index)) return null;
+            
+            ReceiveConveyorChainTickUpdates[index] = caller.GetComponent<IReceiveConveyorChainTickUpdate>();
+            if (!subedToConveyorTick)
+            {
+                ConveyorBelt.ConveyorTick += StartConveyorChainTickUpdate;
+                subedToConveyorTick = true;
+            }
+            return inputs[index];
         }
 
         public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
@@ -74,6 +85,21 @@ namespace Project.Scripts.Buildings
             inputs[0].OnSlotContentChanged += StartCombining;
             inputs[1].OnSlotContentChanged += StartCombining;
             outputs[0].OnSlotContentChanged += StartCombining;
+        }
+
+        public override void Destroy()
+        {
+            if(subedToConveyorTick)  ConveyorBelt.ConveyorTick -= StartConveyorChainTickUpdate;
+            base.Destroy();
+        }
+
+        public void StartConveyorChainTickUpdate()
+        {
+            foreach (IReceiveConveyorChainTickUpdate receiver in ReceiveConveyorChainTickUpdates)
+            {
+                if(receiver == null) continue;
+                StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receiver));
+            }
         }
     }
 }

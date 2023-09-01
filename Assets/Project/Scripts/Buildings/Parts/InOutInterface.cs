@@ -1,3 +1,4 @@
+using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 
 namespace Project.Scripts.Buildings.Parts
@@ -10,5 +11,20 @@ namespace Project.Scripts.Buildings.Parts
     public interface IHaveOutput
     {
         public Slot GetOutputSlot(PlacedBuilding caller, Slot destination);
+    }
+    
+    public interface IContainable<T>
+    {
+        public Container<T> GetContainer();
+    }
+
+    public interface IConveyorDestination
+    {
+        public void StartConveyorChainTickUpdate();
+    }
+
+    public interface IReceiveConveyorChainTickUpdate
+    {
+        public void ConveyorChainTickUpdate();
     }
 }

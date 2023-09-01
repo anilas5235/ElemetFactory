@@ -4,10 +4,6 @@ using UnityEngine;
 
 namespace Project.Scripts.Buildings.Parts
 {
-    public interface IContainable<T>
-    {
-        public Container<T> GetContainer();
-    }
     [Serializable]
     public class Container<T>
     {
