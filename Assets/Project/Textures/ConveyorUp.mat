@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: ConveyorUp
   m_Shader: {fileID: -6465566751694194690, guid: 2a0a2ad1247fa8945a747d4a77dced4c, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _SCROLLDIRECTION_UP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,6 +20,10 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - Texture2D_28015d5352b543539e5468b26f0510fe:
+        m_Texture: {fileID: 2800000, guid: ca6c180b6facfe647a3afffa7be4c102, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseTexture:
         m_Texture: {fileID: 2800000, guid: ca6c180b6facfe647a3afffa7be4c102, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -37,9 +41,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_3d41a23c15ec45ada15f31156e3894cb: 1
+    - Vector1_cbd7cec38baf4174a1d1ff728a6236ff: -90
+    - _Rotation: 0
+    - _SCROLLDIRECTION: 0
+    - _ScrollSpeed: 1
     m_Colors:
     - Vector2_16e58f3249b348b1a7b00b1569b162f2: {r: 1, g: 1, b: 0, a: 0}
     - Vector2_19c14b5e7832420e90374c26360c7275: {r: 0, g: 0.5, b: 0, a: 0}
-    - Vector2_2bc72198dfde493786316bb2e075aabe: {r: 0, g: -1, b: 0, a: 0}
+    - Vector2_2bc72198dfde493786316bb2e075aabe: {r: -1, g: 0, b: 0, a: 0}
     - Vector2_8ce95f363d4d49d0a53d16dcccdade38: {r: 0, g: 1, b: 0, a: 0}
+    - _Tilling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
