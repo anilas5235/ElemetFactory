@@ -43,19 +43,23 @@ namespace Project.Scripts.ItemSystem
             mySlot = slot;
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
-            VisibilityCheck();
             if (!mySlot || arrived) return;
             if (Vector3.Distance(transform.position, mySlot.transform.position) > .01f && InView)
             {
-                progress += Time.fixedDeltaTime * ConveyorBelt.ItemsPerSecond;
+                progress += Time.deltaTime* ConveyorBelt.ItemsPerSecond;
                 transform.position = Vector3.Lerp(previousPos, mySlot.transform.position, progress);
                 return;
             }
 
             transform.position = mySlot.transform.position;
             arrived = true;
+        }
+
+        private void FixedUpdate()
+        {
+            VisibilityCheck();
         }
 
         private void VisibilityCheck()

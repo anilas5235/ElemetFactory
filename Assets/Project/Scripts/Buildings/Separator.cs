@@ -1,3 +1,4 @@
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;

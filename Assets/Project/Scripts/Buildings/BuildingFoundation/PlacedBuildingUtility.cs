@@ -2,7 +2,7 @@ using System;
 using Project.Scripts.Grid.DataContainers;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.Buildings.BuildingFoundation
 {
     public static class PlacedBuildingUtility 
     {
@@ -97,6 +97,30 @@ namespace Project.Scripts.Buildings
             if (realtivPositionOfTarget.x > 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Left) return true;
             if (realtivPositionOfTarget.x < 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Right) return true;
             return false;
+        }
+
+        public static bool VectorToFacingDirection(Vector2 vector2, out FacingDirection facingDirection)
+        {
+            facingDirection = FacingDirection.Up;
+            if (vector2 == Vector2.up)
+            {
+                return true;
+            }
+            if (vector2 == Vector2.right)
+            {
+                facingDirection = FacingDirection.Right;
+                return true;
+            }
+            if (vector2 == Vector2.down)
+            {
+                facingDirection = FacingDirection.Down;
+                return true;
+            }
+
+            if (vector2 != Vector2.left) return false;
+            
+            facingDirection = FacingDirection.Left;
+            return true;
         }
         public static bool DoYouPointAtMe(int facingDirectionOfTargetID, Vector2Int realtivPositionOfTarget)
         {

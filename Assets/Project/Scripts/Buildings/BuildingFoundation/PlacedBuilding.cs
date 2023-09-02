@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.Buildings.BuildingFoundation
 {
     public abstract class PlacedBuilding : MonoBehaviour
     {
@@ -64,6 +63,11 @@ namespace Project.Scripts.Buildings
 
         [SerializeField]protected Slot[] outputs;
         
+        [SerializeField] protected Slot[] slotsToPullFrom;
+        [SerializeField] protected Slot[] slotsToPushTo;
+        
+        [SerializeField] protected bool subedToConveyorTick = false;
+        
         protected SlotValidationHandler mySlotValidationHandler;
 
 
@@ -95,6 +99,14 @@ namespace Project.Scripts.Buildings
 
         public virtual void Destroy()
         {
+            if (subedToConveyorTick)
+            {
+                foreach (Slot slot in slotsToPullFrom)
+                {
+                    if (!slot) continue;
+                    if (slot.transform.parent.TryGetComponent(out ConveyorBelt belt)) belt.SubToConveyorTickEvent();
+                }
+            }
             Destroy(gameObject);
         }
 
@@ -104,15 +116,20 @@ namespace Project.Scripts.Buildings
 
         public virtual void CheckForSlotToPullForm()
         {
+            bool foundSlot = false;
             for (int i = 0; i < mySlotValidationHandler.ValidInputPositions.Length; i++)
             {
                 if (PlacedBuildingUtility.CheckForBuilding(
                         MyPlacedBuildingData.origin + mySlotValidationHandler.ValidInputPositions[i],
                         MyChunk, out PlacedBuilding building))
                 {
-                    building.GetComponent<IHaveInput>()?.GetInputSlot(this, inputs[i]);
+                    Slot slot = building.GetComponent<IHaveOutput>()?.GetOutputSlot(this, inputs[i]);
+                    if(!slot) continue;
+                    slotsToPullFrom[i] = slot;
+                    foundSlot = true;
                 }
             }
+            if(!foundSlot)return;
         }
 
         public virtual void CheckForSlotsToPushTo()
@@ -123,7 +140,7 @@ namespace Project.Scripts.Buildings
                         MyPlacedBuildingData.origin + mySlotValidationHandler.ValidOutputPositions[i],
                         MyChunk, out PlacedBuilding building))
                 {
-                    building.GetComponent<IHaveInput>()?.GetInputSlot(this, outputs[i]);
+                    slotsToPushTo[i] = building.GetComponent<IHaveInput>()?.GetInputSlot(this, outputs[i]);
                 }
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Project.Scripts.Buildings;
+using Project.Scripts.Buildings.BuildingFoundation;
 using UnityEngine;
 
 namespace Project.Scripts.Grid.DataContainers

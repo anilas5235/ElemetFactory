@@ -1,5 +1,6 @@
 using System.Linq;
 using Project.Scripts.Buildings;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid;
 using UnityEngine;
 
@@ -28,6 +29,7 @@ namespace Project.Scripts.SlotSystem
         private bool ValidateSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index, bool input)
         {
             index = 0;
+            
             if (requester.MyPlacedBuildingData.directionID != (int)ownFacingDirection) return false;
 
             Vector2Int chunkOffset = me.MyChunk.ChunkPosition - requester.MyChunk.ChunkPosition;

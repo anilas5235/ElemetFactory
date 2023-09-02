@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.Buildings.BuildingFoundation
 {
     public enum FacingDirection
     {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
@@ -13,8 +14,8 @@ namespace Project.Scripts.Buildings
         private const int StorageCapacity = 5;
         private static float ExtractionSpeed = .5f;
         private static SlotValidationHandler[] SlotValidationHandlers;
+        
         [SerializeField] private Container<Item> storage;
-
         [SerializeField] private ResourceType generatedResource;
 
         private Coroutine generation;
@@ -25,24 +26,19 @@ namespace Project.Scripts.Buildings
             if (generatedResource == ResourceType.None) return;
             storage = new Container<Item>(new Item(new int[] { (int)generatedResource }), 1, StorageCapacity);
 
-            if (PlacedBuildingUtility.CheckForBuilding(
-                    MyGridObject.Position +
-                    PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID),
-                    MyChunk, out PlacedBuilding building))
-            {
-                if (building.MyPlacedBuildingData.buildingDataID == MyPlacedBuildingData.directionID)
-                    building.CheckForSlotToPullForm();
-            }
+            slotsToPushTo = new Slot[outputs.Length];
+
             CheckForSlotsToPushTo();
-            TryPushItemToOutput(false);
-            generation = StartCoroutine(ResourceGeneration());
+            TryPushItemToOutput(outputs[0].IsOccupied);
         }
 
         public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
         {
-            return mySlotValidationHandler.ValidateOutputSlotRequest(this,caller,out int index)
-                ? outputs[index]
-                : null;
+            if (slotsToPushTo[0]) return null;
+            if (!mySlotValidationHandler.ValidateOutputSlotRequest(this, caller, out int index)) return null;
+            
+            slotsToPushTo[0] = destination;
+            return outputs[index];
         }
 
         protected override void SetUpSlots(FacingDirection facingDirection)
@@ -72,7 +68,7 @@ namespace Project.Scripts.Buildings
             {
                 storage.AddAmount();
                 TryPushItemToOutput(outputs[0].IsOccupied);
-                yield return new WaitForSeconds(1 / ExtractionSpeed);
+                yield return new WaitForSeconds(1f / ExtractionSpeed);
             }
             generation = null;
         }

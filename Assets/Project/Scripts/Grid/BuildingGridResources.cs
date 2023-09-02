@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Utilities;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Project.Scripts.Grid
         Extractor,
         Conveyor,
         Combiner,
+        TrashCan,
         Separator,
     }
 
@@ -252,6 +254,7 @@ namespace Project.Scripts.Grid
             Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
         };
 
         public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)

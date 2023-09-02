@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Project.Scripts.Buildings
+namespace Project.Scripts.Buildings.BuildingFoundation
 {
     [Serializable]
     public class PlacedBuildingData

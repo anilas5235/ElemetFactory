@@ -1,12 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using Project.Scripts.Buildings;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
 using Project.Scripts.Utilities;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
 namespace Project.Scripts.Grid
 {
@@ -65,6 +64,7 @@ namespace Project.Scripts.Grid
             if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = PossibleBuildings.Extractor;
             else if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
             else if (Input.GetKeyDown(KeyCode.Alpha3)) _selectedBuilding = PossibleBuildings.Combiner;
+            else if (Input.GetKeyDown(KeyCode.Alpha4)) _selectedBuilding = PossibleBuildings.TrashCan;
         }
 
         private void FixedUpdate()

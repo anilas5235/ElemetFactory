@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
+using System.Linq;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Project.Scripts.Buildings
 {
@@ -14,12 +15,10 @@ namespace Project.Scripts.Buildings
 
         private Coroutine CombineProcess;
 
-        private IReceiveConveyorChainTickUpdate[] ReceiveConveyorChainTickUpdates;
-        [SerializeField] private bool subedToConveyorTick = false;
-
         protected override void StartWorking()
         {
-            ReceiveConveyorChainTickUpdates = new IReceiveConveyorChainTickUpdate[inputs.Length];
+            slotsToPullFrom = new Slot[inputs.Length];
+            slotsToPushTo = new Slot[outputs.Length];
             CheckForSlotToPullForm();
             CheckForSlotsToPushTo();
         }
@@ -27,8 +26,8 @@ namespace Project.Scripts.Buildings
         public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
         {
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out int index)) return null;
-            
-            ReceiveConveyorChainTickUpdates[index] = caller.GetComponent<IReceiveConveyorChainTickUpdate>();
+            if (slotsToPullFrom[index]) return null;
+            slotsToPullFrom[index] = destination;
             if (!subedToConveyorTick)
             {
                 ConveyorBelt.ConveyorTick += StartConveyorChainTickUpdate;
@@ -39,14 +38,24 @@ namespace Project.Scripts.Buildings
 
         public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
         {
-            return mySlotValidationHandler.ValidateOutputSlotRequest(this,caller,out int index)
-                ? outputs[index]
-                : null;
+            if (!mySlotValidationHandler.ValidateOutputSlotRequest(this, caller, out int index) ||
+                slotsToPushTo[index]) return null;
+            
+            slotsToPushTo[index] = destination;
+            return outputs[index];
+        }
+
+        public override void CheckForSlotToPullForm()
+        {
+            base.CheckForSlotToPullForm();
+            if (subedToConveyorTick) return;
+            ConveyorBelt.ConveyorTick += StartConveyorChainTickUpdate;
+            subedToConveyorTick = true;
         }
 
         private void StartCombining(bool fillStatus)
         {
-           if(!fillStatus || CombineProcess != null)return;
+           if(CombineProcess != null)return;
            if(!inputs[0].IsOccupied|| !inputs[1].IsOccupied || outputs[0].IsOccupied) return;
            CombineProcess = StartCoroutine(TryCombine());
         }
@@ -89,16 +98,32 @@ namespace Project.Scripts.Buildings
 
         public override void Destroy()
         {
-            if(subedToConveyorTick)  ConveyorBelt.ConveyorTick -= StartConveyorChainTickUpdate;
+            if (subedToConveyorTick) ConveyorBelt.ConveyorTick -= StartConveyorChainTickUpdate;
             base.Destroy();
         }
 
         public void StartConveyorChainTickUpdate()
         {
-            foreach (IReceiveConveyorChainTickUpdate receiver in ReceiveConveyorChainTickUpdates)
+            bool resp = false;
+            foreach (Slot receiver in slotsToPullFrom)
             {
-                if(receiver == null) continue;
-                StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receiver));
+                if(!receiver) continue;
+                IReceiveConveyorChainTickUpdate receive = receiver.gameObject.GetComponentInParent<IReceiveConveyorChainTickUpdate>();
+                if(receive ==null) continue;
+                StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receive));
+                resp = true;
+            }
+            
+            switch (resp)
+            {
+                case false when subedToConveyorTick:
+                    ConveyorBelt.ConveyorTick -= StartConveyorChainTickUpdate;
+                    subedToConveyorTick = false;
+                    break;
+                case true when !subedToConveyorTick:
+                    ConveyorBelt.ConveyorTick += StartConveyorChainTickUpdate;
+                    subedToConveyorTick = true;
+                    break;
             }
         }
     }
