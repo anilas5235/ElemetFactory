@@ -97,8 +97,9 @@ MonoBehaviour:
   - {fileID: 5883623041385983257}
   outputs:
   - {fileID: 2130188474131418272}
-  slotToPullForm: {fileID: 0}
-  slotToPushTo: {fileID: 0}
+  slotsToPullFrom: []
+  slotsToPushTo: []
+  subedToConveyorTick: 0
 --- !u!1 &5708191998979528765
 GameObject:
   m_ObjectHideFlags: 0
