@@ -15,6 +15,8 @@ namespace Project.Scripts.Buildings
         private static Coroutine runningTickClock;
         private static SlotValidationHandler[] SlotValidationHandlers;
 
+        [SerializeField] private GameObject leftTurn, rightTurn;
+
         private static IEnumerator TickClock()
         {
             yield return new WaitForFixedUpdate();
@@ -44,8 +46,12 @@ namespace Project.Scripts.Buildings
                 PlacedBuildingUtility.FacingDirectionToVector(PlacedBuildingUtility.GetNextDirectionCounterClockwise(MyPlacedBuildingData.directionID)) ,
             };
 
+            int index = -1;
+            bool found = false;
+
             foreach (var offset in offsets)
             {
+                index++;
                 if (!PlacedBuildingUtility.CheckForBuilding(offset + MyGridObject.Position, MyChunk,
                         out PlacedBuilding cellBuild)) continue;
                 IHaveOutput buildingOut = cellBuild.GetComponent<IHaveOutput>();
@@ -54,8 +60,12 @@ namespace Project.Scripts.Buildings
                 Slot next = buildingOut.GetOutputSlot(this, inputs[0]);
                 if (next == null) continue;
                 slotsToPullFrom[0] = next;
+                found = true;
                 break;
             }
+
+            if (!found) return;
+            UpdateVisuals(index);
         }
 
         public override void CheckForSlotsToPushTo()
@@ -116,8 +126,54 @@ namespace Project.Scripts.Buildings
         public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
         {
             if (slotsToPullFrom[0]) return null;
+            Vector2 offset = destination.transform.position - transform.position;
+
+            switch (MyPlacedBuildingData.directionID)
+            {
+                case 0:
+                    if(offset.x > .4f) UpdateVisuals(2);
+                    else if(offset.x < -.4f) UpdateVisuals(1);
+                    else UpdateVisuals(0);
+                    break;
+                case 1:
+                    if(offset.y > .4f) UpdateVisuals(2);
+                    else if(offset.y < -.4f) UpdateVisuals(1);
+                    else UpdateVisuals(0);
+                    break;
+                case 2: 
+                    if(offset.x > .4f) UpdateVisuals(2);
+                    else if(offset.x < -.4f) UpdateVisuals(1);
+                    else UpdateVisuals(0);
+                    break;
+                case 3:
+                    if(offset.y > .4f) UpdateVisuals(2);
+                    else if(offset.y < -.4f) UpdateVisuals(1);
+                    else UpdateVisuals(0);
+                    break;
+            }
+            
+            
             slotsToPullFrom[0] = destination;
             return inputs[0];
+        }
+
+        private void UpdateVisuals(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    leftTurn.SetActive(false);
+                    rightTurn.SetActive(false);
+                    break;
+                case 1:
+                    leftTurn.SetActive(true);
+                    rightTurn.SetActive(false);
+                    break;
+                case 2:
+                    leftTurn.SetActive(false);
+                    rightTurn.SetActive(true);
+                    break;
+            }
         }
 
         public void ConveyorChainTickUpdate()
