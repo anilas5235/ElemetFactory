@@ -131,8 +131,8 @@ namespace Project.Scripts.Buildings
             switch (MyPlacedBuildingData.directionID)
             {
                 case 0:
-                    if(offset.x > .4f) UpdateVisuals(2);
-                    else if(offset.x < -.4f) UpdateVisuals(1);
+                    if(offset.x > .4f) UpdateVisuals(1);
+                    else if(offset.x < -.4f) UpdateVisuals(2);
                     else UpdateVisuals(0);
                     break;
                 case 1:
@@ -146,8 +146,8 @@ namespace Project.Scripts.Buildings
                     else UpdateVisuals(0);
                     break;
                 case 3:
-                    if(offset.y > .4f) UpdateVisuals(2);
-                    else if(offset.y < -.4f) UpdateVisuals(1);
+                    if(offset.y > .4f) UpdateVisuals(1);
+                    else if(offset.y < -.4f) UpdateVisuals(2);
                     else UpdateVisuals(0);
                     break;
             }
