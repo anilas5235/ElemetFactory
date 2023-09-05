@@ -3,6 +3,7 @@ using Project.Scripts.Buildings;
 using Project.Scripts.Grid;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Visualisation;
+using TMPro;
 using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
@@ -99,7 +100,7 @@ namespace Project.Scripts.ItemSystem
 
         public void SetColor(Color color)
         {
-            foreach (SpriteRenderer itemContentRender in itemContentRenders) itemContentRender.color = color;
+            foreach (SpriteRenderer itemContentRender in itemContentRenders) itemContentRender.material.SetColor("_ContentColor",color);
         }
 
         public void SetItemForm(ItemForm itemForm)
