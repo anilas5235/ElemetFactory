@@ -21,7 +21,6 @@ namespace Project.Scripts.ItemSystem
         [SerializeField] private ItemForm myItemForm;
 
         [SerializeField] private GameObject mainVisualParent;
-        [SerializeField] private GameObject visualParentGas, visualParentFluid, visualParentSolid;
 
         private Vector3 previousPos;
         private bool arrived = true;
@@ -105,33 +104,11 @@ namespace Project.Scripts.ItemSystem
 
         public void SetItemForm(ItemForm itemForm)
         {
-            if(myItemForm == itemForm)return;
+            itemContentRenders[(int)myItemForm].enabled = false;
 
-            switch (myItemForm)
-            {
-                case ItemForm.Gas: visualParentGas.SetActive(false);
-                    break;
-                case ItemForm.Fluid: visualParentFluid.SetActive(false);
-                    break;
-                case ItemForm.Solid: visualParentSolid.SetActive(false);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            
             myItemForm = itemForm;
 
-            switch (myItemForm)
-            {
-                case ItemForm.Gas: visualParentGas.SetActive(true);
-                    break;
-                case ItemForm.Fluid: visualParentFluid.SetActive(true);
-                    break;
-                case ItemForm.Solid: visualParentSolid.SetActive(true);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            itemContentRenders[(int)myItemForm].enabled = true;
         }
 
         private void OnMouseDown()
