@@ -10,7 +10,10 @@ namespace Project.Scripts.Experimental
         public int amount= 100;
         public int batchSize = 30;
 
+        public Shader Shader;
+
         public int totalSpawned;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -29,11 +32,18 @@ namespace Project.Scripts.Experimental
                 
                 for (int i = 0; i < thisBatchSize; i++)
                 {
-                    for (int j = 0; j < thisBatchSize; j++)
+                    for (int j = 0; j < 1; j++)
                     {
 
                         GameObject gameObject = Instantiate(objectToSpawn, new Vector3(batchNumber * objectToSpawn.transform.localScale.x, i * objectToSpawn.transform.localScale.y, j* objectToSpawn.transform.localScale.z), Quaternion.identity);
-                        gameObject.GetComponentInChildren<Renderer>()?.material.SetColor("_ContentColor", new Color(batchNumber/10f,i/10f,j/10f,1f));
+                        Renderer _renderer = gameObject.GetComponentInChildren<Renderer>();
+                        Vector3 color = new Vector3(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f))*10;
+                        Material[] materials = _renderer.materials;
+                        string path = $"Materials/Gas_Bottle/{color.x:00}{color.y:00}{color.z:00}";
+                        materials[0] = Resources.Load<Material>(path);
+                        _renderer.materials = materials;
+
+                        /*
                         
                         const string basePath = "Assets/Project/Resources/Materials/Gas_Bottle/";
                         string fileName =batchNumber.ToString("00") + i.ToString("00") + j.ToString("00");
@@ -42,12 +52,13 @@ namespace Project.Scripts.Experimental
                         if (!System.IO.File.Exists(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), path)))
                         {
 
-                            Material material = new Material(Shader.Find("GasBottleShader"));
+                            Material material = new Material(Shader);
                             material.SetColor("_ContentColor", new Color(batchNumber / 10f, i / 10f, j / 10f, 1f));
                             material.name = fileName;
 
-                            AssetDatabase.CreateAsset(material,"Materials/Gas_Bottle/");
+                            AssetDatabase.CreateAsset(material,$"Assets/Project/Resources/Materials/Gas_Bottle/{fileName}.mat");
                         }
+                        */
                     }
                 }
                 
