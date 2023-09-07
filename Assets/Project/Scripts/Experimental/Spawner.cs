@@ -62,7 +62,7 @@ namespace Project.Scripts.Experimental
                     }
                 }
                 
-                AssetDatabase.SaveAssets();
+                //AssetDatabase.SaveAssets();
 
                 batchNumber++;
                 totalSpawned += thisBatchSize;
