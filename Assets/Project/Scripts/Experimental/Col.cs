@@ -6,7 +6,6 @@ namespace Project.Scripts.Experimental
     {
         void Start()
         {
-            GetComponent<Renderer>()?.material.SetColor("_ContentColor", new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f)));
         }
     }
 }

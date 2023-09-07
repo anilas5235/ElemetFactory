@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &89813937
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -241,8 +241,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectToSpawn: {fileID: 105702481}
-  amount: 10000
-  batchSize: 100
+  amount: 121
+  batchSize: 11
   totalSpawned: 0
 --- !u!4 &194752255
 Transform:
@@ -265,7 +265,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 194752253}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d46a28644a994f94b86cb5385f0fa607, type: 3}
   m_Name: 
@@ -453,7 +453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &1504337318
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -539,6 +539,10 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1875752461080471137, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875752461080471137, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -582,6 +586,14 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2269428978084520589, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2298668158198626926, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3139563201698647594, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -593,6 +605,10 @@ PrefabInstance:
     - target: {fileID: 5778830674370931494, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8354307715992488902, guid: c59983fbb966a3840889c9ff278f6956, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c59983fbb966a3840889c9ff278f6956, type: 3}

@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 
 namespace Project.Scripts.Experimental
@@ -28,8 +29,29 @@ namespace Project.Scripts.Experimental
                 
                 for (int i = 0; i < thisBatchSize; i++)
                 {
-                    Instantiate(objectToSpawn, new Vector3(batchNumber*objectToSpawn.transform.localScale.x, i*objectToSpawn.transform.localScale.y, 0), Quaternion.identity);
+                    for (int j = 0; j < thisBatchSize; j++)
+                    {
+
+                        GameObject gameObject = Instantiate(objectToSpawn, new Vector3(batchNumber * objectToSpawn.transform.localScale.x, i * objectToSpawn.transform.localScale.y, j* objectToSpawn.transform.localScale.z), Quaternion.identity);
+                        gameObject.GetComponentInChildren<Renderer>()?.material.SetColor("_ContentColor", new Color(batchNumber/10f,i/10f,j/10f,1f));
+                        
+                        const string basePath = "Assets/Project/Resources/Materials/Gas_Bottle/";
+                        string fileName =batchNumber.ToString("00") + i.ToString("00") + j.ToString("00");
+                        string path = basePath+$"{fileName}.asset";
+
+                        if (!System.IO.File.Exists(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), path)))
+                        {
+
+                            Material material = new Material(Shader.Find("GasBottleShader"));
+                            material.SetColor("_ContentColor", new Color(batchNumber / 10f, i / 10f, j / 10f, 1f));
+                            material.name = fileName;
+
+                            AssetDatabase.CreateAsset(material,"Materials/Gas_Bottle/");
+                        }
+                    }
                 }
+                
+                AssetDatabase.SaveAssets();
 
                 batchNumber++;
                 totalSpawned += thisBatchSize;
