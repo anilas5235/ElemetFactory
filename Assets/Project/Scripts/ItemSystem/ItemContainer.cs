@@ -15,8 +15,8 @@ namespace Project.Scripts.ItemSystem
 
         [SerializeField]private Slot mySlot;
         public bool InView = true;
-
-        [SerializeField] private SpriteRenderer[] itemContentRenders;
+        
+        [SerializeField] private SpriteRenderer itemContentRender;
 
         [SerializeField] private ItemForm myItemForm;
 
@@ -25,6 +25,7 @@ namespace Project.Scripts.ItemSystem
         private Vector3 previousPos;
         private bool arrived = true;
         private float progress = 0;
+        private Color myColor;
 
         public void SetItem(Item newItem)
         {
@@ -99,16 +100,18 @@ namespace Project.Scripts.ItemSystem
 
         public void SetColor(Color color)
         {
-            foreach (SpriteRenderer itemContentRender in itemContentRenders) itemContentRender.material.SetColor("_ContentColor",color);
+            myColor = color;
+            Material[] materials = itemContentRender.materials;
+            materials[0] = VisualResources.GetItemMaterial(myColor, myItemForm);
+            itemContentRender.materials = materials;
         }
 
         public void SetItemForm(ItemForm itemForm)
         {
-            itemContentRenders[(int)myItemForm].enabled = false;
-
             myItemForm = itemForm;
-
-            itemContentRenders[(int)myItemForm].enabled = true;
+            Material[] materials = itemContentRender.materials;
+            materials[0] = VisualResources.GetItemMaterial(myColor, myItemForm);
+            itemContentRender.materials = materials;
         }
 
         private void OnMouseDown()

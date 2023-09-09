@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Project.Scripts.Utilities.GeneralUtilities;
 using UnityEngine.Tilemaps;
 
 namespace Project.Scripts.Utilities
@@ -25,17 +26,43 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Na,Resources.Load<TileBase>("Tiles/Na"),new Color(1f,.2f,1f), ItemForm.Gas),
         };
 
-        private static Dictionary<Color, ItemVisual> ItemVisuals;
+        private static Dictionary<Color, ItemVisual> _itemVisuals;
+        private const string BasePath = "Materials/ItemMaterials";
 
         private static void LoadItemVisuals()
         {
-            ItemVisuals = new Dictionary<Color, ItemVisual>();
+            _itemVisuals = new Dictionary<Color, ItemVisual>();
 
-            int limit =(int) Mathf.Pow(11f, 3f);
-            for (int i = 0; i < limit; i++)
+            for (int i = 0; i < 11; i++)
             {
-                
+                for (int j = 0; j < 11; j++)
+                {
+                    for (int k = 0; k < 11; k++)
+                    {
+                        string fileName = TurnToHex(i) + TurnToHex(j) + TurnToHex(k);
+                        string path = BasePath +"/"+ fileName+"/";
+                        Material[] materials = Resources.LoadAll<Material>(path);
+                        ItemVisual itemVisual = new ItemVisual(materials);
+                        _itemVisuals.Add(new Color(i / 10f, j / 10f, k / 10f, 1f),itemVisual);
+                    }
+                }
             }
+        }
+
+        public static Material GetItemMaterial(Color color, ItemForm form)
+        {
+            if(_itemVisuals == null) LoadItemVisuals();
+
+            color.r = Mathf.Round(color.r * 10f)/10f;
+            color.g = Mathf.Round(color.g * 10f)/10f;
+            color.b = Mathf.Round(color.b * 10f)/10f;
+            color.a = 1f;
+            
+            Material material =_itemVisuals[color].materials[(int)form];
+
+            material ??= _itemVisuals.First().Value.materials[(int)form];
+
+            return material;
         }
 
         public static TileBase GetTileSource(ResourceType resourceType)
@@ -100,7 +127,7 @@ namespace Project.Scripts.Utilities
     {
         public Material[] materials;
 
-        public ItemVisual(Color color, Material[] materials)
+        public ItemVisual(Material[] materials)
         {
             this.materials = materials;
         }

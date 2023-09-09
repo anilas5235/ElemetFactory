@@ -51,6 +51,21 @@ namespace Project.Scripts.Utilities
             float exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
             return frontFactor * Mathf.Exp(exponential);
         }
+        
+        public static string TurnToHex(int number)
+        {
+            if (number < 10) return number.ToString();
+            return number switch
+            {
+                10 => "a",
+                11 => "b",
+                12 => "c",
+                13 => "d",
+                14 => "e",
+                15 => "f",
+                _ => "error"
+            };
+        }
     
     }
 }

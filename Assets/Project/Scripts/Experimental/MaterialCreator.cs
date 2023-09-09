@@ -1,6 +1,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static Project.Scripts.Utilities.GeneralUtilities;
 
 namespace Project.Scripts.Experimental
 {
@@ -44,17 +45,6 @@ namespace Project.Scripts.Experimental
 
                 AssetDatabase.CreateAsset(material, $"{path}/{shader.name.Split('/').Last()}_{fileName}.mat");
             }
-        }
-
-        private string TurnToHex(int number)
-        {
-            if (number < 10) return number.ToString();
-            return number switch
-            {
-                10 => "a",
-                11 => "b",
-                _ => "error"
-            };
         }
     }
 }
