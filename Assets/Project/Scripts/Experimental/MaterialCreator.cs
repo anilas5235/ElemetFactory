@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -5,7 +6,7 @@ namespace Project.Scripts.Experimental
 {
     public class MaterialCreator : MonoBehaviour
     {
-        private const string BasePath = "Assets/Project/Resources/Materials/ItemMaterials/";
+        private const string BasePath = "Assets/Project/Resources/Materials/ItemMaterials";
 
         public Shader[] shaders;
         private static readonly int ContentColor = Shader.PropertyToID("_ContentColor");
@@ -29,7 +30,7 @@ namespace Project.Scripts.Experimental
         private void CreateMaterialBatch(Vector3Int color)
         {
             string fileName = TurnToHex(color.x) + TurnToHex(color.y) + TurnToHex(color.z);
-            string path = BasePath + fileName;
+            string path = BasePath +"/"+ fileName;
             
             if (AssetDatabase.IsValidFolder(path)) return;
 
@@ -41,7 +42,7 @@ namespace Project.Scripts.Experimental
                 material.SetColor(ContentColor, new Color(color.x / 10f, color.y / 10f, color.z / 10f, 1f));
                 material.name = fileName;
 
-                AssetDatabase.CreateAsset(material, $"Assets/Project/Resources/Materials/Gas_Bottle/fileName/{shader.name}_{fileName}.mat");
+                AssetDatabase.CreateAsset(material, $"{path}/{shader.name.Split('/').Last()}_{fileName}.mat");
             }
         }
 
