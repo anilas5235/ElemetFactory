@@ -1,5 +1,5 @@
 using Project.Scripts.SlotSystem;
-using Project.Scripts.Visualisation;
+using Project.Scripts.Utilities;
 using UnityEngine;
 
 namespace Project.Scripts.ItemSystem

@@ -43,26 +43,8 @@ namespace Project.Scripts.Experimental
                         materials[0] = Resources.Load<Material>(path);
                         _renderer.materials = materials;
 
-                        /*
-                        
-                        const string basePath = "Assets/Project/Resources/Materials/Gas_Bottle/";
-                        string fileName =batchNumber.ToString("00") + i.ToString("00") + j.ToString("00");
-                        string path = basePath+$"{fileName}.asset";
-
-                        if (!System.IO.File.Exists(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), path)))
-                        {
-
-                            Material material = new Material(Shader);
-                            material.SetColor("_ContentColor", new Color(batchNumber / 10f, i / 10f, j / 10f, 1f));
-                            material.name = fileName;
-
-                            AssetDatabase.CreateAsset(material,$"Assets/Project/Resources/Materials/Gas_Bottle/{fileName}.mat");
-                        }
-                        */
                     }
                 }
-                
-                //AssetDatabase.SaveAssets();
 
                 batchNumber++;
                 totalSpawned += thisBatchSize;

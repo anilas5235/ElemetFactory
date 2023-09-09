@@ -2,7 +2,6 @@ using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
-using Project.Scripts.Visualisation;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
