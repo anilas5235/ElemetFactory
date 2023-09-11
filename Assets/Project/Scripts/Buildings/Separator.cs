@@ -12,12 +12,15 @@ namespace Project.Scripts.Buildings
 
         protected override void StartWorking()
         {
-            
+            slotsToPullFrom = new Slot[inputs.Length];
+            slotsToPushTo = new Slot[outputs.Length];
+            CheckForSlotToPullForm();
+            CheckForSlotsToPushTo();
         }
 
         protected override void SetUpSlots(FacingDirection facingDirection)
         {
-            throw new System.NotImplementedException();
+            inputs[0].OnSlotContentChanged += InputSlotChanged;
         }
 
         public override void CheckForSlotToPullForm()
@@ -32,7 +35,7 @@ namespace Project.Scripts.Buildings
 
         private void InputSlotChanged(bool fillStatus)
         {
-            if (fillStatus && !outputs[0].IsOccupied && !outputs[1].IsOccupied)
+            if ( inputs[0].IsOccupied && !outputs[0].IsOccupied && !outputs[1].IsOccupied)
             {
                 int itemLength = inputs[0].SlotContent.Item.ResourceIDs.Length;
                 if(itemLength < 1) return;

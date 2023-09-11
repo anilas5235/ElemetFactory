@@ -243,7 +243,7 @@ MonoBehaviour:
   amount: 121
   batchSize: 11
   CubeSize: 11
-  Form: 2
+  Form: 1
   totalSpawned: 0
   makeCube: 1
 --- !u!4 &194752255
