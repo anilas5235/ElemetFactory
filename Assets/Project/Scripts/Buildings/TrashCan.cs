@@ -10,7 +10,7 @@ namespace Project.Scripts.Buildings
     {
         protected override void StartWorking()
         {
-            slotsToPullFrom = new Slot[inputs.Length];
+            base.StartWorking();
             CheckForSlotToPullForm();
         }
 

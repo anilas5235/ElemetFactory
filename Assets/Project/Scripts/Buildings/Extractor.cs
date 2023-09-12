@@ -22,11 +22,10 @@ namespace Project.Scripts.Buildings
 
         protected override void StartWorking()
         {
+            base.StartWorking();
             generatedResource = MyChunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
             if (generatedResource == ResourceType.None) return;
             storage = new Container<Item>(new Item(new int[] { (int)generatedResource }), 1, StorageCapacity);
-
-            slotsToPushTo = new Slot[outputs.Length];
 
             CheckForSlotsToPushTo();
             TryPushItemToOutput(outputs[0].IsOccupied);

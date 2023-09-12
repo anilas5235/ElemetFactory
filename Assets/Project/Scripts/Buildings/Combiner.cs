@@ -17,8 +17,7 @@ namespace Project.Scripts.Buildings
 
         protected override void StartWorking()
         {
-            slotsToPullFrom = new Slot[inputs.Length];
-            slotsToPushTo = new Slot[outputs.Length];
+            base.StartWorking();
             CheckForSlotToPullForm();
             CheckForSlotsToPushTo();
         }
@@ -38,11 +37,9 @@ namespace Project.Scripts.Buildings
 
         public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
         {
-            if (!mySlotValidationHandler.ValidateOutputSlotRequest(this, caller, out int index) ||
-                slotsToPushTo[index]) return null;
-            
-            slotsToPushTo[index] = destination;
-            return outputs[index];
+            if (slotsToPushTo[0]) return null;
+            slotsToPushTo[0] = destination;
+            return outputs[0];
         }
 
         public override void CheckForSlotToPullForm()
@@ -66,13 +63,18 @@ namespace Project.Scripts.Buildings
             {
                 ItemContainer container1 = inputs[0].EmptySlot();
                 ItemContainer container2 = inputs[1].EmptySlot();
-                int[] combIDs = new int[container1.Item.ResourceIDs.Length + container2.Item.ResourceIDs.Length];
-                container1.Item.ResourceIDs.CopyTo(combIDs, 0);
+                int[] combIDs = new int[container1.Item.resourceIDs.Length + container2.Item.resourceIDs.Length];
+                container1.Item.resourceIDs.CopyTo(combIDs, 0);
                 container1.Destroy();
-                container2.Item.ResourceIDs.CopyTo(combIDs, container1.Item.ResourceIDs.Length);
+                container2.Item.resourceIDs.CopyTo(combIDs, container1.Item.resourceIDs.Length);
                 container2.Destroy();
 
                 outputs[0].FillSlot(ItemUtility.GetItemContainerWith(combIDs, outputs[0]));
+                
+                for (int i = 0; i < outputs.Length; i++)
+                {
+                    if(outputs[i].IsOccupied && slotsToPushTo[i] && !slotsToPushTo[i].IsOccupied) slotsToPushTo[i].PutIntoSlot(outputs[i].ExtractFromSlot());
+                }
 
                 yield return new WaitForSeconds(1 / CombinationsPerSecond);
 
@@ -113,7 +115,7 @@ namespace Project.Scripts.Buildings
                 StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receive));
                 resp = true;
             }
-            
+
             switch (resp)
             {
                 case false when subedToConveyorTick:

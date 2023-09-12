@@ -28,10 +28,9 @@ namespace Project.Scripts.Buildings
         }
         protected override void StartWorking()
         {
+            base.StartWorking();
+            
             runningTickClock ??= StartCoroutine(TickClock());
-            slotsToPullFrom = new Slot[inputs.Length];
-            slotsToPushTo = new Slot[outputs.Length];
-
             CheckForSlotsToPushTo();
             CheckForSlotToPullForm();
         }
@@ -151,8 +150,7 @@ namespace Project.Scripts.Buildings
                     else UpdateVisuals(0);
                     break;
             }
-            
-            
+
             slotsToPullFrom[0] = destination;
             return inputs[0];
         }

@@ -29,8 +29,10 @@ namespace Project.Scripts.SlotSystem
         private bool ValidateSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index, bool input)
         {
             index = 0;
-            
-            if (requester.MyPlacedBuildingData.directionID != (int)ownFacingDirection) return false;
+
+            if (requester.MyPlacedBuildingData.directionID != (int)ownFacingDirection &&
+                (PossibleBuildings)requester.MyPlacedBuildingData.buildingDataID != PossibleBuildings.Conveyor)
+                return false;
 
             Vector2Int chunkOffset = me.MyChunk.ChunkPosition - requester.MyChunk.ChunkPosition;
             Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * GridBuildingSystem.ChunkSize;

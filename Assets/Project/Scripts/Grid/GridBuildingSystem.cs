@@ -65,6 +65,7 @@ namespace Project.Scripts.Grid
             else if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
             else if (Input.GetKeyDown(KeyCode.Alpha3)) _selectedBuilding = PossibleBuildings.Combiner;
             else if (Input.GetKeyDown(KeyCode.Alpha4)) _selectedBuilding = PossibleBuildings.TrashCan;
+            else if (Input.GetKeyDown(KeyCode.Alpha5)) _selectedBuilding = PossibleBuildings.Separator;
         }
 
         private void FixedUpdate()

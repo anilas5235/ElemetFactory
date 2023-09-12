@@ -110,7 +110,11 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             Destroy(gameObject);
         }
 
-        protected abstract void StartWorking();
+        protected virtual void StartWorking()
+        {
+            slotsToPullFrom = new Slot[inputs.Length];
+            slotsToPushTo = new Slot[outputs.Length];
+        }
 
         protected virtual void SetUpSlots(FacingDirection facingDirection){}
 

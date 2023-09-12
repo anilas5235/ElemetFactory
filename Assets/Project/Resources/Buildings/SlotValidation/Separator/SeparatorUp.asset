@@ -9,9 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f964f8eb78a906f4a83b6436e693696f, type: 3}
-  m_Name: Separator
+  m_Script: {fileID: 11500000, guid: 1979c1b49a5084942b340594d0dfb564, type: 3}
+  m_Name: SeparatorUp
   m_EditorClassIdentifier: 
-  nameString: Seperator
-  prefab: {fileID: 1207112208540549613, guid: 61d1cccdb64a52c4996d9179a72a7ce1, type: 3}
-  size: {x: 2, y: 1}
+  ownFacingDirection: 0
+  validInputPositions:
+  - {x: 0, y: -1}
+  validOutputPositions:
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}

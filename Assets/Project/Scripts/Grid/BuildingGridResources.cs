@@ -30,7 +30,6 @@ namespace Project.Scripts.Grid
         Fe,
         Na,
         Cl,
-        
     }
 
     public static class BuildingGridResources
@@ -255,6 +254,7 @@ namespace Project.Scripts.Grid
             Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
         };
 
         public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
