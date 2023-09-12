@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: GrayFluid
+  m_Shader: {fileID: -6465566751694194690, guid: 2831963b1fdb5ab47af64f899a487996, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - Vector1_1291340277fe4406bb132ed2caf71a18: 0.5
+    - Vector1_27d34a298bcc4498892c76e8c1fe66b4: 5
+    - Vector1_3d07693af7c14204bafed9c05aa28cea: 0.5
+    - Vector1_4e8eb6e938854855ad1566755821b70b: 0.2
+    - Vector1_62c265d7486148668fa62eb39a709795: 0.5
+    - Vector1_b744339f22e44b2b8dfafc630db75234: 1
+    - Vector1_ef4138a6ba704dd19cc87b171bf93365: 2
+    - _DistrionStengthX: 0.5
+    - _DistrionStengthY: 0.5
+    - _FoamDensity: 5
+    - _FoamSpeed: 1
+    - _FoamThickness: 3
+    m_Colors:
+    - Color_16a03a51d7a040ccbb5e9007f75b38ac: {r: 0.24056602, g: 0.26848632, b: 1, a: 1}
+    - Color_22ecbe6b9a0d4ad4bd1c980c37dab45d: {r: 0, g: 0.1412525, b: 0.4056604, a: 0}
+    - Vector2_88c92bf766c741bbb293815b8f7b8e28: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - Vector2_9379f23755544cd7b401e497863cc6ce: {r: 0, g: 0, b: 0, a: 0}
+    - Vector2_ace53299b90745a78a3db353c51587e4: {r: 0.1, g: 0.5, b: 0, a: 0}
+    - Vector2_d611958cad654203b5656beb9dfee4e8: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _BaseColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
+    - _DistrtionCenter: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _DistrtionOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _FoamColor: {r: 2.9960785, g: 2.9960785, b: 2.9960785, a: 1}
+    - _Tinte: {r: 1, g: 0.3563676, b: 0, a: 0}
+  m_BuildTextureStacks: []
