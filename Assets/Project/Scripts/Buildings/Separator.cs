@@ -13,7 +13,6 @@ namespace Project.Scripts.Buildings
         private static float SepartionPerSecond = 0.25f;
 
         private Coroutine SeparactionProcess;
-
         private bool CanStartSeparation => inputs[0].IsOccupied && !outputs[0].IsOccupied && !outputs[1].IsOccupied;
         protected override void StartWorking()
         {
@@ -26,7 +25,7 @@ namespace Project.Scripts.Buildings
         {
             foreach (Slot input in inputs) input.OnSlotContentChanged += SlotChanged;
             foreach (Slot output in outputs) output.OnSlotContentChanged += SlotChanged;
-            
+
             mySlotValidationHandler = MyPlacedBuildingData.directionID switch
             {
                 0 => Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/Separator/SeparatorUp"),
@@ -35,7 +34,6 @@ namespace Project.Scripts.Buildings
                 3 => Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/Separator/SeparatorLeft"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            
         }
 
         private void SlotChanged(bool fillStatus)
@@ -62,12 +60,6 @@ namespace Project.Scripts.Buildings
 
                 outputs[0].FillSlot(ItemUtility.GetItemContainerWith(new Item(contentItem1),outputs[0]));
                 outputs[1].FillSlot(ItemUtility.GetItemContainerWith(new Item(contentItem2),outputs[1]));
-                
-                for (int i = 0; i < outputs.Length; i++)
-                {
-                    if(!slotsToPushTo[i]) continue;
-                    if(outputs[i].IsOccupied && !slotsToPushTo[i].IsOccupied) slotsToPushTo[i].PutIntoSlot(outputs[i].ExtractFromSlot());
-                }
 
                 yield return new WaitForSeconds(1 / SepartionPerSecond);
 
@@ -117,6 +109,8 @@ namespace Project.Scripts.Buildings
                 StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receive));
                 resp = true;
             }
+            
+            PullItem();
 
             switch (resp)
             {

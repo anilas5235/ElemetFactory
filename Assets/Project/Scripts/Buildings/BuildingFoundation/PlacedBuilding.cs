@@ -153,5 +153,14 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         {
             return MyPlacedBuildingData.buildingDataID.ToString();
         }
+
+        protected void PullItem()
+        {
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                if(!slotsToPullFrom[i]) continue;
+                if(!inputs[i].IsOccupied && slotsToPullFrom[i].IsOccupied) inputs[i].PutIntoSlot(slotsToPullFrom[i].ExtractFromSlot());
+            }
+        }
     }
 }

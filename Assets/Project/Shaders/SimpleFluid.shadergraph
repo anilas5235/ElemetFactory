@@ -620,8 +620,8 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1427.0,
-            "y": 494.0,
+            "x": -1414.9998779296875,
+            "y": 473.0,
             "width": 138.0,
             "height": 34.0
         }
@@ -939,7 +939,7 @@
     "m_ObjectId": "3eda7978e8df4b62b69ca20454cf6e17",
     "m_Title": "Fluid",
     "m_Position": {
-        "x": -1489.0,
+        "x": -1789.0,
         "y": 9.999996185302735
     }
 }
@@ -2029,10 +2029,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1267.0,
-            "y": 361.0,
-            "width": 126.0,
-            "height": 118.0
+            "x": -1255.0,
+            "y": 339.9999694824219,
+            "width": 126.00000762939453,
+            "height": 118.00000762939453
         }
     },
     "m_Slots": [
@@ -2160,9 +2160,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1427.0,
-            "y": 306.0,
-            "width": 126.0,
+            "x": -1414.9998779296875,
+            "y": 285.0000305175781,
+            "width": 126.00000762939453,
             "height": 173.0
         }
     },

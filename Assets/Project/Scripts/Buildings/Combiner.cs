@@ -70,11 +70,6 @@ namespace Project.Scripts.Buildings
                 container2.Destroy();
 
                 outputs[0].FillSlot(ItemUtility.GetItemContainerWith(combIDs, outputs[0]));
-                
-                for (int i = 0; i < outputs.Length; i++)
-                {
-                    if(outputs[i].IsOccupied && slotsToPushTo[i] && !slotsToPushTo[i].IsOccupied) slotsToPushTo[i].PutIntoSlot(outputs[i].ExtractFromSlot());
-                }
 
                 yield return new WaitForSeconds(1 / CombinationsPerSecond);
 
@@ -115,6 +110,8 @@ namespace Project.Scripts.Buildings
                 StartCoroutine(ConveyorBelt.ConveyorChainTickUpdateHandler(receive));
                 resp = true;
             }
+            
+            PullItem();
 
             switch (resp)
             {

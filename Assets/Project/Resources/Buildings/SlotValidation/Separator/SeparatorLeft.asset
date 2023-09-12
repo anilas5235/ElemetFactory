@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownFacingDirection: 3
   validInputPositions:
-  - {x: -1, y: 0}
-  validOutputPositions:
   - {x: 1, y: 0}
-  - {x: 1, y: -1}
+  validOutputPositions:
+  - {x: -1, y: 0}
+  - {x: -1, y: -1}

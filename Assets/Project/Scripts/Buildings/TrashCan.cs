@@ -79,6 +79,8 @@ namespace Project.Scripts.Buildings
                 resp = true;
             }
             
+            PullItem();
+            
             switch (resp)
             {
                 case false when subedToConveyorTick:
