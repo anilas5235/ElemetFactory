@@ -5,6 +5,7 @@ using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
 using Project.Scripts.Utilities;
+using UI.Windows;
 using UnityEngine;
 
 namespace Project.Scripts.Grid
@@ -15,6 +16,8 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
+        [SerializeField] private bool buildingEnabled = true;
+        
         private PossibleBuildings _selectedBuilding = PossibleBuildings.Extractor;
         private FacingDirection _facingDirection = FacingDirection.Down;
         
@@ -39,10 +42,13 @@ namespace Project.Scripts.Grid
         private void OnEnable()
         {
             LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
+            UIWindowMaster.Instance.OnActiveUIChanged += CanBuild;
         }
 
         private void Update()
         {
+            if(!buildingEnabled) return;
+            
             if (Input.GetKeyDown(KeyCode.R))
             {
                 _facingDirection = PlacedBuildingUtility.GetNextDirectionClockwise(_facingDirection);
@@ -76,6 +82,11 @@ namespace Project.Scripts.Grid
         private void OnApplicationQuit()
         {
             SaveAllChunksToFile(Chunks);
+        }
+
+        private void CanBuild(bool val)
+        {
+            buildingEnabled = !val;
         }
 
         #region PlayTimeLoad&UnLoadChunksSystem
