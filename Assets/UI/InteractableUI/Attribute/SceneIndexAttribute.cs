@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UI.InteractableUI.Editor
+namespace UI.InteractableUI.Attribute
 {
     public class SceneIndexAttribute : PropertyAttribute
     { }

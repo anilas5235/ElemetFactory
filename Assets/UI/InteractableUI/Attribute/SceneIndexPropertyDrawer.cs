@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace UI.InteractableUI.Editor
+namespace UI.InteractableUI.Attribute
 {
     [CustomPropertyDrawer(typeof(SceneIndexAttribute))]
     public class SceneIndexPropertyDrawer : PropertyDrawer

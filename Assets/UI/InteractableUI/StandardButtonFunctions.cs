@@ -1,5 +1,6 @@
 using System;
 using Project.Scripts.UI.InteractableUI;
+using UI.InteractableUI.Attribute;
 using UI.Windows;
 
 namespace UI.InteractableUI
@@ -9,7 +10,7 @@ namespace UI.InteractableUI
         public UIWindowHandler.StandardUIButtonFunctions myFunction;
 
         public UIWindowHandler windowHandler;
-        public int sceneID;
+        [SceneIndex] public int sceneID;
 
         protected override void Interact()
         {
