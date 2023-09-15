@@ -42,6 +42,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -244,6 +245,13 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      CustomButtons_3: 4165512384205702701
+      CustomButtons_1: 8354505094147074004
+      CustomButtons_4: 739533707218885059
+      CustomButtons_5: 7577400244475922417
+      CustomButtons_0: -4409465379027442178
+      CustomButtons_2: 1091384750992251110
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
