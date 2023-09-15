@@ -56,6 +56,10 @@ namespace Project.Scripts.Experimental
                 for (int i = 0; i < thisBatchSize; i++)
                 {
                     GameObject gameObject = Instantiate(objectToSpawn, new Vector3(batchNumber * objectToSpawn.transform.localScale.x, i * objectToSpawn.transform.localScale.y, 0), Quaternion.identity);
+                    ItemContainer itemContainer =gameObject.GetComponent<ItemContainer>();
+                    if(!itemContainer)continue;
+                    itemContainer.SetColor(new Color(Random.Range(0f,1f),Random.Range(0f,1f),Random.Range(0f,1f)));
+                    itemContainer.SetItemForm(Form);
                 }
 
                 batchNumber++;

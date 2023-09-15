@@ -5,9 +5,17 @@ using UI.Windows;
 
 namespace UI.InteractableUI
 {
+    public enum StandardUIButtonFunctions
+    {
+        Esc,
+        ChangeWindow,
+        OpenWindow,
+        Quit,
+        ChangeScene,
+    }
     public class StandardButtonFunctions : CustomButtonBase
     {
-        public UIWindowHandler.StandardUIButtonFunctions myFunction;
+        public StandardUIButtonFunctions myFunction;
 
         public UIWindowHandler windowHandler;
         [SceneIndex] public int sceneID;
@@ -17,20 +25,20 @@ namespace UI.InteractableUI
             base.Interact();
             switch (myFunction)
             {
-                case UIWindowHandler.StandardUIButtonFunctions.Esc:
-                    MyWindowHandler.UIEsc();
+                case StandardUIButtonFunctions.Esc:
+                    UIWindowMaster.Instance.UIEsc();
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.ChangeWindow:
-                    MyWindowHandler.ChangeToWindow(windowHandler);
+                case StandardUIButtonFunctions.ChangeWindow:
+                    UIWindowMaster.Instance.ChangeToWindow(windowHandler);
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.OpenWindow:
-                    MyWindowHandler.OpenWindow(windowHandler);
+                case StandardUIButtonFunctions.OpenWindow:
+                    UIWindowMaster.Instance.OpenWindow(windowHandler);
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.Quit:
-                    MyWindowHandler.QuitApplication();
+                case StandardUIButtonFunctions.Quit:
+                    UIWindowHandler.QuitApplication();
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.ChangeScene:
-                    MyWindowHandler.ChangeScene(sceneID);
+                case StandardUIButtonFunctions.ChangeScene:
+                    UIWindowHandler.ChangeScene(sceneID);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

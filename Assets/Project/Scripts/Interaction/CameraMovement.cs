@@ -1,4 +1,6 @@
+using System;
 using Project.Scripts.General;
+using UI.Windows;
 using UnityEngine;
 
 namespace Project.Scripts.Interaction
@@ -6,6 +8,7 @@ namespace Project.Scripts.Interaction
     public class CameraMovement : Singleton<CameraMovement>
     {
         public Camera Camera { get; private set; }
+        [SerializeField] private bool canMove = true;
 
         [Header("Parameters")]
         [SerializeField] private float moveSpeed =5;
@@ -21,8 +24,19 @@ namespace Project.Scripts.Interaction
             Camera = GetComponent<Camera>();
         }
 
+        private void Start()
+        {
+            if(UIWindowMaster.Instance)UIWindowMaster.Instance.OnActiveUIChanged += CanMoveUIDependence;
+        }
+
+        private void CanMoveUIDependence(bool val)
+        {
+            canMove = !val;
+        }
+
         private void Update()
         {
+            if(!canMove) return;
             Camera.orthographicSize += -Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
             if (Camera.orthographicSize < minCamSize) Camera.orthographicSize = minCamSize;
             else if (Camera.orthographicSize > maxCamSize) Camera.orthographicSize = maxCamSize;

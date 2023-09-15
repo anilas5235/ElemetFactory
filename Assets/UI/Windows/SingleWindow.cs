@@ -20,6 +20,12 @@ namespace UI.Windows
             woken = true;
         }
 
+        public virtual void OpenSingleWindow()
+        {
+            if(Instance.WindowEnabled) return;
+            UIWindowMaster.Instance.OpenWindow(this);
+        }
+
         public void ForceAwake()
         {
             if(woken)return;

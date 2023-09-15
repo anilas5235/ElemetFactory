@@ -2,9 +2,12 @@ using System;
 using Project.Scripts.Buildings;
 using Project.Scripts.Grid;
 using Project.Scripts.SlotSystem;
+using Project.Scripts.UI;
 using Project.Scripts.Utilities;
 using TMPro;
+using UI.Windows;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.Scripts.ItemSystem
 {
@@ -14,18 +17,18 @@ namespace Project.Scripts.ItemSystem
         public Item Item => item;
 
         [SerializeField]private Slot mySlot;
-        public bool InView = true;
         
+        [SerializeField] private bool inView = true;
+
         [SerializeField] private SpriteRenderer itemContentRender;
 
         [SerializeField] private ItemForm myItemForm;
-
-        [SerializeField] private GameObject mainVisualParent;
+        public ItemForm MyItemForm=> myItemForm;
+        public Color MyColor { get; protected set; }
 
         private Vector3 previousPos;
         private bool arrived = true;
         private float progress = 0;
-        private Color myColor;
 
         public void SetItem(Item newItem)
         {
@@ -47,7 +50,7 @@ namespace Project.Scripts.ItemSystem
         private void Update()
         {
             if (!mySlot || arrived) return;
-            if (Vector3.Distance(transform.position, mySlot.transform.position) > .01f && InView)
+            if (Vector3.Distance(transform.position, mySlot.transform.position) > .01f && inView)
             {
                 progress += Time.deltaTime* ConveyorBelt.ItemsPerSecond;
                 transform.position = Vector3.Lerp(previousPos, mySlot.transform.position, progress);
@@ -66,9 +69,9 @@ namespace Project.Scripts.ItemSystem
         private void VisibilityCheck()
         {
             if(!mySlot) return;
-            if (mySlot.MyBuilding.MyChunk.Loaded == InView) return;
-            InView = !InView;
-            mainVisualParent.SetActive(InView);
+            if (mySlot.MyBuilding.MyChunk.Loaded == inView) return;
+            inView = !inView;
+            itemContentRender.enabled = inView;
         }
 
         public static ItemContainer CreateNewContainer(Item content, Slot slot)
@@ -100,9 +103,9 @@ namespace Project.Scripts.ItemSystem
 
         public void SetColor(Color color)
         {
-            myColor = color;
+            MyColor = color;
             Material[] materials = itemContentRender.materials;
-            materials[0] = VisualResources.GetItemMaterial(myColor, myItemForm);
+            materials[0] = VisualResources.GetItemMaterial(MyColor, myItemForm);
             itemContentRender.materials = materials;
         }
 
@@ -110,13 +113,14 @@ namespace Project.Scripts.ItemSystem
         {
             myItemForm = itemForm;
             Material[] materials = itemContentRender.materials;
-            materials[0] = VisualResources.GetItemMaterial(myColor, myItemForm);
+            materials[0] = VisualResources.GetItemMaterial(MyColor, myItemForm);
             itemContentRender.materials = materials;
         }
 
         private void OnMouseDown()
         {
-            Debug.Log(this.ToString());
+            Debug.Log(ToString());
+            ItemInspector.Instance.InspectItem(this);
         }
 
         public override string ToString()

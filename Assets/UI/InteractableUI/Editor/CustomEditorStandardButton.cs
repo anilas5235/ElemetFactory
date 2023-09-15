@@ -34,21 +34,21 @@ namespace UI.InteractableUI.Editor
 
             switch (script.myFunction)
             {
-                case UIWindowHandler.StandardUIButtonFunctions.Esc:
+                case StandardUIButtonFunctions.Esc:
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.ChangeWindow:
+                case StandardUIButtonFunctions.ChangeWindow:
                     HasParameters();
                     EditorGUILayout.PropertyField(P_WindowHandler);
                     EditorGUILayout.EndVertical();
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.OpenWindow:
+                case StandardUIButtonFunctions.OpenWindow:
                     HasParameters();
                     EditorGUILayout.PropertyField(P_WindowHandler);
                     EditorGUILayout.EndVertical();
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.Quit:
+                case StandardUIButtonFunctions.Quit:
                     break;
-                case UIWindowHandler.StandardUIButtonFunctions.ChangeScene:
+                case StandardUIButtonFunctions.ChangeScene:
                     HasParameters();
                     EditorGUILayout.PropertyField(P_sceneID);
                     EditorGUILayout.EndVertical();

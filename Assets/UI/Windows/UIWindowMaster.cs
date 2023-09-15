@@ -10,12 +10,14 @@ namespace UI.Windows
     public class UIWindowMaster : Singleton<UIWindowMaster>
     {
         [SerializeField] private UIWindowHandler standardWindowToOpen;
-        [SerializeField] private bool deactivateCursorOnMenuClose;
-        [SerializeField] private bool menuActive;
-        [SerializeField] private bool enableSystem = true;
+        [SerializeField] private bool deactivateCursorOnMenuClose,
+        menuActive,
+        enableSystem = true;
         
         public Action<bool> OnActiveUIChanged;
-        public readonly Stack<UIWindowHandler> CurrentlyActiveWindows = new Stack<UIWindowHandler>();
+        private readonly Stack<UIWindowHandler> _currentlyActiveWindows = new Stack<UIWindowHandler>();
+
+        private Coroutine _updateUIState;
 
         private void Start()
         {
@@ -29,49 +31,63 @@ namespace UI.Windows
         public bool MenuActive
         {
             get => menuActive;
-            set
+            private set
             {
-                if (!value == menuActive)
-                {
-                    menuActive = value;
-                    OnActiveUIChanged?.Invoke(menuActive);
-                }
+                if (value == menuActive) return;
+                menuActive = value;
+                OnActiveUIChanged?.Invoke(menuActive);
             }
         }
-
 
         private void Update()
         {
-            if (Input.GetButtonDown("Cancel"))
-            {
-                if (!MenuActive) OpenWindow(); 
-                else CurrentlyActiveWindows.Pop().UIEsc();
-            }
+            if (Input.GetButtonDown("Cancel")) UIEsc();
+        }
+        
+        public void UIEsc()
+        {
+            if (!MenuActive) OpenWindow(standardWindowToOpen);
+            else ChangeToWindow(_currentlyActiveWindows.Peek().ParentWindow);
         }
 
-        public void OpenWindow(UIWindowHandler windowToOpen = null)
+        public void ChangeToWindow(UIWindowHandler windowHandler)
         {
-            if(!enableSystem) return;
-            if (windowToOpen == null) windowToOpen = standardWindowToOpen;
+            CloseWindow(_currentlyActiveWindows.Pop());
+            OpenWindow(windowHandler);
+            UpdateState();
+        }
+
+        public void OpenWindow(UIWindowHandler windowToOpen)
+        {
+            if(!enableSystem || !windowToOpen || _currentlyActiveWindows.Contains(windowToOpen)) return;
             windowToOpen.ActivateWindow();
-            CurrentlyActiveWindows.Push(windowToOpen);
+            _currentlyActiveWindows.Push(windowToOpen);
           
-            MenuActive = true;
+            if(!MenuActive) MenuActive = true;
             if(deactivateCursorOnMenuClose)CursorManager.Instance.ActivateCursor();
+        }
+        
+        public void CloseWindow(UIWindowHandler window)
+        {
+            if(!window) return;
+            window.DeactivateWindow();
+            UpdateState();
         }
 
         public void UpdateState()
         {
-            StartCoroutine(UpdateMenuState());
+            _updateUIState ??= StartCoroutine(UpdateMenuState());
         }
         
         private IEnumerator UpdateMenuState()
         {
             yield return new WaitForEndOfFrame();
-            if (CurrentlyActiveWindows.Any()) yield break;
-            
-            MenuActive = false;
-            if(deactivateCursorOnMenuClose) CursorManager.Instance.DeActivateCursor();
+            if (!_currentlyActiveWindows.Any())
+            {
+                MenuActive = false;
+                if (deactivateCursorOnMenuClose) CursorManager.Instance.DeActivateCursor();
+            }
+            _updateUIState = null;
         }
     }
 }
