@@ -2,10 +2,18 @@ using System;
 using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.ItemSystem;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.SlotSystem
 {
+    public enum SlotBehaviour
+    {
+        InAndOutput,
+        Input,
+        Output
+    }
+
     public class Slot : MonoBehaviour
     {
         [SerializeField] private SlotBehaviour mySlotBehaviour;
@@ -15,13 +23,6 @@ namespace Project.Scripts.SlotSystem
         public Action<bool> OnSlotContentChanged;
 
         public PlacedBuilding MyBuilding;
-        
-        public enum SlotBehaviour
-        {
-            InAndOutput,
-            Input,
-            Output
-        }
 
         public Slot(SlotBehaviour slotBehaviour = SlotBehaviour.InAndOutput, ItemContainer item = null)
         {
@@ -65,6 +66,23 @@ namespace Project.Scripts.SlotSystem
         private void OnDestroy()
         {
             if (slotContent) Destroy(slotContent.gameObject);
+        }
+    }
+
+    public struct SlotDataComponent : IComponentData
+    {
+        private SlotBehaviour mySlotBehaviour;
+
+        public Entity SlotContent;
+        public bool IsOccupied => SlotContent != null;
+        
+        public Entity MyBuilding;
+
+        public SlotDataComponent(SlotBehaviour mySlotBehaviour, Entity slotContent, Entity myBuilding)
+        {
+            this.mySlotBehaviour = mySlotBehaviour;
+            SlotContent = slotContent;
+            MyBuilding = myBuilding;
         }
     }
 }

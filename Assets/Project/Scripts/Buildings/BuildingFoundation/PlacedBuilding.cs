@@ -1,7 +1,10 @@
+using System;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
+using Unity.Collections;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
@@ -19,7 +22,8 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <param name="transformParent">Reference to parent in hierarchy</param>
         /// <param name="cellSize">Size of the cells in the Grid for the scaling of the building</param>
         /// <returns>Reference to the newly created PlacedBuilding</returns>
-        public static PlacedBuilding CreateBuilding(GridChunk chunk,GridObject gridObject,Vector3 localPosition, Vector2Int origin,
+        public static PlacedBuilding CreateBuilding(GridChunk chunk, GridObject gridObject, Vector3 localPosition,
+            Vector2Int origin,
             FacingDirection facingDirection, PossibleBuildings buildingData,
             Transform transformParent, float cellSize)
         {
@@ -33,8 +37,8 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             placedBuilding.MyPlacedBuildingData = new PlacedBuildingData()
             {
                 origin = origin,
-                buildingDataID =(int) buildingData,
-                directionID =(int) facingDirection,
+                buildingDataID = (int)buildingData,
+                directionID = (int)facingDirection,
             };
 
             placedBuilding.MyChunk = chunk;
@@ -54,20 +58,20 @@ namespace Project.Scripts.Buildings.BuildingFoundation
 
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
         public GridChunk MyChunk { get; private set; }
-        
+
         public GridObject MyGridObject { get; private set; }
 
         [SerializeField] private GameObject visualParent;
 
-        [SerializeField]protected Slot[] inputs;
+        [SerializeField] protected Slot[] inputs;
 
-        [SerializeField]protected Slot[] outputs;
-        
+        [SerializeField] protected Slot[] outputs;
+
         [SerializeField] protected Slot[] slotsToPullFrom;
         [SerializeField] protected Slot[] slotsToPushTo;
-        
+
         [SerializeField] protected bool subedToConveyorTick = false;
-        
+
         protected SlotValidationHandler mySlotValidationHandler;
 
 
@@ -77,7 +81,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <returns>Ary of Vector2Int pseudo positions, not all maybe in the same Chunk</returns>
         public Vector2Int[] GetGridPositionList()
         {
-            return BuildingGridResources.GetBuildingDataBase( MyPlacedBuildingData.buildingDataID)
+            return BuildingGridResources.GetBuildingDataBase(MyPlacedBuildingData.buildingDataID)
                 .GetGridPositionList(MyPlacedBuildingData);
         }
 
@@ -107,6 +111,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
                     if (slot.transform.parent.TryGetComponent(out ConveyorBelt belt)) belt.SubToConveyorTickEvent();
                 }
             }
+
             Destroy(gameObject);
         }
 
@@ -116,7 +121,9 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             slotsToPushTo = new Slot[outputs.Length];
         }
 
-        protected virtual void SetUpSlots(FacingDirection facingDirection){}
+        protected virtual void SetUpSlots(FacingDirection facingDirection)
+        {
+        }
 
         public virtual void CheckForSlotToPullForm()
         {
@@ -128,12 +135,13 @@ namespace Project.Scripts.Buildings.BuildingFoundation
                         MyChunk, out PlacedBuilding building))
                 {
                     Slot slot = building.GetComponent<IHaveOutput>()?.GetOutputSlot(this, inputs[i]);
-                    if(!slot) continue;
+                    if (!slot) continue;
                     slotsToPullFrom[i] = slot;
                     foundSlot = true;
                 }
             }
-            if(!foundSlot)return;
+
+            if (!foundSlot) return;
         }
 
         public virtual void CheckForSlotsToPushTo()
@@ -158,9 +166,34 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         {
             for (int i = 0; i < inputs.Length; i++)
             {
-                if(!slotsToPullFrom[i]) continue;
-                if(!inputs[i].IsOccupied && slotsToPullFrom[i].IsOccupied) inputs[i].PutIntoSlot(slotsToPullFrom[i].ExtractFromSlot());
+                if (!slotsToPullFrom[i]) continue;
+                if (!inputs[i].IsOccupied && slotsToPullFrom[i].IsOccupied)
+                    inputs[i].PutIntoSlot(slotsToPullFrom[i].ExtractFromSlot());
             }
+        }
+    }
+
+    public struct PlacedBuildingsDataComponent : IComponentData
+    {
+        public static int NumberOfBuildings;
+
+        public PlacedBuildingData MyPlacedBuildingData { get; }
+        public GridChunk MyChunk { get; }
+
+        public GridObject MyGridObject { get; }
+
+        public bool SubedToConveyorTick;
+
+        public SlotValidationHandler MySlotValidationHandler;
+
+        public PlacedBuildingsDataComponent(GridChunk myChunk, GridObject myGridObject,
+            PlacedBuildingData myPlacedBuildingData)
+        {
+            MyChunk = myChunk;
+            MyGridObject = myGridObject;
+            MyPlacedBuildingData = myPlacedBuildingData;
+            SubedToConveyorTick = false;
+            MySlotValidationHandler = null;
         }
     }
 }

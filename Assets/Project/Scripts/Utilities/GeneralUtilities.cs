@@ -1,3 +1,4 @@
+using Project.Scripts.EntitySystem.Components.Transmission;
 using UnityEngine;
 
 namespace Project.Scripts.Utilities
