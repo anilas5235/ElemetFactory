@@ -1,4 +1,5 @@
 using Project.Scripts.EntitySystem.Components.MaterialModify;
+using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.SlotSystem;
 using Unity.Collections;
 using Unity.Entities;

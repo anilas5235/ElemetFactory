@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
     [Serializable]
-    public class PlacedBuildingData
+    public struct PlacedBuildingData
     {
         public int buildingDataID;
         public Vector2Int origin;

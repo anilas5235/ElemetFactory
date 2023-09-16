@@ -1,5 +1,4 @@
 using System;
-using Project.Scripts.SlotSystem;
 using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Components.Transmission
@@ -14,26 +13,26 @@ namespace Project.Scripts.EntitySystem.Components.Transmission
     [Serializable]
     public struct OutputData
     {
-        public SlotDataComponent OutputSlot;
-        public SlotDataComponent SlotToPushTo;
+        public SlotDataComponent slot;
+        public SlotDataComponent slotToPushTo;
 
         public OutputData(SlotDataComponent outputSlot)
         {
-            OutputSlot = outputSlot;
-            SlotToPushTo = default;
+            slot = outputSlot;
+            slotToPushTo = default;
         }
     }
     
     [Serializable]
     public struct InputData
     {
-        public SlotDataComponent Slot;
-        public SlotDataComponent SlotToPullFrom;
+        public SlotDataComponent slot;
+        public SlotDataComponent slotToPullFrom;
 
-        public InputData(SlotDataComponent slot)
+        public InputData(SlotDataComponent inputSlot)
         {
-            Slot = slot;
-            SlotToPullFrom = default;
+            slot = inputSlot;
+            slotToPullFrom = default;
         }
     }
 }

@@ -172,28 +172,4 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             }
         }
     }
-
-    public struct PlacedBuildingsDataComponent : IComponentData
-    {
-        public static int NumberOfBuildings;
-
-        public PlacedBuildingData MyPlacedBuildingData { get; }
-        public GridChunk MyChunk { get; }
-
-        public GridObject MyGridObject { get; }
-
-        public bool SubedToConveyorTick;
-
-        public SlotValidationHandler MySlotValidationHandler;
-
-        public PlacedBuildingsDataComponent(GridChunk myChunk, GridObject myGridObject,
-            PlacedBuildingData myPlacedBuildingData)
-        {
-            MyChunk = myChunk;
-            MyGridObject = myGridObject;
-            MyPlacedBuildingData = myPlacedBuildingData;
-            SubedToConveyorTick = false;
-            MySlotValidationHandler = null;
-        }
-    }
 }

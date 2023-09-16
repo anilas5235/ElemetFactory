@@ -68,21 +68,4 @@ namespace Project.Scripts.SlotSystem
             if (slotContent) Destroy(slotContent.gameObject);
         }
     }
-
-    public struct SlotDataComponent : IComponentData
-    {
-        private SlotBehaviour mySlotBehaviour;
-
-        public Entity SlotContent;
-        public bool IsOccupied => SlotContent != null;
-        
-        public Entity MyBuilding;
-
-        public SlotDataComponent(SlotBehaviour mySlotBehaviour, Entity slotContent, Entity myBuilding)
-        {
-            this.mySlotBehaviour = mySlotBehaviour;
-            SlotContent = slotContent;
-            MyBuilding = myBuilding;
-        }
-    }
 }
