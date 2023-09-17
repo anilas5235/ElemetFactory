@@ -4,7 +4,7 @@ using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
 using Unity.Entities;
 
-namespace Project.Scripts.EntitySystem.Components.Buildings
+namespace Project.Scripts.EntitySystem.Components.Buildings.General
 {
     [Serializable]
     public struct BuildingDataComponent : IComponentData

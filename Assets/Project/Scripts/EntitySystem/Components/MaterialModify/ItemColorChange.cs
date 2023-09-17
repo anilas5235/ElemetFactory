@@ -7,7 +7,7 @@ namespace Project.Scripts.EntitySystem.Components.MaterialModify
 {
     [GenerateAuthoringComponent]
     [MaterialProperty("_ContentColor",MaterialPropertyFormat.Float4)]
-    public struct ItemColorChange : IComponentData
+    public struct ItemColor : IComponentData
     {
         public float4 Value;
     }

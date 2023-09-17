@@ -15,7 +15,6 @@ namespace Project.Scripts.ItemSystem
     public struct Item
     {
         public int[] resourceIDs;
-
         public Item(int[] resourceIDs)
         {
             this.resourceIDs = resourceIDs;
