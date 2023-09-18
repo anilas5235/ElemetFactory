@@ -1,39 +1,24 @@
 using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.EntitySystem.Components.Buildings.Specific;
-using Project.Scripts.EntitySystem.Components.MaterialModify;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
-using Project.Scripts.SlotSystem;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Rendering;
-using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
-
 
 namespace Project.Scripts.Experimental
 {
     public class EntityTest : MonoBehaviour
     {
-        public Mesh mesh;
-        public Material itemMaterial,conveyorMaterial;
-
-        private EntityManager entityManager;
         private EntityArchetype item,conveyor;
 
         private void Start()
         {
-            entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-
             //item = entityManager.CreateArchetype(typeof(Translation), typeof(Scale), typeof(RenderMesh),typeof(RenderBounds), typeof(LocalToWorld), typeof(ItemColor), typeof(ItemDataComponent));
 
-            BuildingGridEntityUtilities.quad = mesh;
-
-            BuildingGridEntityUtilities.CreateBuildingEntity(Vector3.zero, new PlacedBuildingData() { buildingDataID = 1, directionID = 1});
+            for (int i = 0; i < 2; i++)
+            {
+                BuildingGridEntityUtilities.CreateBuildingEntity(new Vector3(i,0,0), new PlacedBuildingData() { buildingDataID = i, directionID = 0});
+            }
+            
+            
 
             /*
             NativeArray<Entity> entities = new NativeArray<Entity>(10000, Allocator.Temp);
