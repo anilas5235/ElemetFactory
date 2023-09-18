@@ -116,6 +116,7 @@ namespace Project.Scripts.Grid
 
         public static Entity CreateBuildingEntity(Vector3 position, PlacedBuildingData data)
         {
+            Vector3 offset = Vector3.zero;
             if (!archetypesInit)
             {
                 InitArchetypes();
@@ -158,7 +159,7 @@ namespace Project.Scripts.Grid
             EntityManager.SetComponentData(entity, new NonUniformScale() { Value = scale });
 
             EntityManager.SetComponentData(entity,
-                new Translation() { Value = position - new Vector3(scale.x - 1, scale.y - 1, 0) });
+                new Translation() { Value = position + offset});
 
             return entity;
         }
