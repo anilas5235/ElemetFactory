@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 namespace Project.Scripts.Grid
 {
-    public enum PossibleBuildings
+    public enum PossibleBuildings : byte
     {
         Extractor,
         Conveyor,
@@ -18,7 +18,7 @@ namespace Project.Scripts.Grid
         Separator,
     }
 
-    public enum ResourceType
+    public enum ResourceType : byte
     {
         None,
         H,

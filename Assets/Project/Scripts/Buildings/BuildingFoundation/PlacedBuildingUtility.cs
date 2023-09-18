@@ -40,16 +40,9 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         }
         
           public static FacingDirection GetOppositeDirection(FacingDirection facingDirection)
-        {
-            return facingDirection switch
-            {
-                FacingDirection.Up => FacingDirection.Down,
-                FacingDirection.Right => FacingDirection.Left,
-                FacingDirection.Down => FacingDirection.Up,
-                FacingDirection.Left => FacingDirection.Right,
-                _ => throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null)
-            };
-        }
+          {
+              return GetOppositeDirection((int)facingDirection);
+          }
         
         public static FacingDirection GetOppositeDirection(int facingDirectionID)
         {
@@ -87,15 +80,15 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         
         public static int GetRotation(int directionID)
         {
-            return -90 * directionID +180;
+            return -90 * directionID;
         }
 
         public static bool DoYouPointAtMe(FacingDirection facingDirectionOfTarget, Vector2Int realtivPositionOfTarget)
         {
-            if (realtivPositionOfTarget.x == 0 && realtivPositionOfTarget.y > 0 && facingDirectionOfTarget == FacingDirection.Down) return true;
-            if (realtivPositionOfTarget.x == 0 && realtivPositionOfTarget.y < 0 && facingDirectionOfTarget == FacingDirection.Up) return true;
-            if (realtivPositionOfTarget.x > 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Left) return true;
-            if (realtivPositionOfTarget.x < 0 && realtivPositionOfTarget.y == 0 && facingDirectionOfTarget == FacingDirection.Right) return true;
+            if (realtivPositionOfTarget is { x: 0, y: > 0 } && facingDirectionOfTarget == FacingDirection.Down) return true;
+            if (realtivPositionOfTarget is { x: 0, y: < 0 } && facingDirectionOfTarget == FacingDirection.Up) return true;
+            if (realtivPositionOfTarget is { x: > 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Left) return true;
+            if (realtivPositionOfTarget is { x: < 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Right) return true;
             return false;
         }
 
