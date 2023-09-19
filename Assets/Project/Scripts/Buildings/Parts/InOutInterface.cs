@@ -5,24 +5,14 @@ using Unity.Entities;
 
 namespace Project.Scripts.Buildings.Parts
 {
-    public interface IHaveInput
-    {
-        public Slot GetInputSlot(PlacedBuilding caller, Slot destination);
-    }
 
     public interface IEntityInput
     {
-        public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int bufferIndex);
+        public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex);
     }
-
-    public interface IHaveOutput
-    {
-        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination);
-    }
-    
     public interface IEntityOutput
     {
-        public bool GetOutput(PlacedBuildingEntity caller, out Entity entity,out int bufferIndex);
+        public bool GetOutput(PlacedBuildingEntity caller, out Entity entity,out int outputIndex);
     }
     
     public interface IContainable<T>

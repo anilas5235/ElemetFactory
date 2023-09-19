@@ -14,35 +14,28 @@ namespace Project.Scripts.EntitySystem.Components.Transmission
         public SlotBehaviour MySlotBehaviour;
 
         public Entity SlotContent;
-        public bool IsOccupied => SlotContent != null;
+        public bool IsOccupied => SlotContent != default;
         
-        public Entity SlotToPushTo;
-        public int BufferIndex;
+        public Entity EntityToPushTo;
+        public byte OutputIndex { get; }
 
-        public OutputDataComponent(float3 position , Entity slotContent = default)
+       
+        public OutputDataComponent(float3 position ,SlotBehaviour slotBehaviour , byte outputIndex, Entity slotContent = default)
         {
-            SlotToPushTo = default;
-            Position = position;
-            SlotContent = slotContent;
-            MySlotBehaviour = SlotBehaviour.Output;
-            BufferIndex = -1;
-        }
-        public OutputDataComponent(float3 position ,SlotBehaviour slotBehaviour ,Entity slotContent = default)
-        {
-            SlotToPushTo = default;
+            EntityToPushTo = default;
             Position = position;
             SlotContent = slotContent;
             MySlotBehaviour = slotBehaviour;
-            BufferIndex = -1;
+            OutputIndex = outputIndex;
         }
         
-        public OutputDataComponent(float3 position ,SlotBehaviour slotBehaviour, Entity slotToPushTo ,int bufferIndex, Entity slotContent = default)
+        public OutputDataComponent(float3 position ,SlotBehaviour slotBehaviour, Entity entityToPushTo ,byte outputIndex, Entity slotContent = default)
         {
-            SlotToPushTo = slotToPushTo;
+            EntityToPushTo = entityToPushTo;
+            OutputIndex = outputIndex;
             Position = position;
             SlotContent = slotContent;
             MySlotBehaviour = slotBehaviour;
-            BufferIndex = bufferIndex;
         }
     }
 }

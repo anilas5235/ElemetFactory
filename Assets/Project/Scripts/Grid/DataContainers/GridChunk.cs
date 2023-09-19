@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings;
@@ -10,7 +11,7 @@ namespace Project.Scripts.Grid.DataContainers
     public class GridChunk : MonoBehaviour
     {
         public GridField<GridObject> ChunkBuildingGrid { get; private set; }
-        public List<PlacedBuilding> Buildings { get; private set; } = new List<PlacedBuilding>();
+        public List<PlacedBuildingEntity> Buildings { get; private set; } = new List<PlacedBuildingEntity>();
 
         public GridBuildingSystem myGridBuildingSystem;
         public Tilemap ChunkTilemap { get; private set; }
@@ -87,9 +88,26 @@ namespace Project.Scripts.Grid.DataContainers
             Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;
 
-            PlacedBuilding building = PlacedBuilding.CreateBuilding(chunk, buildGridField.GetCellData(cellPos),
-                buildGridField.GetLocalPosition(cellPos), cellPos, facingDirection, buildingData,
-                chunk.transform, chunk.ChunkBuildingGrid.CellSize);
+
+            PlacedBuildingEntity building = buildingData switch
+            {
+                PossibleBuildings.Extractor => PlacedBuildingEntity.CreateBuilding<Extractor>(
+                    buildGridField.GetCellData(cellPos),
+                    buildGridField.GetWorldPosition(cellPos), cellPos, facingDirection, buildingData),
+                PossibleBuildings.Conveyor => PlacedBuildingEntity.CreateBuilding<ConveyorBelt>(
+                    buildGridField.GetCellData(cellPos),
+                    buildGridField.GetWorldPosition(cellPos), cellPos, facingDirection, buildingData),
+                PossibleBuildings.Combiner => PlacedBuildingEntity.CreateBuilding<Combiner>(
+                    buildGridField.GetCellData(cellPos),
+                    buildGridField.GetWorldPosition(cellPos), cellPos, facingDirection, buildingData),
+                PossibleBuildings.TrashCan => PlacedBuildingEntity.CreateBuilding<TrashCan>(
+                    buildGridField.GetCellData(cellPos),
+                    buildGridField.GetWorldPosition(cellPos), cellPos, facingDirection, buildingData),
+                PossibleBuildings.Separator => PlacedBuildingEntity.CreateBuilding<Separator>(
+                    buildGridField.GetCellData(cellPos),
+                    buildGridField.GetWorldPosition(cellPos), cellPos, facingDirection, buildingData),
+                _ => throw new ArgumentOutOfRangeException(nameof(buildingData), buildingData, null)
+            };
 
             foreach (Vector2Int cellPosition in positions)
             {
@@ -115,7 +133,7 @@ namespace Project.Scripts.Grid.DataContainers
             GridField<GridObject> buildingGrid = chunk.ChunkBuildingGrid;
             GridObject gridObject = buildingGrid.GetCellData(mousePosition);
             if(!(gridObject is { Occupied: true })) return;
-            PlacedBuilding placedBuilding = gridObject.Building;
+            PlacedBuildingEntity placedBuilding = gridObject.Building;
             chunk.Buildings.Remove(placedBuilding);
             placedBuilding.Destroy();
                     
@@ -149,7 +167,6 @@ namespace Project.Scripts.Grid.DataContainers
             Loaded = true;
             chunkTilemapRenderer.enabled = Loaded;
             if(!loadedChunks.Contains(ChunkPosition)) loadedChunks.Add(ChunkPosition);
-            foreach (PlacedBuilding building in Buildings) building.Load();
         }
         
         public void UnLoad(List<Vector2Int> loadedChunks)
@@ -158,7 +175,6 @@ namespace Project.Scripts.Grid.DataContainers
             Loaded = false;
             chunkTilemapRenderer.enabled = Loaded;
             if(loadedChunks.Contains(ChunkPosition))loadedChunks.Remove(ChunkPosition);
-            foreach (PlacedBuilding building in Buildings) building.UnLoad();
         }
     }
 }

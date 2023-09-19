@@ -6,13 +6,13 @@ namespace Project.Scripts.Buildings.BuildingFoundation
 {
     public static class PlacedBuildingUtility 
     {
-        public static bool CheckForBuilding(Vector2Int targetPos, GridChunk myChunk,out PlacedBuilding building)
+        public static bool CheckForBuilding(Vector2Int targetPos, GridChunk myChunk,out PlacedBuildingEntity building)
         {
             GridObject cell = myChunk.ChunkBuildingGrid.IsValidPosition(targetPos)
                 ? myChunk.ChunkBuildingGrid.GetCellData(targetPos)
                 : myChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, myChunk);
             building = cell.Building;
-            return building;
+            return cell.Occupied;
         }
         
         public static FacingDirection GetNextDirectionClockwise(FacingDirection facingDirection)

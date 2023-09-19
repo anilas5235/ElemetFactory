@@ -1,11 +1,16 @@
-using System.Linq;
-using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid;
 using UnityEngine;
 
 namespace Project.Scripts.SlotSystem
 {
+    public enum SlotBehaviour
+    {
+        InAndOutput,
+        Input,
+        Output
+    }
+    
     [CreateAssetMenu(menuName = "BuildingSystem/SlotValidationHandler")]
     public class SlotValidationHandler : ScriptableObject
     {
@@ -16,17 +21,17 @@ namespace Project.Scripts.SlotSystem
         public Vector2Int[] ValidInputPositions => validInputPositions;
         public Vector2Int[] ValidOutputPositions => validOutputPositions;
 
-        public bool ValidateInputSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index)
+        public bool ValidateInputSlotRequest(PlacedBuildingEntity me, PlacedBuildingEntity requester, out int index)
         {
             return ValidateSlotRequest(me, requester, out index, true);
         }
 
-        public bool ValidateOutputSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index)
+        public bool ValidateOutputSlotRequest(PlacedBuildingEntity me, PlacedBuildingEntity requester, out int index)
         {
             return ValidateSlotRequest(me, requester, out index, false);
         }
 
-        private bool ValidateSlotRequest(PlacedBuilding me, PlacedBuilding requester, out int index, bool input)
+        private bool ValidateSlotRequest(PlacedBuildingEntity me, PlacedBuildingEntity requester, out int index, bool input)
         {
             index = 0;
 
@@ -34,7 +39,7 @@ namespace Project.Scripts.SlotSystem
                 (PossibleBuildings)requester.MyPlacedBuildingData.buildingDataID != PossibleBuildings.Conveyor)
                 return false;
 
-            Vector2Int chunkOffset = me.MyChunk.ChunkPosition - requester.MyChunk.ChunkPosition;
+            Vector2Int chunkOffset = me.MyGridObject.Chunk.ChunkPosition - requester.MyGridObject.Chunk.ChunkPosition;
             Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * GridBuildingSystem.ChunkSize;
 
             Vector2Int search = newPos - me.MyGridObject.Position;

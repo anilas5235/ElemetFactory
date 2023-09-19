@@ -2,42 +2,28 @@ using System;
 using System.Collections;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
+using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.SlotSystem;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
 {
-    public class ConveyorBelt : PlacedBuilding,IHaveOutput,IHaveInput,IReceiveConveyorChainTickUpdate,IConveyorDestination
+    public class ConveyorBelt : PlacedBuildingEntity, IEntityInput,IEntityOutput
     {
-        public static Action ConveyorTick;
-        private static float itemsPerSecond = 2;
-        public static float ItemsPerSecond => itemsPerSecond;
-        private static Coroutine runningTickClock;
-        private static SlotValidationHandler[] SlotValidationHandlers;
-
-        [SerializeField] private GameObject leftTurn, rightTurn;
-
-        private static IEnumerator TickClock()
+        protected override void SetUpSlots(FacingDirection facingDirection)
         {
-            yield return new WaitForFixedUpdate();
-            while (true)
-            {
-                ConveyorTick?.Invoke();
-                yield return new WaitForSeconds(1f/itemsPerSecond);
-            }
-        }
-        protected override void StartWorking()
-        {
-            base.StartWorking();
-            
-            runningTickClock ??= StartCoroutine(TickClock());
             CheckForSlotsToPushTo();
             CheckForSlotToPullForm();
         }
 
-        public override void CheckForSlotToPullForm()
+        protected override void CheckForSlotToPullForm()
         {
-            if (slotsToPullFrom[0]) return;
+            var buffer = _entityManager.GetBuffer<InputDataComponent>(BuildingEntity);
+            InputDataComponent inputDataComponent = buffer[0];
+            
+            if (inputDataComponent.EntityToPullFrom != default) return;
+            
             Vector2Int[] offsets = new Vector2Int[]
             {
                 PlacedBuildingUtility.FacingDirectionToVector(PlacedBuildingUtility.GetOppositeDirection(MyPlacedBuildingData.directionID)) ,
@@ -45,175 +31,57 @@ namespace Project.Scripts.Buildings
                 PlacedBuildingUtility.FacingDirectionToVector(PlacedBuildingUtility.GetNextDirectionCounterClockwise(MyPlacedBuildingData.directionID)) ,
             };
 
-            int index = -1;
-            bool found = false;
-
-            foreach (var offset in offsets)
+            for (var i = 0; i < offsets.Length; i++)
             {
-                index++;
-                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyGridObject.Position, MyChunk,
-                        out PlacedBuilding cellBuild)) continue;
-                IHaveOutput buildingOut = cellBuild.GetComponent<IHaveOutput>();
-                if(buildingOut == null)continue;
-                if (!PlacedBuildingUtility.DoYouPointAtMe(cellBuild.MyPlacedBuildingData.directionID,offset)) continue;
-                Slot next = buildingOut.GetOutputSlot(this, inputs[0]);
-                if (next == null) continue;
-                slotsToPullFrom[0] = next;
-                found = true;
+                var offset = offsets[i];
+                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyGridObject.Position, MyGridObject.Chunk,
+                        out PlacedBuildingEntity building)) continue;
+                
+                IEntityOutput entityInput = (IEntityOutput)building;
+                if (entityInput == null) continue;
+                if (!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
+                buffer[i] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
+                    entity, (byte)index, inputDataComponent.SlotContent);
                 break;
             }
-
-            if (!found) return;
-            UpdateVisuals(index);
         }
 
-        public override void CheckForSlotsToPushTo()
+        protected override void CheckForSlotsToPushTo()
         {
-            if (!slotsToPushTo[0])
-            {
-                Vector2Int targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
-                                       MyGridObject.Position;
-                if (PlacedBuildingUtility.CheckForBuilding(targetPos, MyChunk, out PlacedBuilding cellBuild))
-                {
-                    IHaveInput buildingIn = cellBuild.GetComponent<IHaveInput>();
-                    if (buildingIn != null)
-                    {
-                        Slot next = buildingIn.GetInputSlot(this, outputs[0]);
-                        if (next) slotsToPushTo[0] = next;
-                    }
-                }
+            DynamicBuffer<OutputDataComponent> buffer = _entityManager.GetBuffer<OutputDataComponent>(BuildingEntity);
+            OutputDataComponent outputDataComponent = buffer[0];
+            if (outputDataComponent.EntityToPushTo != default) return;
 
-            }
-
-            UpdateRespConveyorTickEvent();
-        }
-
-        private void UpdateRespConveyorTickEvent()
-        {
-            if (slotsToPushTo[0] && subedToConveyorTick)
-            {
-                ConveyorTick -= StartConveyorChainTickUpdate;
-                subedToConveyorTick = false;
-                //Debug.Log($"Conveyor {name} unsubed");
-            }
-            else if (!slotsToPushTo[0] && !subedToConveyorTick)
-            {
-                SubToConveyorTickEvent();
-            }
-        }
-
-        public void SubToConveyorTickEvent()
-        {
-            ConveyorTick += StartConveyorChainTickUpdate;
-            subedToConveyorTick = true;
-            //Debug.Log($"Conveyor {name} subed");
-        }
-
-        public override void Destroy()
-        {
-            if (subedToConveyorTick) ConveyorTick -= StartConveyorChainTickUpdate;
-            base.Destroy();
-        }
-
-        public Slot GetOutputSlot(PlacedBuilding caller, Slot destination)
-        {
-            if(slotsToPushTo[0]) return null;
-            slotsToPushTo[0] = destination;
-            return outputs[0];
-        }
-
-        public Slot GetInputSlot(PlacedBuilding caller, Slot destination)
-        {
-            if (slotsToPullFrom[0]) return null;
-            Vector2 offset = destination.transform.position - transform.position;
-
-            switch (MyPlacedBuildingData.directionID)
-            {
-                case 0:
-                    if(offset.x > .4f) UpdateVisuals(1);
-                    else if(offset.x < -.4f) UpdateVisuals(2);
-                    else UpdateVisuals(0);
-                    break;
-                case 1:
-                    if(offset.y > .4f) UpdateVisuals(2);
-                    else if(offset.y < -.4f) UpdateVisuals(1);
-                    else UpdateVisuals(0);
-                    break;
-                case 2: 
-                    if(offset.x > .4f) UpdateVisuals(2);
-                    else if(offset.x < -.4f) UpdateVisuals(1);
-                    else UpdateVisuals(0);
-                    break;
-                case 3:
-                    if(offset.y > .4f) UpdateVisuals(1);
-                    else if(offset.y < -.4f) UpdateVisuals(2);
-                    else UpdateVisuals(0);
-                    break;
-            }
-
-            slotsToPullFrom[0] = destination;
-            return inputs[0];
-        }
-
-        private void UpdateVisuals(int index)
-        {
-            switch (index)
-            {
-                case 0:
-                    leftTurn.SetActive(false);
-                    rightTurn.SetActive(false);
-                    break;
-                case 1:
-                    leftTurn.SetActive(true);
-                    rightTurn.SetActive(false);
-                    break;
-                case 2:
-                    leftTurn.SetActive(false);
-                    rightTurn.SetActive(true);
-                    break;
-            }
-        }
-
-        public void ConveyorChainTickUpdate()
-        {
-            // try to move ItemContainer: own Output => input of the next building(SlotToPushTo)
-            if (slotsToPushTo[0] && !slotsToPushTo[0].IsOccupied && outputs[0].IsOccupied)
-            {
-                slotsToPushTo[0].PutIntoSlot(outputs[0].ExtractFromSlot());
-            }
+            Vector2Int targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
+                                   MyGridObject.Position;
+            if (PlacedBuildingUtility.CheckForBuilding(targetPos, MyGridObject.Chunk, out PlacedBuildingEntity building)) return;
             
-            // try to move ItemContainer: own Input => own Output
-            if (inputs[0].IsOccupied && !outputs[0].IsOccupied)
-            {
-                outputs[0].PutIntoSlot(inputs[0].ExtractFromSlot());
-            }
-
-            if (!slotsToPullFrom[0]) return;
-            
-            IReceiveConveyorChainTickUpdate nextChainLink = slotsToPullFrom[0].GetComponentInParent<IReceiveConveyorChainTickUpdate>();
-            if (nextChainLink != null)
-            {
-                //continue ChainUpdate to next link 
-                nextChainLink.ConveyorChainTickUpdate();
-            }
-            //end of ChainUpdate: try to move ItemContainer: Output of previous building(slotToPullFrom) => own input 
-            else if (!inputs[0].IsOccupied && slotsToPullFrom[0].IsOccupied)
-            {
-                inputs[0].PutIntoSlot(slotsToPullFrom[0].ExtractFromSlot());
-            }
+            IEntityInput entityInput = (IEntityInput) building;
+            if(entityInput == null) return;
+            if(!entityInput.GetInput(this, out Entity entity, out int index)) return;
+            buffer[0] = new OutputDataComponent(outputDataComponent.Position, outputDataComponent.MySlotBehaviour,
+                entity,(byte)index, outputDataComponent.SlotContent);
         }
-
-        public static IEnumerator ConveyorChainTickUpdateHandler(IReceiveConveyorChainTickUpdate start)
+        
+        public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)
         {
-            start.ConveyorChainTickUpdate();
-            yield return null;
+            entity = default;
+            inputIndex = default;
+            InputDataComponent input =_entityManager.GetBuffer<InputDataComponent>(BuildingEntity)[inputIndex];
+            if (input.EntityToPullFrom != default) return false;
+            input.EntityToPullFrom = entity;
+            return true;
         }
 
-        public void StartConveyorChainTickUpdate()
+        public bool GetOutput(PlacedBuildingEntity caller, out Entity entity, out int outputIndex)
         {
-            UpdateRespConveyorTickEvent();
-            if(!subedToConveyorTick) return;
-            StartCoroutine(ConveyorChainTickUpdateHandler(this));
+            entity = default;
+            outputIndex = default;
+            OutputDataComponent output =_entityManager.GetBuffer<OutputDataComponent>(BuildingEntity)[outputIndex];
+            if (output.EntityToPushTo != default) return false;
+            output.EntityToPushTo = entity;
+            return true;
         }
+        
     }
 }

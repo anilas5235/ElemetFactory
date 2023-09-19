@@ -4,13 +4,12 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
-using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
-    public class PlacedBuildingEntity
+    public abstract class PlacedBuildingEntity
     {
         /// <summary>
         /// Creates a specified Building Entity with the input parameters  
@@ -21,10 +20,10 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <param name="facingDirection">The facing direction of the building</param>
         /// <param name="buildingData">The typeData of the building</param>
         /// <returns>Reference to the newly created PlacedBuildingEntity</returns>
-        public static PlacedBuildingEntity CreateBuilding(GridObject gridObject, Vector3 worldPosition,
-            Vector2Int origin, FacingDirection facingDirection, PossibleBuildings buildingData)
+        public static PlacedBuildingEntity CreateBuilding<T>(GridObject gridObject, Vector3 worldPosition,
+            Vector2Int origin, FacingDirection facingDirection, PossibleBuildings buildingData) where T : PlacedBuildingEntity,new()
         {
-            PlacedBuildingEntity placedBuilding = new PlacedBuildingEntity
+            PlacedBuildingEntity placedBuilding = new T()
             {
                 MyPlacedBuildingData = new PlacedBuildingData()
                 {
@@ -34,14 +33,13 @@ namespace Project.Scripts.Buildings.BuildingFoundation
                 },
                 MyGridObject = gridObject
             };
+            placedBuilding.BuildingEntity =
+                BuildingGridEntityUtilities.CreateBuildingEntity(worldPosition, placedBuilding.MyPlacedBuildingData);
             placedBuilding.SetUpSlots(facingDirection);
-
-            placedBuilding.StartWorking();
             return placedBuilding;
         }
         
-        protected static EntityManager EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-        protected static int NumberOfBuildings;
+        protected static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         public Entity BuildingEntity { get; private set; }
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
         public GridObject MyGridObject { get; private set; }
@@ -61,58 +59,51 @@ namespace Project.Scripts.Buildings.BuildingFoundation
 
         public virtual void Destroy()
         {
-            EntityManager.DestroyEntity(BuildingEntity);
+            _entityManager.DestroyEntity(BuildingEntity);
         }
 
-        protected virtual void StartWorking()
-        {
-        }
+        protected abstract void SetUpSlots(FacingDirection facingDirection);
 
-        protected virtual void SetUpSlots(FacingDirection facingDirection)
+        protected virtual void CheckForSlotToPullForm()
         {
-        }
-
-        public virtual void CheckForSlotToPullForm()
-        {
-            DynamicBuffer<InputDataComponent> buffer = EntityManager.GetBuffer<InputDataComponent>(BuildingEntity);
+            DynamicBuffer<InputDataComponent> buffer = _entityManager.GetBuffer<InputDataComponent>(BuildingEntity);
             
             for (int i = 0; i < mySlotValidationHandler.ValidInputPositions.Length; i++)
             {
                 if(buffer.Length -1 < i) break;
                 if (PlacedBuildingUtility.CheckForBuilding(
                         MyPlacedBuildingData.origin + mySlotValidationHandler.ValidInputPositions[i],
-                        MyGridObject.Chunk, out PlacedBuilding building))
+                        MyGridObject.Chunk, out PlacedBuildingEntity building))
                 {
                     InputDataComponent inputDataComponent = buffer[i];
-                    IEntityOutput entityInput = building.GetComponent<IEntityOutput>();
+                    IEntityOutput entityInput = (IEntityOutput)building;
                     if(entityInput == null) continue;
                     if(!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
                     buffer[i] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
-                        entity,index, inputDataComponent.SlotContent);
+                        entity,(byte)index, inputDataComponent.SlotContent);
                 }
             }
         }
 
-        public virtual void CheckForSlotsToPushTo()
+        protected virtual void CheckForSlotsToPushTo()
         {
-            DynamicBuffer<OutputDataComponent> buffer = EntityManager.GetBuffer<OutputDataComponent>(BuildingEntity);
+            DynamicBuffer<OutputDataComponent> buffer = _entityManager.GetBuffer<OutputDataComponent>(BuildingEntity);
             for (int i = 0; i < mySlotValidationHandler.ValidOutputPositions.Length; i++)
             {
                 if(buffer.Length -1 < i) break;
                 if (PlacedBuildingUtility.CheckForBuilding(
                         MyPlacedBuildingData.origin + mySlotValidationHandler.ValidOutputPositions[i],
-                        MyGridObject.Chunk, out PlacedBuilding building))
+                        MyGridObject.Chunk, out PlacedBuildingEntity building))
                 {
                     OutputDataComponent outputDataComponent = buffer[i];
-                    IEntityInput entityInput = building.GetComponent<IEntityInput>();
+                    IEntityInput entityInput = (IEntityInput) building;
                     if(entityInput == null) continue;
                     if(!entityInput.GetInput(this, out Entity entity, out int index)) continue;
                     buffer[i] = new OutputDataComponent(outputDataComponent.Position, outputDataComponent.MySlotBehaviour,
-                        entity,index, outputDataComponent.SlotContent);
+                        entity,(byte)index, outputDataComponent.SlotContent);
                 }
             }
         }
-
         public override string ToString()
         {
             return ((PossibleBuildings) MyPlacedBuildingData.buildingDataID).ToString();

@@ -9,8 +9,8 @@ namespace Project.Scripts.Grid.DataContainers
     {
         private GridField<GridObject> GridField => Chunk.ChunkBuildingGrid;
         public Vector2Int Position { get; }
-        public bool Occupied => Building;
-        public PlacedBuilding Building { get; private set; }
+        public bool Occupied => Building == null;
+        public PlacedBuildingEntity Building { get; private set; }
         public ResourceType ResourceNode { get; private set; }
         public GridChunk Chunk { get; }
 
@@ -24,16 +24,16 @@ namespace Project.Scripts.Grid.DataContainers
         }
 
         #region Functions
-        public void Occupy(PlacedBuilding building)
+        public void Occupy(PlacedBuildingEntity building)
         {
-            if (Building) return;
+            if (Building != null) return;
             Building = building;
             GridField.TriggerGridObjectChanged(Position);
         }
 
         public void ClearBuilding()
         {
-            if (!Building) return;
+            if (Building == null) return;
             Building = null;
             GridField.TriggerGridObjectChanged(Position);
         }

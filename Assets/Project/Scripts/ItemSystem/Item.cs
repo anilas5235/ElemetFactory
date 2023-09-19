@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Project.Scripts.Grid;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
 {

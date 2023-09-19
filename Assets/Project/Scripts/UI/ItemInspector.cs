@@ -3,18 +3,17 @@ using Project.Scripts.Utilities;
 using TMPro;
 using UI.Windows;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Project.Scripts.UI
 {
     public class ItemInspector : SingleWindow<ItemInspector>
     {
-        private ItemContainer _inspectedItem;
+        private Item _inspectedItem;
         [SerializeField] private RawImage image;
         [SerializeField] private TextMeshProUGUI nameText;
 
-        public void InspectItem(ItemContainer item)
+        public void InspectItem(Item item)
         {
             _inspectedItem = item;
             UpdateUIFields();
@@ -23,7 +22,9 @@ namespace Project.Scripts.UI
 
         private void UpdateUIFields()
         {
-            image.material = VisualResources.GetItemMaterial(_inspectedItem.MyColor, _inspectedItem.MyItemForm);
+            image.material = VisualResources.GetItemMaterial(
+                new Color(_inspectedItem.Color.x,_inspectedItem.Color.y,_inspectedItem.Color.z,_inspectedItem.Color.w)
+                , _inspectedItem.ItemForm);
             nameText.text = _inspectedItem.ToString();
         }
     }

@@ -118,14 +118,14 @@ namespace Project.Scripts.Grid
             DynamicBuffer<InputDataComponent> inputBuffer = _entityManager.AddBuffer<InputDataComponent>(entity);
             for (int i = 0; i < constructionData.NumInputs; i++)
             {
-                inputBuffer.Add(new InputDataComponent(float3.zero, SlotBehaviour.Input));
+                inputBuffer.Add(new InputDataComponent(float3.zero, SlotBehaviour.Input,(byte)i));
             }
 
             //setup outputs
             DynamicBuffer<OutputDataComponent> outputBuffer = _entityManager.AddBuffer<OutputDataComponent>(entity);
             for (int i = 0; i < constructionData.NumOutputs; i++)
             {
-                outputBuffer.Add(new OutputDataComponent(float3.zero, SlotBehaviour.Output));
+                outputBuffer.Add(new OutputDataComponent(float3.zero, SlotBehaviour.Output,(byte)i));
             }
 
             //set entity Name
