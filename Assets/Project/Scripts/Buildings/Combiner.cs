@@ -63,10 +63,10 @@ namespace Project.Scripts.Buildings
             {
                 ItemContainer container1 = inputs[0].EmptySlot();
                 ItemContainer container2 = inputs[1].EmptySlot();
-                int[] combIDs = new int[container1.Item.resourceIDs.Length + container2.Item.resourceIDs.Length];
-                container1.Item.resourceIDs.CopyTo(combIDs, 0);
+                int[] combIDs = new int[container1.Item.ResourceIDs.Length + container2.Item.ResourceIDs.Length];
+                container1.Item.ResourceIDs.CopyTo(combIDs, 0);
                 container1.Destroy();
-                container2.Item.resourceIDs.CopyTo(combIDs, container1.Item.resourceIDs.Length);
+                container2.Item.ResourceIDs.CopyTo(combIDs, container1.Item.ResourceIDs.Length);
                 container2.Destroy();
 
                 outputs[0].FillSlot(ItemUtility.GetItemContainerWith(combIDs, outputs[0]));

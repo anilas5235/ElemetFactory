@@ -7,7 +7,7 @@ using Unity.Mathematics;
 namespace Project.Scripts.EntitySystem.Components.Transmission
 {
     [Serializable]
-    [InternalBufferCapacity(4)]
+    [InternalBufferCapacity(3)]
     public struct InputDataComponent : IBufferElementData
     {
         public float3 Position { get; }

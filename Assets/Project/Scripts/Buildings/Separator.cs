@@ -46,15 +46,15 @@ namespace Project.Scripts.Buildings
         {
             do
             {
-                int itemLength = inputs[0].SlotContent.Item.resourceIDs.Length;
+                int itemLength = inputs[0].SlotContent.Item.ResourceIDs.Length;
                 if(itemLength < 1) break;
                 int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
                 ItemContainer item = inputs[0].EmptySlot();
                 int[] contentItem1= new int[item1Length], contentItem2=new int[item2Length];
                 for (int i = 0; i < itemLength; i++)
                 {
-                    if (i < item1Length) contentItem1[i] = item.Item.resourceIDs[i];
-                    else contentItem2[i-item1Length] = item.Item.resourceIDs[i];
+                    if (i < item1Length) contentItem1[i] = item.Item.ResourceIDs[i];
+                    else contentItem2[i-item1Length] = item.Item.ResourceIDs[i];
                 }
                 item.Destroy();
 

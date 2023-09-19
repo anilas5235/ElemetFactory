@@ -11,14 +11,14 @@ namespace Project.Scripts.ItemSystem
             ItemContainer container = ItemContainer.SetContainer(ItemPool.Instance.GetObjectFromPool().GetComponent<ItemContainer>(),item,slot);
             Color contentColor = new Color(0, 0, 0);
             float fromID = 0;
-            foreach (int resourceID in item.resourceIDs)
+            foreach (int resourceID in item.ResourceIDs)
             {
                 contentColor += VisualResources.GetResourceColor(resourceID);
                 fromID +=(int) VisualResources.GetResourceForm(resourceID);
             }
 
-            contentColor *= 1f/ item.resourceIDs.Length;
-            fromID *= 1f/ item.resourceIDs.Length;
+            contentColor *= 1f/ item.ResourceIDs.Length;
+            fromID *= 1f/ item.ResourceIDs.Length;
             fromID = Mathf.RoundToInt(fromID);
             container.SetColor(contentColor);
             container.SetItemForm((ItemForm)fromID);

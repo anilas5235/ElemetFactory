@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Utilities;
@@ -34,6 +33,15 @@ namespace Project.Scripts.Grid
 
     public static class BuildingGridResources
     {
+        private static readonly BuildingScriptableData[] PossibleBuildingData =
+         {
+             Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
+             Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
+             Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
+             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
+             Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
+         };
+        
         #region ResourceGeneration
         
         private static readonly float[] ResourcePatchSizeProbabilities =  {60f, 39f, 1f};
@@ -79,22 +87,14 @@ namespace Project.Scripts.Grid
                 bool done;
                 do
                 {
-                    done = true;
                     type = GetRandom(Vector2Int.Distance(Vector2Int.zero, chunk.ChunkPosition));
-                    foreach (ResourceType resource in chunkResources)
-                    {
-                        if (type != resource) continue;
-                        done = false;
-                        break;
-                    }
+                    done = chunkResources.All(resource => type != resource);
                 } while (!done);
                 chunkResources[i] = type;
             }
 
-            foreach (ResourceType resource in chunkResources)
-            {
-                patches.Add(GenerateResourcePatch(chunk,GetPatchSize(numberOfPatches),resource,blockPositions));
-            }
+            patches.AddRange(chunkResources.Select(resource =>
+                GenerateResourcePatch(chunk, GetPatchSize(numberOfPatches), resource, blockPositions)));
 
             return patches.ToArray();
         }
@@ -104,8 +104,8 @@ namespace Project.Scripts.Grid
         {
             List<Vector2Int> cellPositions = GeneratePatchShape(patchSize, blocked,chunk);
 
-            foreach (Vector2Int cellPosition in cellPositions) blocked.Add(cellPosition);
-            
+            blocked.AddRange(cellPositions);
+
             return new ChunkResourcePatch
             {
                 resourceID = (int)resourceType,
@@ -207,9 +207,9 @@ namespace Project.Scripts.Grid
             foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
             {
                 Vector2Int chunkPos = neighbourOffset + chunk.ChunkPosition;
-                if (gridChunks.ContainsKey(chunkPos))
+                if (gridChunks.TryGetValue(chunkPos, out var gridChunk))
                 {
-                    random -= gridChunks[chunkPos].ChunkResourcePatches.Length * antiCrowdingMultiplier;
+                    random -= gridChunk.ChunkResourcePatches.Length * antiCrowdingMultiplier;
                 }
             }
             
@@ -246,17 +246,6 @@ namespace Project.Scripts.Grid
         #endregion
 
         #region BuildingHandeling
-        
-
-        private static readonly BuildingScriptableData[] PossibleBuildingData =
-        {
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
-        };
-
         public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
         {
             return GetBuildingDataBase((int)buildingType);

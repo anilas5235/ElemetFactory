@@ -7,18 +7,14 @@ namespace Project.Scripts.Experimental
 {
     public class EntityTest : MonoBehaviour
     {
-        private EntityArchetype item,conveyor;
-
         private void Start()
         {
             //item = entityManager.CreateArchetype(typeof(Translation), typeof(Scale), typeof(RenderMesh),typeof(RenderBounds), typeof(LocalToWorld), typeof(ItemColor), typeof(ItemDataComponent));
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 5; i++)
             {
-                BuildingGridEntityUtilities.CreateBuildingEntity(new Vector3(i,0,0), new PlacedBuildingData() { buildingDataID = i, directionID = 0});
+                BuildingGridEntityUtilities.CreateBuildingEntity(new Vector3(0,i,0), new PlacedBuildingData() { buildingDataID = i, directionID = 0});
             }
-            
-            
 
             /*
             NativeArray<Entity> entities = new NativeArray<Entity>(10000, Allocator.Temp);

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Noise;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Components.Transmission;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
+using Project.Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Rendering;
@@ -17,173 +19,181 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridEntityUtilities
     {
-        private static EntityManager EntityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        private static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        private const int pixelsPerUnit = 200;
-        
-        private static EntityArchetype conveyor, extractor,combiner,trashCan,separator;
+        private const int PixelsPerUnit = 200;
 
-        private static List<ComponentType> standardtComps = new List<ComponentType>()
+        private static readonly List<ComponentType> BuildingDefaultComps = new List<ComponentType>()
         {
             typeof(Translation), typeof(NonUniformScale), typeof(Rotation),
-            typeof(RenderMesh), typeof(RenderBounds), typeof(LocalToWorld), typeof(InputDataComponent),
-            typeof(OutputDataComponent)
+            typeof(RenderMesh), typeof(RenderBounds), typeof(LocalToWorld),
+            typeof(InputDataComponent), typeof(OutputDataComponent)
         };
-        private static bool archetypesInit;
-                                                
-        public static Mesh quad;
-        private static Material conveyorMaterial = Resources.Load<Material>("Materials/ConveyorUp"),
-            extractorMaterial = Resources.Load<Material>("Materials/Excavator");
+
+        private static readonly List<ComponentType> ItemDefaultComps = new List<ComponentType>()
+        {
+            typeof(Translation), typeof(Scale), typeof(RenderMesh), typeof(ItemColor),
+            typeof(RenderBounds), typeof(LocalToWorld), typeof(ItemDataComponent)
+        };
+
+        private static readonly Material[] ItemMaterials = new[]
+        {
+            Resources.Load<Material>("Materials/Gas_Bottle"),
+            Resources.Load<Material>("Materials/Liquid_Bottle"),
+            Resources.Load<Material>("Materials/Solid_Bottle"),
+        };
+        
+        private static bool _init;
+
+        private static Mesh _quad;
+
+        private static EntityConstructionData[] _constructionData;
 
         private static readonly int BaseTexture = Shader.PropertyToID("_BaseTexture");
-
-        private static void InitArchetypes()
+        private static void InitConstructionData()
         {
+            string[] names = Enum.GetNames(typeof(PossibleBuildings));
+            _constructionData = new EntityConstructionData[names.Length];
             List<ComponentType> componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(standardtComps);
-            componentTypes.Add(typeof(ConveyorTickDataComponent ));
             
-            conveyor = EntityManager.CreateArchetype(componentTypes.ToArray());
+            //extractor construction data setup
+            componentTypes.AddRange(BuildingDefaultComps);
+            componentTypes.Add(typeof(ExtractorTickDataComponent));
+            _constructionData[0] = new EntityConstructionData(Resources.Load<Material>("Materials/Excavator"),
+                _entityManager.CreateArchetype(componentTypes.ToArray()), float3.zero,0,1,names[0]);
             
+            //conveyor construction data setup
             componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(standardtComps);
-            componentTypes.Add(typeof( ExtractorTickDataComponent));
-
-            extractor = EntityManager.CreateArchetype(componentTypes.ToArray());
+            componentTypes.AddRange(BuildingDefaultComps);
+            componentTypes.Add(typeof(ConveyorTickDataComponent));
+            _constructionData[1] = new EntityConstructionData(Resources.Load<Material>("Materials/ConveyorUp"),
+                _entityManager.CreateArchetype(componentTypes.ToArray()), float3.zero,1,1,names[1]);
             
+            //Combiner construction data setup
             componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(standardtComps);
-            componentTypes.Add(typeof( CombinerTickDataComponent));
-
-            combiner = EntityManager.CreateArchetype(componentTypes.ToArray());
+            componentTypes.AddRange(BuildingDefaultComps);
+            componentTypes.Add(typeof(CombinerTickDataComponent));
+            _constructionData[2] = new EntityConstructionData(Resources.Load<Material>("Materials/Combiner"),
+                _entityManager.CreateArchetype(componentTypes.ToArray()), new float3(0, -.25f, 0),2,1,names[2]);
             
+            //TrashCan construction data setup
             componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(standardtComps);
-            componentTypes.Add(typeof( TrashCanTickDataComponent));
-
-            trashCan = EntityManager.CreateArchetype(componentTypes.ToArray());
+            componentTypes.AddRange(BuildingDefaultComps);
+            componentTypes.Add(typeof(TrashCanTickDataComponent));
+            _constructionData[3] = new EntityConstructionData(Resources.Load<Material>("Materials/TrashCan"),
+                _entityManager.CreateArchetype(componentTypes.ToArray()), new float3(-.25f, -.25f, 0),1,0,names[3]);
             
+            //Separator construction data setup
             componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(standardtComps);
-            componentTypes.Add(typeof( SeparatorTickDataComponent));
-
-            separator = EntityManager.CreateArchetype(componentTypes.ToArray());
-        }
-
-        private static void InitMesh()
-        {
-            quad = new Mesh();
-
-            int width = 1;
-            int height = 1;
-
-            Vector3[] vertices = new Vector3[4]
-            {
-                new Vector3(0, 0, 0),
-                new Vector3(width, 0, 0),
-                new Vector3(0, height, 0),
-                new Vector3(width, height, 0)
-            };
-            quad.vertices = vertices;
-
-            int[] tris = new int[6]
-            {
-                // lower left triangle
-                0, 2, 1,
-                // upper right triangle
-                2, 3, 1
-            };
-            quad.triangles = tris;
-
-            Vector3[] normals = new Vector3[4]
-            {
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward
-            };
-            quad.normals = normals;
-
-            Vector2[] uv = new Vector2[4]
-            {
-                new Vector2(0, 0),
-                new Vector2(1, 0),
-                new Vector2(0, 1),
-                new Vector2(1, 1)
-            };
-            quad.uv = uv;
+            componentTypes.AddRange(BuildingDefaultComps);
+            componentTypes.Add(typeof(SeparatorTickDataComponent));
+            _constructionData[4] = new EntityConstructionData(Resources.Load<Material>("Materials/Separator"),
+                _entityManager.CreateArchetype(componentTypes.ToArray()),new float3(0, -.25f, 0),1,2,names[4]);
+            
+            _quad = MeshUtils.CreateQuad();
         }
 
         public static Entity CreateBuildingEntity(Vector3 position, PlacedBuildingData data)
         {
-            Vector3 offset = Vector3.zero;
-            if (!archetypesInit)
+            if (!_init)
             {
-                InitArchetypes();
-                InitMesh();
-                archetypesInit = true;
+                InitConstructionData();
+                _init = true;
+            }
+            //get constructionData
+            EntityConstructionData constructionData = _constructionData[data.buildingDataID];
+            
+            //create entity
+            Entity entity = _entityManager.CreateEntity(constructionData.Archetype);
+            
+            //set Position of entity
+            _entityManager.SetComponentData(entity, new Translation() 
+            { Value = (float3)position + constructionData.Offset });
+            
+            //set mesh/render data
+            _entityManager.SetSharedComponentData(entity, new RenderMesh() 
+                { mesh = _quad, material = constructionData.Material, layer = 0,layerMask = 1});
+            
+            //setup inputs
+            DynamicBuffer<InputDataComponent> inputBuffer = _entityManager.AddBuffer<InputDataComponent>(entity);
+            for (int i = 0; i < constructionData.NumInputs; i++)
+            {
+                inputBuffer.Add(new InputDataComponent(float3.zero, SlotBehaviour.Input));
             }
 
-            Entity entity;
-            switch ((PossibleBuildings)data.buildingDataID)
+            //setup outputs
+            DynamicBuffer<OutputDataComponent> outputBuffer = _entityManager.AddBuffer<OutputDataComponent>(entity);
+            for (int i = 0; i < constructionData.NumOutputs; i++)
             {
-                case PossibleBuildings.Extractor:
-                    entity = CreateBaseEntity(0, 1, ((PossibleBuildings)data.buildingDataID).ToString());
-                    EntityManager.SetSharedComponentData(entity,
-                        new RenderMesh() { mesh = quad, material = extractorMaterial, layerMask = 1 });
-                    break;
-                case PossibleBuildings.Conveyor:
-                    entity = CreateBaseEntity(1, 1, ((PossibleBuildings)data.buildingDataID).ToString());
-                    EntityManager.SetSharedComponentData(entity,
-                        new RenderMesh() { mesh = quad, material = conveyorMaterial, layerMask = 1 });
-                    break;
-                case PossibleBuildings.Combiner:
-                    entity = CreateBaseEntity(2, 1, ((PossibleBuildings)data.buildingDataID).ToString());
-                    break;
-                case PossibleBuildings.TrashCan:
-                    entity = CreateBaseEntity(4, 0, ((PossibleBuildings)data.buildingDataID).ToString());
-                    break;
-                case PossibleBuildings.Separator:
-                    entity = CreateBaseEntity(1, 2, ((PossibleBuildings)data.buildingDataID).ToString());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                outputBuffer.Add(new OutputDataComponent(float3.zero, SlotBehaviour.Output));
             }
 
-            EntityManager.SetComponentData(entity,
-                new Rotation()
-                    { Value = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID))) });
-
-            Texture tex = EntityManager.GetSharedComponentData<RenderMesh>(entity).material.GetTexture(BaseTexture);
-            float3 scale = new float3((float)tex.width / pixelsPerUnit, (float)tex.height / pixelsPerUnit, 1);
-            EntityManager.SetComponentData(entity, new NonUniformScale() { Value = scale });
-
-            EntityManager.SetComponentData(entity,
-                new Translation() { Value = position + offset});
+            //set entity Name
+            _entityManager.SetName(entity, constructionData.Name);
+            
+            //set rotation of entity
+            _entityManager.SetComponentData(entity, new Rotation()
+                { Value = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID))) });
+            
+            //set entity scale
+            Texture tex = _entityManager.GetSharedComponentData<RenderMesh>(entity).material.GetTexture(BaseTexture);
+            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1);
+            _entityManager.SetComponentData(entity, new NonUniformScale() { Value = scale });
+            
+            //set RenderBounds
+            _entityManager.SetComponentData(entity, new RenderBounds()
+            {
+                Value = new AABB() { Extents = new float3(scale.x / 2f, scale.y / 2f, 0) }
+            });
 
             return entity;
         }
 
-        private static Entity CreateBaseEntity(int inputs, int outputs, string name)
+        public static Entity CreateItemEntity(Vector3 position, Item item)
         {
-            Entity entity = EntityManager.CreateEntity(conveyor);
-            EntityManager.SetComponentData(entity, new RenderBounds() { Value = new AABB() { Extents = new float3(.5f, .5f, 0) } });
+            //create entity
+            Entity entity = _entityManager.CreateEntity(ItemDefaultComps.ToArray());
             
-            DynamicBuffer<InputDataComponent> inputBuffer = EntityManager.AddBuffer<InputDataComponent>(entity);
-            for (int i = 0; i < inputs; i++)
+            //set Position of entity
+            _entityManager.SetComponentData(entity, new Translation() { Value = position});
+            
+            //set Scale of entity
+            _entityManager.SetComponentData(entity, new Scale(){Value = 1});
+            
+            //set mesh/render data
+            _entityManager.SetSharedComponentData(entity, new RenderMesh() 
+                { mesh = _quad, material = ItemMaterials[(int)item.ItemForm], layer = 0,layerMask = 1});
+            
+            //set Item Color Data
+            _entityManager.SetComponentData(entity,new ItemColor(){Value = item.Color});
+            
+            //set Item Data
+            _entityManager.SetComponentData(entity, new ItemDataComponent()
             {
-                inputBuffer.Add(new InputDataComponent(float3.zero,SlotBehaviour.Input));
-            }
-           
-
-            DynamicBuffer<OutputDataComponent> outputBuffer = EntityManager.AddBuffer<OutputDataComponent>(entity);
-            for (int i = 0; i < outputs; i++)
-            {
-               outputBuffer.Add(new OutputDataComponent(float3.zero, SlotBehaviour.Output)); 
-            }
-
-            EntityManager.SetName(entity,name);
+                ItemID = ItemMemory.GetItemID(item), PreviousPos = position,
+                DestinationPos = position, Arrived = true, Progress = 1,
+            });
+            
             return entity;
+        }
+
+        private struct EntityConstructionData
+        {
+            public EntityConstructionData(Material material, EntityArchetype archetype, float3 offset, int numInputs, int numOutputs, string name)
+            {
+                Material = material;
+                Archetype = archetype;
+                Offset = offset;
+                NumInputs = numInputs;
+                NumOutputs = numOutputs;
+                Name = name;
+            }
+            public Material Material { get; }
+            public EntityArchetype Archetype { get; }
+            public float3 Offset { get; }
+            public int NumInputs { get; }
+            public int NumOutputs { get; }
+            public string Name { get; }
         }
     }
 }

@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
 using Project.Scripts.Grid;
+using Unity.Mathematics;
 
 namespace Project.Scripts.ItemSystem
 {
-    public enum ItemForm
+    public enum ItemForm : byte
     {
         Gas,
         Fluid,
@@ -14,23 +15,27 @@ namespace Project.Scripts.ItemSystem
     [Serializable]
     public struct Item
     {
-        public int[] resourceIDs;
-        public Item(int[] resourceIDs)
+        public int[] ResourceIDs { get; }
+        public ItemForm ItemForm{ get; }
+        public float4 Color{ get; }
+        public Item(int[] resourceIDs, ItemForm form, float4 color)
         {
-            this.resourceIDs = resourceIDs;
+            ResourceIDs = resourceIDs;
+            ItemForm = form;
+            Color = color;
         }
 
         public override bool Equals(object obj)
         {
             if (obj.GetType() != GetType()) return false;
             Item target = (Item) obj;
-            if (resourceIDs.Length != target.resourceIDs.Length) return false;
-            return !resourceIDs.Where((t, i) => t != target.resourceIDs[i]).Any();
+            if (ResourceIDs.Length != target.ResourceIDs.Length) return false;
+            return !ResourceIDs.Where((t, i) => t != target.ResourceIDs[i]).Any();
         }
 
         public override string ToString()
         {
-            return resourceIDs.Aggregate(string.Empty, (current, resourceID) => current + (ResourceType)resourceID);
+            return ResourceIDs.Aggregate(string.Empty, (current, resourceID) => current + (ResourceType)resourceID);
         }
     }
 }

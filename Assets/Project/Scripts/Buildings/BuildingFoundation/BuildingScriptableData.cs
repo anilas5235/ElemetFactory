@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
-    public enum FacingDirection
+    public enum FacingDirection :byte
     {
         Up,
         Right,
