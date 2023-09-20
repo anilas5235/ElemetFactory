@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.ItemSystem;
+using Project.Scripts.Utilities;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -72,7 +74,7 @@ namespace Project.Scripts.Grid.DataContainers
             GridObject gridObject = buildingGrid.GetCellData(cellPos);
             if (gridObject == null) return;
 
-            Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
+            Vector2Int[] positions = ResourcesUtility.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
             foreach (Vector2Int position in positions)
             {
                 GridObject gridObj = buildingGrid.GetCellData(position);
@@ -85,7 +87,7 @@ namespace Project.Scripts.Grid.DataContainers
         private static void PlaceBuilding(GridChunk chunk, Vector2Int cellPos, PossibleBuildings  buildingData,
             FacingDirection facingDirection)
         {
-            Vector2Int[] positions = BuildingGridResources.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
+            Vector2Int[] positions = ResourcesUtility.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;
 
 

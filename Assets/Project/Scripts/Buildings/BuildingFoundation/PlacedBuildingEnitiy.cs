@@ -4,11 +4,21 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
+using Project.Scripts.Utilities;
 using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
+    public enum PossibleBuildings : byte
+    {
+        Extractor,
+        Conveyor,
+        Combiner,
+        TrashCan,
+        Separator,
+    }
+    
     public abstract class PlacedBuildingEntity
     {
         /// <summary>
@@ -53,7 +63,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <returns>Ary of Vector2Int pseudo positions, not all maybe in the same Chunk</returns>
         public Vector2Int[] GetGridPositionList()
         {
-            return BuildingGridResources.GetBuildingDataBase(MyPlacedBuildingData.buildingDataID)
+            return ResourcesUtility.GetBuildingDataBase(MyPlacedBuildingData.buildingDataID)
                 .GetGridPositionList(MyPlacedBuildingData);
         }
 

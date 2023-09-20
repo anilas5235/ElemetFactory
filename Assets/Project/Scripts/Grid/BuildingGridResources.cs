@@ -1,47 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
-using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid.DataContainers;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Project.Scripts.Grid
 {
-    public enum PossibleBuildings : byte
-    {
-        Extractor,
-        Conveyor,
-        Combiner,
-        TrashCan,
-        Separator,
-    }
-
-    public enum ResourceType : byte
-    {
-        None,
-        H,
-        C,
-        O,
-        N,
-        S,
-        Al,
-        Fe,
-        Na,
-        Cl,
-    }
-
     public static class BuildingGridResources
     {
-        private static readonly BuildingScriptableData[] PossibleBuildingData =
-         {
-             Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
-             Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
-             Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
-             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
-             Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
-         };
-        
         #region ResourceGeneration
         
         private static readonly float[] ResourcePatchSizeProbabilities =  {60f, 39f, 1f};
@@ -243,18 +211,6 @@ namespace Project.Scripts.Grid
             return returnVal;
         }
         
-        #endregion
-
-        #region BuildingHandeling
-        public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
-        {
-            return GetBuildingDataBase((int)buildingType);
-        }
-        
-        public static BuildingScriptableData GetBuildingDataBase(int buildingTypeID)
-        {
-            return PossibleBuildingData[buildingTypeID];
-        }
         #endregion
     }
 }

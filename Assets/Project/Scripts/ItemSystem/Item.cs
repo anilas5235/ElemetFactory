@@ -6,6 +6,21 @@ using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
 {
+    public enum ResourceType : byte
+    {
+        None,
+        H,
+        C,
+        O,
+        N,
+        S,
+        Al,
+        Fe,
+        Na,
+        Cl,
+    }
+
+    
     public enum ItemForm : byte
     {
         Gas,

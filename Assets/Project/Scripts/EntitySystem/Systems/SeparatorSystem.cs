@@ -1,8 +1,13 @@
+using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.Transmission;
+using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
+using Project.Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
@@ -25,30 +30,27 @@ namespace Project.Scripts.EntitySystem.Systems
         
             if(timeForNextTick > Time.ElapsedTime) return;
             timeForNextTick += 1f/SeparatorTickDataComponent.Rate;
-        
-            Entities.ForEach((ref Translation translation, in Rotation rotation) => {
-                // Implement the work to perform for each entity here.
-                // You should only access data that is local or that is a
-                // field on this job. Note that the 'rotation' parameter is
-                // marked as 'in', which means it cannot be modified,
-                // but allows this job to run in parallel with other jobs
-                // that want to read Rotation component data.
-                // For example,
-                //     translation.Value += math.mul(rotation.Value, new float3(0, 0, 1)) * deltaTime;
-                int itemLength = inputs[0].SlotContent.Item.ResourceIDs.Length;
-                if(itemLength < 1) break;
-                int item1Length = math.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
-                ItemContainer item = inputs[0].EmptySlot();
+            
+            Entities.ForEach((ref DynamicBuffer<InputDataComponent> inputs, ref DynamicBuffer<OutputDataComponent> outputs, in CombinerTickDataComponent comTick) =>
+            {
+                InputDataComponent input = inputs[0];
+                OutputDataComponent output1 = outputs[0], output2 = outputs[1];
+                if (!input.IsOccupied && output1.IsOccupied && output2.IsOccupied) return;
+                
+                Item itemA = ItemMemory.ItemDataBank[_entityManager.GetComponentData<ItemDataComponent>(input.SlotContent).ItemID];
+                int itemLength = itemA.ResourceIDs.Length;
+                int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
+                
                 int[] contentItem1= new int[item1Length], contentItem2=new int[item2Length];
                 for (int i = 0; i < itemLength; i++)
                 {
-                    if (i < item1Length) contentItem1[i] = item.Item.ResourceIDs[i];
-                    else contentItem2[i-item1Length] = item.Item.ResourceIDs[i];
+                    if (i < item1Length) contentItem1[i] = itemA.ResourceIDs[i];
+                    else contentItem2[i-item1Length] = itemA.ResourceIDs[i];
                 }
-                item.Destroy();
-
-                outputs[0].FillSlot(ItemUtility.GetItemContainerWith(new Item(contentItem1),outputs[0]));
-                outputs[1].FillSlot(ItemUtility.GetItemContainerWith(new Item(contentItem2),outputs[1]));
+                input.SlotContent = default;
+                
+                output1.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output1.Position,ResourcesUtility.CreateItemData(contentItem1));
+                output2.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output2.Position,ResourcesUtility.CreateItemData(contentItem2));
             }).Schedule();
         }
     }

@@ -13,7 +13,7 @@ namespace Project.Scripts.EntitySystem.Systems
             float deltaTime = Time.DeltaTime;
 
             Entities.ForEach((ref Translation translation,in ItemColor itemColorChange) => {
-                translation.Value += new float3(0,math.sin(time),0) * deltaTime;
+                //translation.Value += new float3(0,math.sin(time),0) * deltaTime;
             }).ScheduleParallel();
         }
     }

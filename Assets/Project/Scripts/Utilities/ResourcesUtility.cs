@@ -1,14 +1,26 @@
 using System;
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace Project.Scripts.Utilities
 {
-    public static class VisualResourcesUtility
+    public static class ResourcesUtility
     {
-        private static readonly ResourceData[] ResourceData = new[]
+        //data arrays
+        private static readonly BuildingScriptableData[] PossibleBuildingData =
+        {
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
+        };
+        
+        private static readonly ResourceData[] ResourceDataBank = new[]
         {
             new ResourceData(ResourceType.None,Resources.Load<TileBase>("Tiles/None"),new Color(.7f,.7f,.7f),ItemForm.Solid),
             new ResourceData(ResourceType.H,Resources.Load<TileBase>("Tiles/H"),new Color(.1f,.8f,1f), ItemForm.Gas),
@@ -20,6 +32,26 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Fe,Resources.Load<TileBase>("Tiles/Fe"),new Color(.5f,0f,1f), ItemForm.Solid),
             new ResourceData(ResourceType.Na,Resources.Load<TileBase>("Tiles/Na"),new Color(1f,.2f,1f), ItemForm.Gas),
         };
+
+        public static Item CreateItemData(int[] resourceIDs)
+        {
+            float4 color = float4.zero;
+            float form =0;
+            foreach (var id in resourceIDs)
+            {
+                ResourceData data = GetResourceData(id);
+                color += new float4(data.color.r, data.color.g, data.color.b,0);
+                form += (int)data.form;
+            }
+            
+            color *= 1f / resourceIDs.Length;
+            color.w = 1f;
+            form *= 1f / resourceIDs.Length;
+            form = Mathf.RoundToInt(form);
+            
+            return new Item(resourceIDs,(ItemForm)form,color);
+        }
+        
         public static ResourceData GetResourceData(ResourceType resourceType)
         {
             return GetResourceData((int)resourceType);
@@ -27,8 +59,20 @@ namespace Project.Scripts.Utilities
         
         public static ResourceData GetResourceData(int resourceID)
         {
-            return ResourceData[resourceID];
+            return ResourceDataBank[resourceID];
         }
+        
+        #region BuildingHandeling
+        public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
+        {
+            return GetBuildingDataBase((int)buildingType);
+        }
+        
+        public static BuildingScriptableData GetBuildingDataBase(int buildingTypeID)
+        {
+            return PossibleBuildingData[buildingTypeID];
+        }
+        #endregion
     }
 
     [Serializable]

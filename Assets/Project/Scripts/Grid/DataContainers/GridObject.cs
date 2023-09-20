@@ -1,5 +1,6 @@
 using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using UnityEngine;
 
@@ -46,7 +47,7 @@ namespace Project.Scripts.Grid.DataContainers
                 Mathf.FloorToInt(Position.x - GridBuildingSystem.ChunkSize.x / 2f),
                 Mathf.FloorToInt(Position.y - GridBuildingSystem.ChunkSize.y / 2f),
                 0);
-            Chunk.ChunkTilemap.SetTile(tilePos, VisualResourcesUtility.GetResourceData(ResourceNode).tile);
+            Chunk.ChunkTilemap.SetTile(tilePos, ResourcesUtility.GetResourceData(ResourceNode).tile);
         }
 
         public override string ToString()
