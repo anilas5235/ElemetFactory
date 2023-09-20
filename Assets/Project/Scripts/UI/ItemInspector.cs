@@ -22,9 +22,6 @@ namespace Project.Scripts.UI
 
         private void UpdateUIFields()
         {
-            image.material = VisualResources.GetItemMaterial(
-                new Color(_inspectedItem.Color.x,_inspectedItem.Color.y,_inspectedItem.Color.z,_inspectedItem.Color.w)
-                , _inspectedItem.ItemForm);
             nameText.text = _inspectedItem.ToString();
         }
     }
