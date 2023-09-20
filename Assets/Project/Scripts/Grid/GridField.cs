@@ -13,7 +13,8 @@ namespace Project.Scripts.Grid
         public int Height { get; }
         public float CellSize { get; }
 
-        private readonly Vector3 _halfCellSize,_originPosition,_fieldOffset;
+        public readonly Vector3 _halfCellSize;
+        private readonly Vector3 _originPosition,_fieldOffset;
         private readonly TGridObject[,] _cellValues;
         private readonly TextMesh[,] _cellTexts;
 

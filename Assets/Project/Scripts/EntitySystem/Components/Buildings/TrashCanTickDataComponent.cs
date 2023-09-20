@@ -2,7 +2,7 @@
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
 {
-    public class TrashCanTickDataComponent : IComponentData
+    public struct TrashCanTickDataComponent : IComponentData
     {
     }
 }

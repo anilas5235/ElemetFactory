@@ -10,7 +10,7 @@ namespace Project.Scripts.Grid.DataContainers
     {
         private GridField<GridObject> GridField => Chunk.ChunkBuildingGrid;
         public Vector2Int Position { get; }
-        public bool Occupied => Building == null;
+        public bool Occupied => Building != null;
         public PlacedBuildingEntity Building { get; private set; }
         public ResourceType ResourceNode { get; private set; }
         public GridChunk Chunk { get; }

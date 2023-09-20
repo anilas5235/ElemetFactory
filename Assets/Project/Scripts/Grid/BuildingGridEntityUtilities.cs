@@ -50,45 +50,55 @@ namespace Project.Scripts.Grid
         private static EntityConstructionData[] _constructionData;
 
         private static readonly int BaseTexture = Shader.PropertyToID("_BaseTexture");
+
+        private static readonly float EntityScaleFactor = 10f;
         private static void InitConstructionData()
         {
             string[] names = Enum.GetNames(typeof(PossibleBuildings));
             _constructionData = new EntityConstructionData[names.Length];
             List<ComponentType> componentTypes = new List<ComponentType>();
+
+            float3[] nullOffset = new[] { float3.zero, float3.zero, float3.zero, float3.zero };
             
             //extractor construction data setup
             componentTypes.AddRange(BuildingDefaultComps);
             componentTypes.Add(typeof(ExtractorTickDataComponent));
             _constructionData[0] = new EntityConstructionData(Resources.Load<Material>("Materials/Excavator"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), float3.zero,0,1,names[0]);
+                _entityManager.CreateArchetype(componentTypes.ToArray()),  nullOffset,0,1,names[0]);
             
             //conveyor construction data setup
             componentTypes = new List<ComponentType>();
             componentTypes.AddRange(BuildingDefaultComps);
             componentTypes.Add(typeof(ConveyorTickDataComponent));
             _constructionData[1] = new EntityConstructionData(Resources.Load<Material>("Materials/ConveyorUp"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), float3.zero,1,1,names[1]);
+                _entityManager.CreateArchetype(componentTypes.ToArray()), nullOffset,1,1,names[1]);
             
             //Combiner construction data setup
             componentTypes = new List<ComponentType>();
             componentTypes.AddRange(BuildingDefaultComps);
             componentTypes.Add(typeof(CombinerTickDataComponent));
             _constructionData[2] = new EntityConstructionData(Resources.Load<Material>("Materials/Combiner"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), new float3(0, -.25f, 0),2,1,names[2]);
+                _entityManager.CreateArchetype(componentTypes.ToArray()), 
+                new []{new float3(1, -.25f, 0),new float3(-.25f,1,0),new float3(1, .25f, 0),new float3(-.25f,-1,0)},
+                2,1,names[2]);
             
             //TrashCan construction data setup
             componentTypes = new List<ComponentType>();
             componentTypes.AddRange(BuildingDefaultComps);
             componentTypes.Add(typeof(TrashCanTickDataComponent));
             _constructionData[3] = new EntityConstructionData(Resources.Load<Material>("Materials/TrashCan"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), new float3(-.25f, -.25f, 0),1,0,names[3]);
+                _entityManager.CreateArchetype(componentTypes.ToArray()),
+                new []{ new float3(-.25f, -.25f, 0),new float3(-.25f, -.25f, 0),new float3(-.25f, -.25f, 0),new float3(-.25f, -.25f, 0)},
+                1,0,names[3]);
             
             //Separator construction data setup
             componentTypes = new List<ComponentType>();
             componentTypes.AddRange(BuildingDefaultComps);
             componentTypes.Add(typeof(SeparatorTickDataComponent));
             _constructionData[4] = new EntityConstructionData(Resources.Load<Material>("Materials/Separator"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()),new float3(0, -.25f, 0),1,2,names[4]);
+                _entityManager.CreateArchetype(componentTypes.ToArray()),
+                new []{ new float3(1, -.25f, 0),new float3(-.25f,1,0),new float3(1, .25f, 0),new float3(-.25f,-1,0)}
+                ,1,2,names[4]);
             
             _quad = MeshUtils.CreateQuad();
         }
@@ -108,7 +118,7 @@ namespace Project.Scripts.Grid
             
             //set Position of entity
             _entityManager.SetComponentData(entity, new Translation() 
-            { Value = (float3)position + constructionData.Offset });
+            { Value = (float3)position + constructionData.Offset[data.directionID]* EntityScaleFactor});
             
             //set mesh/render data
             _entityManager.SetSharedComponentData(entity, new RenderMesh() 
@@ -137,7 +147,7 @@ namespace Project.Scripts.Grid
             
             //set entity scale
             Texture tex = _entityManager.GetSharedComponentData<RenderMesh>(entity).material.GetTexture(BaseTexture);
-            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1);
+            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1)*EntityScaleFactor;
             _entityManager.SetComponentData(entity, new NonUniformScale() { Value = scale });
             
             //set RenderBounds
@@ -158,7 +168,7 @@ namespace Project.Scripts.Grid
             _entityManager.SetComponentData(entity, new Translation() { Value = position});
             
             //set Scale of entity
-            _entityManager.SetComponentData(entity, new Scale(){Value = 1});
+            _entityManager.SetComponentData(entity, new Scale(){Value = EntityScaleFactor});
             
             //set mesh/render data
             _entityManager.SetSharedComponentData(entity, new RenderMesh() 
@@ -179,7 +189,7 @@ namespace Project.Scripts.Grid
 
         private struct EntityConstructionData
         {
-            public EntityConstructionData(Material material, EntityArchetype archetype, float3 offset, int numInputs, int numOutputs, string name)
+            public EntityConstructionData(Material material, EntityArchetype archetype, float3[] offset, int numInputs, int numOutputs, string name)
             {
                 Material = material;
                 Archetype = archetype;
@@ -190,7 +200,7 @@ namespace Project.Scripts.Grid
             }
             public Material Material { get; }
             public EntityArchetype Archetype { get; }
-            public float3 Offset { get; }
+            public float3[] Offset { get; }
             public int NumInputs { get; }
             public int NumOutputs { get; }
             public string Name { get; }

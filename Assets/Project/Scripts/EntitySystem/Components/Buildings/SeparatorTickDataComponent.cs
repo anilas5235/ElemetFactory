@@ -2,7 +2,7 @@
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
 {
-    public class SeparatorTickDataComponent : IComponentData
+    public struct SeparatorTickDataComponent : IComponentData
     {
         public static float Rate = .25f;
     }

@@ -2,7 +2,7 @@
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
 {
-    public class CombinerTickDataComponent : IComponentData
+    public struct CombinerTickDataComponent : IComponentData
     {
         public static float Rate = .25f;
     }

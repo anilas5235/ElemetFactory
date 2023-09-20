@@ -2,7 +2,7 @@ using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
 {
-    public class ExtractorTickDataComponent : IComponentData
+    public struct ExtractorTickDataComponent : IComponentData
     {
         public static float Rate = 1;
     }
