@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Project.Scripts.Grid;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -31,12 +32,15 @@ namespace Project.Scripts.ItemSystem
     [Serializable]
     public struct Item
     {
-        public int[] ResourceIDs { get; }
+        //public int[] ResourceIDs { get; }
+        
+        public NativeArray<int> ResourceIDs { get; }
         public ItemForm ItemForm{ get; }
         public float4 Color{ get; }
-        public Item(int[] resourceIDs, ItemForm form, float4 color)
+        public Item(NativeArray<int> resourceIDs, ItemForm form, float4 color)
         {
-            ResourceIDs = resourceIDs;
+            ResourceIDs = new NativeArray<int>();
+            resourceIDs.CopyTo(ResourceIDs);
             ItemForm = form;
             Color = color;
         }

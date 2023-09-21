@@ -2,6 +2,7 @@ using System;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -33,7 +34,7 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Na,Resources.Load<TileBase>("Tiles/Na"),new Color(1f,.2f,1f), ItemForm.Gas),
         };
 
-        public static Item CreateItemData(int[] resourceIDs)
+        public static Item CreateItemData(NativeArray<int> resourceIDs)
         {
             float4 color = float4.zero;
             float form =0;

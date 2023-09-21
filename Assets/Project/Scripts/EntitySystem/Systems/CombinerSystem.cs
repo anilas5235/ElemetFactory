@@ -36,11 +36,9 @@ namespace Project.Scripts.EntitySystem.Systems
                     OutputDataComponent output = outputs[0];
                     
                     if (!input1.IsOccupied && !input2.IsOccupied && output.IsOccupied) return;
-                    
-                    Item itemA = ItemMemory.ItemDataBank[
-                        EntityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).ItemID];
-                    Item itemB = ItemMemory.ItemDataBank[
-                        EntityManager.GetComponentData<ItemDataComponent>(input2.SlotContent).ItemID];
+
+                    Item itemA = EntityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).item; 
+                    Item itemB = EntityManager.GetComponentData<ItemDataComponent>(input2.SlotContent).item; 
 
                     NativeArray<int> combIDs = new NativeArray<int>(itemA.ResourceIDs.Length + itemB.ResourceIDs.Length, Allocator.TempJob);
                     for (int i = 0; i < itemA.ResourceIDs.Length; i++)combIDs[i] = itemA.ResourceIDs[i];
@@ -49,7 +47,7 @@ namespace Project.Scripts.EntitySystem.Systems
                     input2.SlotContent = default;
 
                     output.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output.Position,
-                        ResourcesUtility.CreateItemData(combIDs.ToArray()), EntityManager);
+                        ResourcesUtility.CreateItemData(combIDs), EntityManager);
                     
                     combIDs.Dispose();
 

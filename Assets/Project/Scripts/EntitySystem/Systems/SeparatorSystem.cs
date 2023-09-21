@@ -4,6 +4,7 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 int itemLength = itemA.ResourceIDs.Length;
                 int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
 
-                int[] contentItem1 = new int[item1Length], contentItem2 = new int[item2Length];
+                NativeArray<int> contentItem1 = new (item1Length,Allocator.TempJob), contentItem2 = new (item2Length,Allocator.TempJob);
                 for (int i = 0; i < itemLength; i++)
                 {
                     if (i < item1Length) contentItem1[i] = itemA.ResourceIDs[i];
@@ -45,6 +46,9 @@ namespace Project.Scripts.EntitySystem.Systems
                     ResourcesUtility.CreateItemData(contentItem1),EntityManager);
                 output2.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output2.Position,
                     ResourcesUtility.CreateItemData(contentItem2),EntityManager);
+
+                contentItem1.Dispose();
+                contentItem2.Dispose();
             }).Schedule();
         }
     }
