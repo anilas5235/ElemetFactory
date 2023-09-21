@@ -10,8 +10,9 @@ namespace Project.Scripts.EntitySystem.Systems
         public static float Rate = 2;
         protected override void OnUpdate()
         {
-            if(timeForNextTick > Time.ElapsedTime) return;
-            timeForNextTick += 1f/Rate;
+            timeForNextTick += Time.DeltaTime;
+            if(timeForNextTick < 1f/Rate) return;
+            timeForNextTick = 0;
         
             Entities.ForEach((ref DynamicBuffer<InputDataComponent> inputs, ref DynamicBuffer<OutputDataComponent> outputs, in ConveyorTickDataComponent conveyorTick) => {
                 
