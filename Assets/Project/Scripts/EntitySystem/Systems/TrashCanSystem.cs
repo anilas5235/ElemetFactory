@@ -1,7 +1,6 @@
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Transmission;
 using Unity.Entities;
-using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Systems
 {

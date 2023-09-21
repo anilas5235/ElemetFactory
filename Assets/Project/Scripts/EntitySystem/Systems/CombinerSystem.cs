@@ -5,18 +5,19 @@ using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;
+using UnityEditorInternal.Profiling.Memory.Experimental;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
     public partial class CombinerSystem : SystemBase
     {
         private static float timeForNextTick = 0;
-        private static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        public static float Rate = .25f;
     
         protected override void OnUpdate()
         {
             if(timeForNextTick > Time.ElapsedTime) return;
-            timeForNextTick += 1f/CombinerTickDataComponent.Rate;
+            timeForNextTick += 1f/Rate;
         
             Entities.ForEach((ref DynamicBuffer<InputDataComponent> inputs, ref DynamicBuffer<OutputDataComponent> outputs, in CombinerTickDataComponent comTick) =>
             {
@@ -24,8 +25,8 @@ namespace Project.Scripts.EntitySystem.Systems
                 OutputDataComponent output = outputs[0];
                 if (!input1.IsOccupied && !input2.IsOccupied && output.IsOccupied) return;
                 
-                Item itemA = ItemMemory.ItemDataBank[_entityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).ItemID];
-                Item itemB = ItemMemory.ItemDataBank[_entityManager.GetComponentData<ItemDataComponent>(input2.SlotContent).ItemID];
+                Item itemA = ItemMemory.ItemDataBank[EntityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).ItemID];
+                Item itemB = ItemMemory.ItemDataBank[EntityManager.GetComponentData<ItemDataComponent>(input2.SlotContent).ItemID];
                     
                 int[] combIDs = new int[itemA.ResourceIDs.Length + itemB.ResourceIDs.Length];
                 itemA.ResourceIDs.CopyTo(combIDs, 0);
@@ -33,7 +34,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 itemB.ResourceIDs.CopyTo(combIDs, itemA.ResourceIDs.Length);
                 input2.SlotContent = default;
 
-                output.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output.Position,ResourcesUtility.CreateItemData(combIDs));
+                output.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output.Position,ResourcesUtility.CreateItemData(combIDs),EntityManager);
             }).Schedule();
         }
     }

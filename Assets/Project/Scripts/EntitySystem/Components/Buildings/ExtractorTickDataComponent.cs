@@ -4,6 +4,6 @@ namespace Project.Scripts.EntitySystem.Components.Buildings
 {
     public struct ExtractorTickDataComponent : IComponentData
     {
-        public static float Rate = 1;
+        public uint itemID;
     }
 }

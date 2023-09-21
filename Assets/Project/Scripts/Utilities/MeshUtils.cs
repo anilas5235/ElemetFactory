@@ -9,7 +9,6 @@
                unitycodemonkey.com
     --------------------------------------------------
  */
-
 using UnityEngine;
 
 namespace Project.Scripts.Utilities
@@ -179,26 +178,28 @@ namespace Project.Scripts.Utilities
 			triangles[tIndex + 4] = vIndex3;
 			triangles[tIndex + 5] = vIndex2;
 		}
-
-		public static Mesh CreateQuad(int width = 1, int height = 1)
+		
+		public static Mesh CreateQuad(Vector2 center,int width = 1, int height = 1)
 		{
 			Mesh mesh = new Mesh();
 
+			Vector2 offsetCenter = new Vector2(.5f, .5f) - center;
+
 			Vector3[] vertices = new Vector3[4]
 			{
-				new Vector3(0, 0, 0),
-				new Vector3(width, 0, 0),
-				new Vector3(0, height, 0),
-				new Vector3(width, height, 0)
+				offsetCenter + new Vector2(-.5f,-.5f),
+				offsetCenter + new Vector2(-.5f,.5f),
+				offsetCenter+ new Vector2(.5f,.5f),
+				offsetCenter+ new Vector2(.5f,-.5f),
 			};
 			mesh.vertices = vertices;
 
 			int[] tris = new int[6]
 			{
 				// lower left triangle
-				0, 2, 1,
+				0, 1, 3,
 				// upper right triangle
-				2, 3, 1
+				1, 2, 3
 			};
 			mesh.triangles = tris;
 
@@ -214,9 +215,9 @@ namespace Project.Scripts.Utilities
 			Vector2[] uv = new Vector2[4]
 			{
 				new Vector2(0, 0),
-				new Vector2(1, 0),
 				new Vector2(0, 1),
-				new Vector2(1, 1)
+				new Vector2(1, 1),
+				new Vector2(1, 0),
 			};
 			mesh.uv = uv;
 

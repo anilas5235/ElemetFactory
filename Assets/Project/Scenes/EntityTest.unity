@@ -253,9 +253,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7b13081f01b57148bfdff2348cea226, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-  itemMaterial: {fileID: 2100000, guid: 1f79c7b9e7f5a464ba4590f3380158aa, type: 2}
-  conveyorMaterial: {fileID: 2100000, guid: 8eefe60471482cc41bb704d9ac267af5, type: 2}
+  building: 3
+  direction: 3
 --- !u!4 &1561265199
 Transform:
   m_ObjectHideFlags: 0
