@@ -2,9 +2,8 @@ using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Unity.Collections;
-using Unity.Entities;
 using UnityEngine;
-
+/*
 namespace Project.Scripts.EntitySystem.Systems
 {
     public partial struct ExtractorSystem : ISystem
@@ -46,4 +45,4 @@ namespace Project.Scripts.EntitySystem.Systems
             }).Run();
         }
     }
-}
+}*/

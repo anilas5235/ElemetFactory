@@ -14,6 +14,7 @@ using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 namespace Project.Scripts.Grid
@@ -26,9 +27,8 @@ namespace Project.Scripts.Grid
 
         private static readonly List<ComponentType> BuildingDefaultComps = new List<ComponentType>()
         {
-            typeof(Translation), typeof(NonUniformScale), typeof(Rotation),
-            typeof(RenderMesh), typeof(RenderBounds), typeof(LocalToWorld),
-            typeof(InputDataComponent), typeof(OutputDataComponent)
+            typeof(LocalTransform), typeof(RenderMesh), typeof(RenderBounds), 
+            typeof(LocalToWorld), typeof(InputDataComponent), typeof(OutputDataComponent)
         };
 
         private static readonly List<ComponentType> ItemDefaultComps = new List<ComponentType>()
@@ -114,11 +114,23 @@ namespace Project.Scripts.Grid
             //create entity
             Entity entity = _entityManager.CreateEntity(constructionData.Archetype);
             
+            //set rotation of entity
+            var rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID)));
+            
+            //set entity scale
+            Texture tex = _entityManager.GetSharedComponentManaged<RenderMesh>(entity).material.GetTexture(BaseTexture);
+            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1)*EntityScaleFactor;
+            
             //set Position of entity
-            _entityManager.SetComponentData(entity, new Translation(){ Value = position});
+            _entityManager.SetComponentData(entity, new LocalTransform()
+            {
+                Position = position,
+                Scale = scale,
+                
+            });
             
             //set mesh/render data
-            _entityManager.SetSharedComponentData(entity, new RenderMesh() 
+            _entityManager.SetSharedComponentManaged(entity, new RenderMesh() 
                 { mesh = constructionData.Mesh, material = constructionData.Material, layer = 0,layerMask = 1});
             
             //setup inputs
@@ -138,15 +150,6 @@ namespace Project.Scripts.Grid
             //set entity Name
             _entityManager.SetName(entity, constructionData.Name);
             
-            //set rotation of entity
-            _entityManager.SetComponentData(entity, new Rotation()
-                { Value = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID))) });
-            
-            //set entity scale
-            Texture tex = _entityManager.GetSharedComponentData<RenderMesh>(entity).material.GetTexture(BaseTexture);
-            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1)*EntityScaleFactor;
-            _entityManager.SetComponentData(entity, new NonUniformScale() { Value = scale });
-            
             //set RenderBounds
             _entityManager.SetComponentData(entity, new RenderBounds()
             {
@@ -162,7 +165,7 @@ namespace Project.Scripts.Grid
             return CreateItemEntity(position, ItemMemory.GetItemID(item), entityManager, out entity);
         }
 
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public static bool CreateItemEntity(Vector3 position, uint itemID, EntityManager entityManager, out Entity entity)
         {
             entity = default;
@@ -178,7 +181,7 @@ namespace Project.Scripts.Grid
             entityManager.SetComponentData(entity, new Scale(){Value = EntityScaleFactor});
             
             //set mesh/render data
-            entityManager.SetSharedComponentData(entity, new RenderMesh() 
+            entityManager.SetSharedComponentManaged(entity, new RenderMesh() 
                 { mesh = itemMesh ,material = ItemMaterials[(int)item.ItemForm], layer = 0,layerMask = 1});
             
             //set bounds

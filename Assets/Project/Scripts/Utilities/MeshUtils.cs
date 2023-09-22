@@ -179,6 +179,13 @@ namespace Project.Scripts.Utilities
 			triangles[tIndex + 5] = vIndex2;
 		}
 		
+		/// <summary>
+		/// Creates a quad Mesh
+		/// </summary>
+		/// <param name="center">in unit space / UV space</param>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <returns></returns>
 		public static Mesh CreateQuad(Vector2 center,int width = 1, int height = 1)
 		{
 			Mesh mesh = new Mesh();
@@ -187,10 +194,10 @@ namespace Project.Scripts.Utilities
 
 			Vector3[] vertices = new Vector3[4]
 			{
-				offsetCenter + new Vector2(-.5f,-.5f),
-				offsetCenter + new Vector2(-.5f,.5f),
-				offsetCenter+ new Vector2(.5f,.5f),
-				offsetCenter+ new Vector2(.5f,-.5f),
+				offsetCenter + new Vector2(-.5f*width,-.5f*height),
+				offsetCenter + new Vector2(-.5f*width,.5f*height),
+				offsetCenter+ new Vector2(.5f*width,.5f*height),
+				offsetCenter+ new Vector2(.5f*width,-.5f*height),
 			};
 			mesh.vertices = vertices;
 

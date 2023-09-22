@@ -1,7 +1,6 @@
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Transmission;
-using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Collections;
@@ -12,25 +11,24 @@ using UnityEngine;
 namespace Project.Scripts.EntitySystem.Systems
 {
     [DisableAutoCreation]
-    [AlwaysUpdateSystem]
     public partial struct CombinerSystem : ISystem
     {
         private static float timeSinceLastTick;
         public static float Rate;
 
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public void OnCreate(ref SystemState state)
         {
             timeSinceLastTick = 0;
             Rate= .25f;
         }
 
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public void OnDestroy(ref SystemState state)
         {
         }
         
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public void OnUpdate(ref SystemState state)
         {
             timeSinceLastTick += Time.deltaTime;
