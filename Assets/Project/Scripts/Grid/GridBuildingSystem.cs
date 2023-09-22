@@ -5,6 +5,7 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using UI.Windows;
 using UnityEngine;
@@ -42,6 +43,7 @@ namespace Project.Scripts.Grid
 
         private void OnEnable()
         {
+            ItemMemory.SetUpItemDataBank();
             LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
             UIWindowMaster.Instance.OnActiveUIChanged += CanBuild;
         }

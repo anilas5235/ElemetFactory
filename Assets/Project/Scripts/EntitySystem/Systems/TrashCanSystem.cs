@@ -4,6 +4,7 @@ using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [DisableAutoCreation]
     public partial class TrashCanSystem : SystemBase
     {
         protected override void OnUpdate()

@@ -34,13 +34,12 @@ namespace Project.Scripts.ItemSystem
     {
         //public int[] ResourceIDs { get; }
         
-        public NativeArray<int> ResourceIDs { get; }
+        public NativeArray<uint> ResourceIDs { get; }
         public ItemForm ItemForm{ get; }
         public float4 Color{ get; }
-        public Item(NativeArray<int> resourceIDs, ItemForm form, float4 color)
+        public Item(NativeArray<uint> resourceIDs, ItemForm form, float4 color)
         {
-            ResourceIDs = new NativeArray<int>();
-            resourceIDs.CopyTo(ResourceIDs);
+            ResourceIDs = new NativeArray<uint>(resourceIDs,Allocator.Persistent);
             ItemForm = form;
             Color = color;
         }

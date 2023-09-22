@@ -30,7 +30,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <param name="facingDirection">The facing direction of the building</param>
         /// <param name="buildingData">The typeData of the building</param>
         /// <returns>Reference to the newly created PlacedBuildingEntity</returns>
-        public static PlacedBuildingEntity CreateBuilding<T>(GridObject gridObject, Vector3 worldPosition,
+        public  static PlacedBuildingEntity CreateBuilding<T>(GridObject gridObject, Vector3 worldPosition,
             Vector2Int origin, FacingDirection facingDirection, PossibleBuildings buildingData) where T : PlacedBuildingEntity,new()
         {
             PlacedBuildingEntity placedBuilding = new T()
@@ -46,6 +46,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             placedBuilding.BuildingEntity =
                 BuildingGridEntityUtilities.CreateBuildingEntity(worldPosition, placedBuilding.MyPlacedBuildingData);
             placedBuilding.SetUpSlots(facingDirection);
+            placedBuilding.OnCreate();
             return placedBuilding;
         }
         
@@ -56,6 +57,10 @@ namespace Project.Scripts.Buildings.BuildingFoundation
 
         protected SlotValidationHandler mySlotValidationHandler;
 
+        protected virtual void OnCreate()
+        {
+            
+        }
 
         /// <summary>
         /// Give back a list of positions, that this building occupies

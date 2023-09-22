@@ -5,7 +5,7 @@ namespace Project.Scripts.ItemSystem
 {
     public static class ItemMemory
     {
-        public static Dictionary<uint, Item> ItemDataBank { get; private set; }
+        private static Dictionary<uint, Item> ItemDataBank;
 
         public static void SetUpItemDataBank(Item[] previous = null)
         {
@@ -24,6 +24,12 @@ namespace Project.Scripts.ItemSystem
             uint key = (uint)ItemDataBank.Count;
             ItemDataBank.Add(key, item);
             return key;
+        }
+
+        public static bool GetItem(uint ID, out Item item)
+        {
+            item = default;
+            return (ItemDataBank.TryGetValue(ID, out item));
         }
     }
 }

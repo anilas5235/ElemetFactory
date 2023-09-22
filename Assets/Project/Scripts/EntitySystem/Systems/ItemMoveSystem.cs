@@ -4,6 +4,7 @@ using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [DisableAutoCreation]
     public partial class ItemMoveSystem : SystemBase
     {
         protected override void OnUpdate()

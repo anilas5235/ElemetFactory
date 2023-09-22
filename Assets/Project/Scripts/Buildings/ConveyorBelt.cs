@@ -40,7 +40,7 @@ namespace Project.Scripts.Buildings
                 IEntityOutput entityInput = (IEntityOutput)building;
                 if (entityInput == null) continue;
                 if (!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
-                buffer[i] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
+                buffer[0] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
                     entity, (byte)index, inputDataComponent.SlotContent);
                 break;
             }

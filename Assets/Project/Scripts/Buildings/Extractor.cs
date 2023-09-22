@@ -6,6 +6,8 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
+using Project.Scripts.Utilities;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -14,6 +16,17 @@ namespace Project.Scripts.Buildings
     public class Extractor : PlacedBuildingEntity,IEntityOutput
     {
         public ResourceType GeneratedResource { get; private set; }
+
+        protected override void OnCreate()
+        {
+            if(GeneratedResource == ResourceType.None) return;
+            NativeArray<uint> ids = new NativeArray<uint>(1, Allocator.Temp);
+            ids[0] = (uint)GeneratedResource;
+
+            ItemMemory.GetItemID(ResourcesUtility.CreateItemData(ids));
+            ids.Dispose();
+        }
+
         public bool GetOutput(PlacedBuildingEntity caller, out Entity entity, out int outputIndex)
         {
             entity = default;

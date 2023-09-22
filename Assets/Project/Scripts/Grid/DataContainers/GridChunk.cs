@@ -90,7 +90,7 @@ namespace Project.Scripts.Grid.DataContainers
             Vector2Int[] positions = ResourcesUtility.GetBuildingDataBase(buildingData).GetGridPositionList(cellPos, facingDirection);
             GridField<GridObject> buildGridField = chunk.ChunkBuildingGrid;
 
-            Vector3 worldPos = buildGridField.GetWorldPosition(cellPos)+ new Vector3(buildGridField._halfCellSize.x, buildGridField._halfCellSize.y, 0);
+            Vector3 worldPos = buildGridField.GetWorldPosition(cellPos);
 
             PlacedBuildingEntity building = buildingData switch
             {

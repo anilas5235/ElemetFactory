@@ -8,6 +8,7 @@ using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Rendering;
@@ -156,17 +157,19 @@ namespace Project.Scripts.Grid
             return entity;
         }
 
-        public static Entity CreateItemEntity(Vector3 position, Item item, EntityManager entityManager)
+        public static bool CreateItemEntity(Vector3 position, Item item, EntityManager entityManager, out Entity entity)
         {
-            return CreateItemEntity(position, ItemMemory.GetItemID(item), entityManager);
+            return CreateItemEntity(position, ItemMemory.GetItemID(item), entityManager, out entity);
         }
 
-        public static Entity CreateItemEntity(Vector3 position, uint itemID, EntityManager entityManager)
+        [BurstCompatible]
+        public static bool CreateItemEntity(Vector3 position, uint itemID, EntityManager entityManager, out Entity entity)
         {
-            Item item = ItemMemory.ItemDataBank[itemID];
+            entity = default;
+            if (!ItemMemory.GetItem(itemID, out var item)) return false;
             
             //create entity
-            Entity entity = entityManager.CreateEntity(ItemDefaultComps.ToArray());
+            entity = entityManager.CreateEntity(ItemDefaultComps.ToArray());
             
             //set Position of entity
             entityManager.SetComponentData(entity, new Translation() { Value = position});
@@ -195,7 +198,7 @@ namespace Project.Scripts.Grid
                 DestinationPos = position, Arrived = true, Progress = 1,
             });
             
-            return entity;
+            return true;
         }
 
         private struct EntityConstructionData

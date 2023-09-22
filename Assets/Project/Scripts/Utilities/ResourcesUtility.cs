@@ -34,7 +34,7 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Na,Resources.Load<TileBase>("Tiles/Na"),new Color(1f,.2f,1f), ItemForm.Gas),
         };
 
-        public static Item CreateItemData(NativeArray<int> resourceIDs)
+        public static Item CreateItemData(NativeArray<uint> resourceIDs)
         {
             float4 color = float4.zero;
             float form =0;
@@ -55,10 +55,10 @@ namespace Project.Scripts.Utilities
         
         public static ResourceData GetResourceData(ResourceType resourceType)
         {
-            return GetResourceData((int)resourceType);
+            return GetResourceData((uint)resourceType);
         }
         
-        public static ResourceData GetResourceData(int resourceID)
+        public static ResourceData GetResourceData(uint resourceID)
         {
             return ResourceDataBank[resourceID];
         }

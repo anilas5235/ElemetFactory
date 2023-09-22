@@ -6,30 +6,41 @@ using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEditorInternal.Profiling.Memory.Experimental;
+using UnityEngine;
+
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [DisableAutoCreation]
     [AlwaysUpdateSystem]
-    public partial class CombinerSystem : SystemBase
+    public partial struct CombinerSystem : ISystem
     {
         private static float timeSinceLastTick;
         public static float Rate;
 
-        protected override void OnCreate()
+        [BurstCompatible]
+        public void OnCreate(ref SystemState state)
         {
             timeSinceLastTick = 0;
             Rate= .25f;
-            base.OnCreate();
         }
 
-        protected override void OnUpdate()
+        [BurstCompatible]
+        public void OnDestroy(ref SystemState state)
         {
-            timeSinceLastTick += Time.DeltaTime;
+        }
+        
+        [BurstCompatible]
+        public void OnUpdate(ref SystemState state)
+        {
+            timeSinceLastTick += Time.deltaTime;
             if (timeSinceLastTick < 1f / Rate) return;
             timeSinceLastTick = 0;
-
-            Entities.WithAll<CombinerTickDataComponent>().ForEach(
+            
+            EntityManager entityManager = state.EntityManager;
+            
+            state.Entities.WithAll<CombinerTickDataComponent>()
+                .ForEach(
                 (ref DynamicBuffer<InputDataComponent> inputs, ref DynamicBuffer<OutputDataComponent> outputs) =>
                 {
                     InputDataComponent input1 = inputs[0],input2 = inputs[1];
@@ -37,17 +48,16 @@ namespace Project.Scripts.EntitySystem.Systems
                     
                     if (!input1.IsOccupied && !input2.IsOccupied && output.IsOccupied) return;
 
-                    Item itemA = EntityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).item; 
-                    Item itemB = EntityManager.GetComponentData<ItemDataComponent>(input2.SlotContent).item; 
+                    if(!ItemMemory.GetItem(entityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).ItemID,out Item itemA)) return;
+                    if(!ItemMemory.GetItem(entityManager.GetComponentData<ItemDataComponent>(input1.SlotContent).ItemID,out Item itemB)) return;
 
-                    NativeArray<int> combIDs = new NativeArray<int>(itemA.ResourceIDs.Length + itemB.ResourceIDs.Length, Allocator.TempJob);
+                    NativeArray<uint> combIDs = new NativeArray<uint>(itemA.ResourceIDs.Length + itemB.ResourceIDs.Length, Allocator.TempJob);
                     for (int i = 0; i < itemA.ResourceIDs.Length; i++)combIDs[i] = itemA.ResourceIDs[i];
                     input1.SlotContent = default;
                     for (int i = 0; i < itemB.ResourceIDs.Length; i++)combIDs[i+itemA.ResourceIDs.Length] = itemA.ResourceIDs[i];
                     input2.SlotContent = default;
 
-                    output.SlotContent = BuildingGridEntityUtilities.CreateItemEntity(output.Position,
-                        ResourcesUtility.CreateItemData(combIDs), EntityManager);
+                    BuildingGridEntityUtilities.CreateItemEntity(output.Position, ResourcesUtility.CreateItemData(combIDs), entityManager, out output.SlotContent );
                     
                     combIDs.Dispose();
 
