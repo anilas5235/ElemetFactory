@@ -31,5 +31,10 @@ namespace Project.Scripts.ItemSystem
             item = default;
             return (ItemDataBank.TryGetValue(ID, out item));
         }
+
+        public static Item[] GetCurrentData()
+        {
+            return ItemDataBank.Values.ToArray();
+        }
     }
 }

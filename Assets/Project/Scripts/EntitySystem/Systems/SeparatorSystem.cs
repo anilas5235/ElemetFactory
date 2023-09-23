@@ -55,11 +55,9 @@ namespace Project.Scripts.EntitySystem.Systems
                 }
 
                 input.SlotContent = default;
-
-                BuildingGridEntityUtilities.CreateItemEntity(output1.Position,
-                    ResourcesUtility.CreateItemData(contentItem1),out output1.SlotContent);
-                BuildingGridEntityUtilities.CreateItemEntity(output2.Position,
-                    ResourcesUtility.CreateItemData(contentItem2),out output2.SlotContent);
+                
+                //BuildingGridEntityUtilities.CreateItemEntity(output1.Position,ResourcesUtility.CreateItemData(contentItem1),out output1.SlotContent);
+                //BuildingGridEntityUtilities.CreateItemEntity(output2.Position, ResourcesUtility.CreateItemData(contentItem2),out output2.SlotContent);
 
                 contentItem1.Dispose();
                 contentItem2.Dispose();
