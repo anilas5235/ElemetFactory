@@ -1,5 +1,3 @@
-using System;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.General;
 using UI.Windows;
 using UnityEngine;

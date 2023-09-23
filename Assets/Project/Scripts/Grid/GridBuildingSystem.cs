@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;

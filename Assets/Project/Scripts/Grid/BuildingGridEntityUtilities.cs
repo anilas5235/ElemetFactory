@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
@@ -14,7 +13,7 @@ using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.UIElements;
+
 
 
 namespace Project.Scripts.Grid
@@ -25,17 +24,19 @@ namespace Project.Scripts.Grid
 
         private const int PixelsPerUnit = 200;
 
-        private static readonly List<ComponentType> BuildingDefaultComps = new List<ComponentType>()
+        private static readonly ComponentType[] BuildingDefaultComps = new ComponentType[]
         {
             typeof(LocalTransform), typeof(RenderMesh), typeof(RenderBounds), 
-            typeof(LocalToWorld), typeof(InputDataComponent), typeof(OutputDataComponent)
+            typeof(LocalToWorld),
         };
 
-        private static readonly List<ComponentType> ItemDefaultComps = new List<ComponentType>()
+        private static readonly ComponentType[] ItemDefaultComps = new ComponentType[]
         {
-            typeof(Translation), typeof(Scale), typeof(RenderMesh), typeof(ItemColor),
+            typeof(LocalTransform), typeof(RenderMesh), typeof(ItemColor),
             typeof(RenderBounds), typeof(LocalToWorld), typeof(ItemDataComponent)
         };
+
+        private static EntityArchetype itemEntityArchetype;
 
         private static readonly Material[] ItemMaterials = new[]
         {
@@ -55,48 +56,41 @@ namespace Project.Scripts.Grid
         private static readonly float EntityScaleFactor = 10f;
         private static void InitConstructionData()
         {
+            itemEntityArchetype = _entityManager.CreateArchetype(ItemDefaultComps);
+            
             string[] names = Enum.GetNames(typeof(PossibleBuildings));
             _constructionData = new EntityConstructionData[names.Length];
-            List<ComponentType> componentTypes = new List<ComponentType>();
+          
             
             //extractor construction data setup
-            componentTypes.AddRange(BuildingDefaultComps);
-            componentTypes.Add(typeof(ExtractorTickDataComponent));
             _constructionData[0] = new EntityConstructionData(Resources.Load<Material>("Materials/Excavator"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), 0,1,names[0],
-                MeshUtils.CreateQuad(new float2(.5f,.4f)));
+                _entityManager.CreateArchetype(BuildingDefaultComps.Union(new ComponentType[]
+                    { typeof(ExtractorDataComponent)}).ToArray()),
+                0, 1, names[0], new float2(.5f, .4f));
             
             //conveyor construction data setup
-            componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(BuildingDefaultComps);
-            componentTypes.Add(typeof(ConveyorTickDataComponent));
             _constructionData[1] = new EntityConstructionData(Resources.Load<Material>("Materials/ConveyorUp"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()),1,1,names[1],
-                MeshUtils.CreateQuad(new float2(.5f,.5f)));
+                _entityManager.CreateArchetype(BuildingDefaultComps.Union(new ComponentType[]
+                    { typeof(ConveyorDataComponent)}).ToArray())
+                ,1,1,names[1], new float2(.5f,.5f));
             
             //Combiner construction data setup
-            componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(BuildingDefaultComps);
-            componentTypes.Add(typeof(CombinerTickDataComponent));
             _constructionData[2] = new EntityConstructionData(Resources.Load<Material>("Materials/Combiner"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), 2,1,names[2],
-                MeshUtils.CreateQuad(new float2(.25f,.5f)));
+                _entityManager.CreateArchetype(BuildingDefaultComps.Union(new ComponentType[]
+                    { typeof(CombinerDataComponent)}).ToArray()),
+                2,1,names[2], new float2(.25f,.5f));
             
             //TrashCan construction data setup
-            componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(BuildingDefaultComps);
-            componentTypes.Add(typeof(TrashCanTickDataComponent));
             _constructionData[3] = new EntityConstructionData(Resources.Load<Material>("Materials/TrashCan"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), 1,0,names[3],
-                MeshUtils.CreateQuad(new float2(.5f,.5f)));
+                _entityManager.CreateArchetype(BuildingDefaultComps.Union(new ComponentType[]
+                    { typeof(TrashCanDataComponent)}).ToArray()),
+                1,0,names[3], new float2(.5f,.5f));
             
             //Separator construction data setup
-            componentTypes = new List<ComponentType>();
-            componentTypes.AddRange(BuildingDefaultComps);
-            componentTypes.Add(typeof(SeparatorTickDataComponent));
             _constructionData[4] = new EntityConstructionData(Resources.Load<Material>("Materials/Separator"),
-                _entityManager.CreateArchetype(componentTypes.ToArray()), 1,2,names[4],
-                MeshUtils.CreateQuad(new float2(.25f,.5f)));
+                _entityManager.CreateArchetype(BuildingDefaultComps.Union(new ComponentType[]
+                    { typeof(SeparatorDataComponent)}).ToArray()), 
+                1,2,names[4], new float2(.25f,.5f));
             
             itemMesh = MeshUtils.CreateQuad(new float2(.5f, .5f));
         }
@@ -114,88 +108,85 @@ namespace Project.Scripts.Grid
             //create entity
             Entity entity = _entityManager.CreateEntity(constructionData.Archetype);
             
-            //set rotation of entity
-            var rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID)));
-            
-            //set entity scale
-            Texture tex = _entityManager.GetSharedComponentManaged<RenderMesh>(entity).material.GetTexture(BaseTexture);
-            float3 scale = new float3((float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit, 1)*EntityScaleFactor;
-            
-            //set Position of entity
-            _entityManager.SetComponentData(entity, new LocalTransform()
-            {
-                Position = position,
-                Scale = scale,
-                
-            });
-            
             //set mesh/render data
             _entityManager.SetSharedComponentManaged(entity, new RenderMesh() 
-                { mesh = constructionData.Mesh, material = constructionData.Material, layer = 0,layerMask = 1});
-            
-            //setup inputs
-            DynamicBuffer<InputDataComponent> inputBuffer = _entityManager.AddBuffer<InputDataComponent>(entity);
-            for (int i = 0; i < constructionData.NumInputs; i++)
-            {
-                inputBuffer.Add(new InputDataComponent(float3.zero, SlotBehaviour.Input,(byte)i));
-            }
-
-            //setup outputs
-            DynamicBuffer<OutputDataComponent> outputBuffer = _entityManager.AddBuffer<OutputDataComponent>(entity);
-            for (int i = 0; i < constructionData.NumOutputs; i++)
-            {
-                outputBuffer.Add(new OutputDataComponent(float3.zero, SlotBehaviour.Output,(byte)i));
-            }
-
-            //set entity Name
-            _entityManager.SetName(entity, constructionData.Name);
+                {mesh = constructionData.Mesh, material = constructionData.Material});
             
             //set RenderBounds
             _entityManager.SetComponentData(entity, new RenderBounds()
             {
-                Value = new AABB(){Center = constructionData.Mesh.bounds.center,
-                Extents = constructionData.Mesh.bounds.extents},
+                Value = new AABB(){Center = constructionData.Mesh.bounds.center, 
+                    Extents = constructionData.Mesh.bounds.extents},
             });
+            
+            //set localTransform
+            var rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID)));
+            _entityManager.SetComponentData(entity, new LocalTransform()
+            {
+                Position = position,
+                Scale = EntityScaleFactor,
+                Rotation = rotation,
+            });
+
+            //set entity Name
+            _entityManager.SetName(entity, constructionData.Name);
 
             return entity;
         }
 
-        public static bool CreateItemEntity(Vector3 position, Item item, EntityManager entityManager, out Entity entity)
+        public static bool CreateItemEntity(Vector3 position, Item item, out Entity entity)
         {
-            return CreateItemEntity(position, ItemMemory.GetItemID(item), entityManager, out entity);
+            return CreateItemEntity(position, ItemMemory.GetItemID(item), out entity);
         }
-
-        [GenerateTestsForBurstCompatibility]
-        public static bool CreateItemEntity(Vector3 position, uint itemID, EntityManager entityManager, out Entity entity)
+        
+        public static bool CreateItemEntity(Vector3 position, uint itemID, out Entity entity)
         {
+            var ecb = new EntityCommandBuffer(Allocator.TempJob);
+            
             entity = default;
             if (!ItemMemory.GetItem(itemID, out var item)) return false;
             
             //create entity
-            entity = entityManager.CreateEntity(ItemDefaultComps.ToArray());
+
+            switch (item.ItemForm)
+            {
+                case ItemForm.Gas:
+                    break;
+                case ItemForm.Fluid:
+                    break;
+                case ItemForm.Solid:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             
-            //set Position of entity
-            entityManager.SetComponentData(entity, new Translation() { Value = position});
             
-            //set Scale of entity
-            entityManager.SetComponentData(entity, new Scale(){Value = EntityScaleFactor});
+            
+            entity = ecb.CreateEntity(itemEntityArchetype);
+            
+            //set localTransform of entity
+            ecb.SetComponent(entity, new LocalTransform()
+            {
+                Position = position,
+                Scale = EntityScaleFactor,
+            });
             
             //set mesh/render data
-            entityManager.SetSharedComponentManaged(entity, new RenderMesh() 
-                { mesh = itemMesh ,material = ItemMaterials[(int)item.ItemForm], layer = 0,layerMask = 1});
+            ecb.SetSharedComponentManaged(entity, new RenderMesh() 
+                { mesh = itemMesh ,material = ItemMaterials[(int)item.ItemForm],});
             
             //set bounds
-            entityManager.SetComponentData(entity, new RenderBounds(){Value = new AABB()
+            ecb.SetComponent(entity, new RenderBounds(){Value = new AABB()
             {
                 Center = itemMesh.bounds.center,
                 Extents = itemMesh.bounds.extents,
             }});
             
             //set Item Color Data
-            entityManager.SetComponentData(entity,new ItemColor(){Value = item.Color});
+            ecb.SetComponent(entity,new ItemColor(){Value = item.Color});
             
             //set Item Data
-            entityManager.SetComponentData(entity, new ItemDataComponent()
+            ecb.SetComponent(entity, new ItemDataComponent()
             {
                 ItemID = itemID, PreviousPos = position,
                 DestinationPos = position, Arrived = true, Progress = 1,
@@ -206,14 +197,15 @@ namespace Project.Scripts.Grid
 
         private struct EntityConstructionData
         {
-            public EntityConstructionData(Material material, EntityArchetype archetype, int numInputs, int numOutputs, string name, Mesh mesh)
+            public EntityConstructionData(Material material, EntityArchetype archetype, int numInputs, int numOutputs, string name, float2 center)
             {
                 Material = material;
                 Archetype = archetype;
                 NumInputs = numInputs;
                 NumOutputs = numOutputs;
                 Name = name;
-                Mesh = mesh;
+                Texture tex = Material.GetTexture(BaseTexture);
+                Mesh = MeshUtils.CreateQuad(center, tex.width / PixelsPerUnit, tex.height / PixelsPerUnit);
             }
             public Material Material { get; }
             public EntityArchetype Archetype { get; }

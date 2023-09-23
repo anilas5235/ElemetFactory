@@ -1,9 +1,7 @@
-using System;
-using System.Collections;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
-using Project.Scripts.SlotSystem;
+using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.ItemSystem;
 using Unity.Entities;
 using UnityEngine;
 
@@ -19,10 +17,11 @@ namespace Project.Scripts.Buildings
 
         protected override void CheckForSlotToPullForm()
         {
-            var buffer = _entityManager.GetBuffer<InputDataComponent>(BuildingEntity);
-            InputDataComponent inputDataComponent = buffer[0];
             
-            if (inputDataComponent.EntityToPullFrom != default) return;
+            ConveyorDataComponent conveyorDataComponent = _entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
+            InputSlot inputSlot = conveyorDataComponent.input;
+            
+            if (inputSlot.EntityToPullFrom != default) return;
             
             Vector2Int[] offsets = new Vector2Int[]
             {
@@ -40,17 +39,24 @@ namespace Project.Scripts.Buildings
                 IEntityOutput entityInput = (IEntityOutput)building;
                 if (entityInput == null) continue;
                 if (!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
-                buffer[0] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
-                    entity, (byte)index, inputDataComponent.SlotContent);
+
+                inputSlot.EntityToPullFrom = entity;
+                
+                _entityManager.SetComponentData(BuildingEntity, new ConveyorDataComponent()
+                {
+                    input = inputSlot,
+                    output = conveyorDataComponent.output,
+                });
                 break;
             }
         }
 
         protected override void CheckForSlotsToPushTo()
         {
-            DynamicBuffer<OutputDataComponent> buffer = _entityManager.GetBuffer<OutputDataComponent>(BuildingEntity);
-            OutputDataComponent outputDataComponent = buffer[0];
-            if (outputDataComponent.EntityToPushTo != default) return;
+            ConveyorDataComponent conveyorDataComponent = _entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
+            OutputSlot outputSlot = conveyorDataComponent.output;
+           
+            if (outputSlot.EntityToPushTo != default) return;
 
             Vector2Int targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
                                    MyGridObject.Position;
@@ -59,15 +65,20 @@ namespace Project.Scripts.Buildings
             IEntityInput entityInput = (IEntityInput) building;
             if(entityInput == null) return;
             if(!entityInput.GetInput(this, out Entity entity, out int index)) return;
-            buffer[0] = new OutputDataComponent(outputDataComponent.Position, outputDataComponent.MySlotBehaviour,
-                entity,(byte)index, outputDataComponent.SlotContent);
+            outputSlot.EntityToPushTo = entity;
+            
+            _entityManager.SetComponentData(BuildingEntity, new ConveyorDataComponent()
+            {
+                input = conveyorDataComponent.input,
+                output = outputSlot,
+            });
         }
         
         public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)
         {
             entity = default;
             inputIndex = default;
-            InputDataComponent input =_entityManager.GetBuffer<InputDataComponent>(BuildingEntity)[inputIndex];
+            InputSlot input =_entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).input;
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
             return true;
@@ -77,7 +88,7 @@ namespace Project.Scripts.Buildings
         {
             entity = default;
             outputIndex = default;
-            OutputDataComponent output =_entityManager.GetBuffer<OutputDataComponent>(BuildingEntity)[outputIndex];
+            OutputSlot output =_entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;

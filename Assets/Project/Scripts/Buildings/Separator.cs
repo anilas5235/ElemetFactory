@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
+using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Unity.Entities;
@@ -27,13 +26,24 @@ namespace Project.Scripts.Buildings
             CheckForSlotToPullForm();
             CheckForSlotsToPushTo();
         }
-        
+
+        protected override void CheckForSlotToPullForm()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CheckForSlotsToPushTo()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)
         {
             entity = default;
             inputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
-            InputDataComponent input =_entityManager.GetBuffer<InputDataComponent>(BuildingEntity)[inputIndex];
+            InputSlot input = _entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity).input;
+            
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
             return true;
@@ -44,7 +54,15 @@ namespace Project.Scripts.Buildings
             entity = default;
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
-            OutputDataComponent output =_entityManager.GetBuffer<OutputDataComponent>(BuildingEntity)[outputIndex];
+            
+            var data = _entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity);
+            OutputSlot output = outputIndex switch
+            {
+                0 => data.output1,
+                1 => data.output2,
+                _ => throw new ArgumentOutOfRangeException(nameof(outputIndex), outputIndex, null)
+            };
+            
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;

@@ -1,5 +1,4 @@
 using Project.Scripts.EntitySystem.Components.Buildings;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Systems
@@ -9,7 +8,7 @@ namespace Project.Scripts.EntitySystem.Systems
     {
         protected override void OnUpdate()
         {
-            Entities.ForEach((ref DynamicBuffer<InputDataComponent> inputs, in TrashCanTickDataComponent trashTick) => {
+            Entities.ForEach(( ref TrashCanDataComponent trash) => {
                 
             }).Schedule();
         }

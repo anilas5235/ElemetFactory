@@ -1,9 +1,4 @@
-using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.EntitySystem.Components.Buildings;
-using Project.Scripts.EntitySystem.Components.Transmission;
-using Project.Scripts.ItemSystem;
-using Project.Scripts.Utilities;
-using Unity.Collections;
+using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
 
@@ -11,33 +6,34 @@ using UnityEngine;
 namespace Project.Scripts.EntitySystem.Systems
 {
     [DisableAutoCreation]
+    [BurstCompile]
     public partial struct CombinerSystem : ISystem
     {
         private static float timeSinceLastTick;
         public static float Rate;
 
-        [GenerateTestsForBurstCompatibility]
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             timeSinceLastTick = 0;
             Rate= .25f;
         }
 
-        [GenerateTestsForBurstCompatibility]
+        [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
         }
         
-        [GenerateTestsForBurstCompatibility]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             timeSinceLastTick += Time.deltaTime;
             if (timeSinceLastTick < 1f / Rate) return;
             timeSinceLastTick = 0;
             
-            EntityManager entityManager = state.EntityManager;
-            
-            state.Entities.WithAll<CombinerTickDataComponent>()
+           
+            /*
+            state.Entities.WithAll<CombinerDataComponent>()
                 .ForEach(
                 (ref DynamicBuffer<InputDataComponent> inputs, ref DynamicBuffer<OutputDataComponent> outputs) =>
                 {
@@ -59,7 +55,7 @@ namespace Project.Scripts.EntitySystem.Systems
                     
                     combIDs.Dispose();
 
-                }).Schedule();
+                }).Schedule();*/
         }
     }
 }

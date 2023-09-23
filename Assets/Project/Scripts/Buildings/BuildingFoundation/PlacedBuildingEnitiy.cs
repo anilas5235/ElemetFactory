@@ -1,6 +1,3 @@
-using System;
-using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using Project.Scripts.Grid;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
@@ -79,46 +76,10 @@ namespace Project.Scripts.Buildings.BuildingFoundation
 
         protected abstract void SetUpSlots(FacingDirection facingDirection);
 
-        protected virtual void CheckForSlotToPullForm()
-        {
-            DynamicBuffer<InputDataComponent> buffer = _entityManager.GetBuffer<InputDataComponent>(BuildingEntity);
-            
-            for (int i = 0; i < mySlotValidationHandler.ValidInputPositions.Length; i++)
-            {
-                if(buffer.Length -1 < i) break;
-                if (PlacedBuildingUtility.CheckForBuilding(
-                        MyPlacedBuildingData.origin + mySlotValidationHandler.ValidInputPositions[i],
-                        MyGridObject.Chunk, out PlacedBuildingEntity building))
-                {
-                    InputDataComponent inputDataComponent = buffer[i];
-                    IEntityOutput entityInput = (IEntityOutput)building;
-                    if(entityInput == null) continue;
-                    if(!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
-                    buffer[i] = new InputDataComponent(inputDataComponent.Position, inputDataComponent.MySlotBehaviour,
-                        entity,(byte)index, inputDataComponent.SlotContent);
-                }
-            }
-        }
+        protected abstract void CheckForSlotToPullForm();
 
-        protected virtual void CheckForSlotsToPushTo()
-        {
-            DynamicBuffer<OutputDataComponent> buffer = _entityManager.GetBuffer<OutputDataComponent>(BuildingEntity);
-            for (int i = 0; i < mySlotValidationHandler.ValidOutputPositions.Length; i++)
-            {
-                if(buffer.Length -1 < i) break;
-                if (PlacedBuildingUtility.CheckForBuilding(
-                        MyPlacedBuildingData.origin + mySlotValidationHandler.ValidOutputPositions[i],
-                        MyGridObject.Chunk, out PlacedBuildingEntity building))
-                {
-                    OutputDataComponent outputDataComponent = buffer[i];
-                    IEntityInput entityInput = (IEntityInput) building;
-                    if(entityInput == null) continue;
-                    if(!entityInput.GetInput(this, out Entity entity, out int index)) continue;
-                    buffer[i] = new OutputDataComponent(outputDataComponent.Position, outputDataComponent.MySlotBehaviour,
-                        entity,(byte)index, outputDataComponent.SlotContent);
-                }
-            }
-        }
+        protected abstract void CheckForSlotsToPushTo();
+        
         public override string ToString()
         {
             return ((PossibleBuildings) MyPlacedBuildingData.buildingDataID).ToString();

@@ -1,4 +1,3 @@
-using Project.Scripts.EntitySystem.Components.Transmission;
 using UnityEngine;
 
 namespace StateMachine.Scripts.Decisions

@@ -1,7 +1,8 @@
 using System;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
+using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Unity.Entities;
 using UnityEngine;
@@ -15,7 +16,15 @@ namespace Project.Scripts.Buildings
             entity = default;
             inputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
-            InputDataComponent input =_entityManager.GetBuffer<InputDataComponent>(BuildingEntity)[inputIndex];
+            var can = _entityManager.GetComponentData<TrashCanDataComponent>(BuildingEntity);
+            InputSlot input = inputIndex switch
+            {
+                0 => can.input1,
+                1 => can.input2,
+                2 => can.input3,
+                3 => can.input4,
+                _ => throw new ArgumentOutOfRangeException(nameof(inputIndex), inputIndex, null)
+            };
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
             return true;
@@ -33,6 +42,16 @@ namespace Project.Scripts.Buildings
             };
             
             CheckForSlotToPullForm();
+        }
+
+        protected override void CheckForSlotToPullForm()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CheckForSlotsToPushTo()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
-using Project.Scripts.Grid;
+using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
@@ -32,7 +30,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
-            OutputDataComponent output =_entityManager.GetBuffer<OutputDataComponent>(BuildingEntity)[outputIndex];
+            OutputSlot output =_entityManager.GetComponentData<ExtractorDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;
@@ -57,6 +55,16 @@ namespace Project.Scripts.Buildings
             
             CheckForSlotsToPushTo();
             CheckForSlotToPullForm();
+        }
+
+        protected override void CheckForSlotToPullForm()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CheckForSlotsToPushTo()
+        {
+            throw new NotImplementedException();
         }
     }
 }

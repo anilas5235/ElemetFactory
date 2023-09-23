@@ -1,4 +1,5 @@
 using Project.Scripts.EntitySystem.Components;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 
@@ -9,20 +10,26 @@ namespace Project.Scripts.EntitySystem.Systems
     {
         protected override void OnUpdate()
         {
-            float deltaTime = Time.DeltaTime;
-        
-            Entities.ForEach((ref ItemDataComponent itemDataComponent, ref Translation translation) => {
+            float deltaTime = SystemAPI.Time.DeltaTime;
+            
+            var separatorQuery = SystemAPI.QueryBuilder().WithAll<ItemDataComponent>().Build();
+            if (separatorQuery.IsEmpty) return;
+
+            Entities.ForEach((ref ItemDataComponent itemDataComponent, ref LocalTransform transform) => {
+                
                 if(itemDataComponent.Arrived) return;
                 itemDataComponent.Progress += deltaTime;
                 if (itemDataComponent.Progress >= 1)
                 {
                     itemDataComponent.Arrived = true;
                     itemDataComponent.Progress = 0;
-                    translation.Value = itemDataComponent.DestinationPos;
+                    transform.Position = itemDataComponent.DestinationPos;
                     return;
                 }
-                translation.Value = itemDataComponent.PreviousPos + itemDataComponent.Progress *
+                
+                transform.Position = itemDataComponent.PreviousPos + itemDataComponent.Progress *
                     (itemDataComponent.DestinationPos - itemDataComponent.PreviousPos);
+                
             }).ScheduleParallel();
         }
     }

@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Project.Scripts.EntitySystem.Components.Transmission;
 using UnityEngine;
 
 namespace Project.AudioSynthesis

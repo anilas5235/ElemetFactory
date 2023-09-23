@@ -186,7 +186,7 @@ namespace Project.Scripts.Utilities
 		/// <param name="width"></param>
 		/// <param name="height"></param>
 		/// <returns></returns>
-		public static Mesh CreateQuad(Vector2 center,int width = 1, int height = 1)
+		public static Mesh CreateQuad(Vector2 center,float width = 1, float height = 1)
 		{
 			Mesh mesh = new Mesh();
 

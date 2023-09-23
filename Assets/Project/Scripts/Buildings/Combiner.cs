@@ -1,7 +1,8 @@
 using System;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
-using Project.Scripts.EntitySystem.Components.Transmission;
+using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Unity.Entities;
 using UnityEngine;
@@ -25,12 +26,29 @@ namespace Project.Scripts.Buildings
             CheckForSlotsToPushTo();
         }
 
+        protected override void CheckForSlotToPullForm()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CheckForSlotsToPushTo()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)
         {
+            CombinerDataComponent combinerDataComponent = _entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity);
+            
             entity = default;
             inputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
-            InputDataComponent input =_entityManager.GetBuffer<InputDataComponent>(BuildingEntity)[inputIndex];
+            InputSlot input = inputIndex switch
+            {
+                0 => combinerDataComponent.input1,
+                1 => combinerDataComponent.input2,
+                _ => throw new ArgumentOutOfRangeException(nameof(inputIndex), inputIndex, null)
+            };
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
             return true;
@@ -41,7 +59,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
-            OutputDataComponent output =_entityManager.GetBuffer<OutputDataComponent>(BuildingEntity)[outputIndex];
+            OutputSlot output =_entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;
