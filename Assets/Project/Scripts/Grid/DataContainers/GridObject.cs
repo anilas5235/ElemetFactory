@@ -47,7 +47,7 @@ namespace Project.Scripts.Grid.DataContainers
                 Mathf.FloorToInt(Position.x - GridBuildingSystem.ChunkSize.x / 2f),
                 Mathf.FloorToInt(Position.y - GridBuildingSystem.ChunkSize.y / 2f),
                 0);
-            Chunk.ChunkTilemap.SetTile(tilePos, ResourcesUtility.GetResourceData(ResourceNode).tile);
+            Chunk.ChunkTilemap.SetTile(tilePos, ResourcesUtility.GetResourceTile(ResourceNode));
         }
 
         public override string ToString()

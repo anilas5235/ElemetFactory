@@ -5,7 +5,7 @@ namespace Project.Scripts.EntitySystem.Components.Buildings
 {
     public struct ExtractorDataComponent : IComponentData
     {
-        public uint itemID;
+        public Item item;
         public OutputSlot output;
     }
 }

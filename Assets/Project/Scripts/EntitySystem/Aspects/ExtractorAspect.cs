@@ -14,9 +14,13 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         private readonly RefRO<LocalTransform> _transform;
 
-        public OutputSlot Output => dataComponent.ValueRW.output;
+        public OutputSlot Output
+        {
+            get =>dataComponent.ValueRO.output;
+            set => dataComponent.ValueRW.output = value;
+        }
         public float3 Location => _transform.ValueRO.Position;
 
-        public uint ItemID => dataComponent.ValueRO.itemID;
+        public Item Item => dataComponent.ValueRO.item;
     }
 }

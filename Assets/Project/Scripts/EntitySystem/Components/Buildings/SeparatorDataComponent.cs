@@ -1,4 +1,5 @@
 ﻿using Project.Scripts.ItemSystem;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
@@ -6,6 +7,6 @@ namespace Project.Scripts.EntitySystem.Components.Buildings
     public struct SeparatorDataComponent : IComponentData
     {
         public InputSlot input;
-        public OutputSlot output1, output2;
+        public NativeArray<OutputSlot> outputs;
     }
 }

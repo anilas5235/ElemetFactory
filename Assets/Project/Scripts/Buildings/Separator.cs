@@ -56,12 +56,7 @@ namespace Project.Scripts.Buildings
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
             
             var data = _entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity);
-            OutputSlot output = outputIndex switch
-            {
-                0 => data.output1,
-                1 => data.output2,
-                _ => throw new ArgumentOutOfRangeException(nameof(outputIndex), outputIndex, null)
-            };
+            OutputSlot output = data.outputs[outputIndex];
             
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;

@@ -23,15 +23,28 @@ namespace Project.Scripts.Utilities
         
         private static readonly ResourceData[] ResourceDataBank = new[]
         {
-            new ResourceData(ResourceType.None,Resources.Load<TileBase>("Tiles/None"),new Color(.7f,.7f,.7f),ItemForm.Solid),
-            new ResourceData(ResourceType.H,Resources.Load<TileBase>("Tiles/H"),new Color(.1f,.8f,1f), ItemForm.Gas),
-            new ResourceData(ResourceType.C,Resources.Load<TileBase>("Tiles/C"),new Color(.1f,.1f,.1f), ItemForm.Solid),
-            new ResourceData(ResourceType.O,Resources.Load<TileBase>("Tiles/O"),new Color(0f,1f,0f), ItemForm.Gas),
-            new ResourceData(ResourceType.N,Resources.Load<TileBase>("Tiles/N"),new Color(1f,0f,0f), ItemForm.Gas),
-            new ResourceData(ResourceType.S,Resources.Load<TileBase>("Tiles/S"),new Color(1f,1f,0f), ItemForm.Solid),
-            new ResourceData(ResourceType.Al,Resources.Load<TileBase>("Tiles/Al"),new Color(1f,.5f,0f), ItemForm.Solid),
-            new ResourceData(ResourceType.Fe,Resources.Load<TileBase>("Tiles/Fe"),new Color(.5f,0f,1f), ItemForm.Solid),
-            new ResourceData(ResourceType.Na,Resources.Load<TileBase>("Tiles/Na"),new Color(1f,.2f,1f), ItemForm.Gas),
+            new ResourceData(ResourceType.None,new Color(.7f,.7f,.7f),ItemForm.Solid),
+            new ResourceData(ResourceType.H,new Color(.1f,.8f,1f), ItemForm.Gas),
+            new ResourceData(ResourceType.C,new Color(.1f,.1f,.1f), ItemForm.Solid),
+            new ResourceData(ResourceType.O,new Color(0f,1f,0f), ItemForm.Gas),
+            new ResourceData(ResourceType.N,new Color(1f,0f,0f), ItemForm.Gas),
+            new ResourceData(ResourceType.S,new Color(1f,1f,0f), ItemForm.Solid),
+            new ResourceData(ResourceType.Al,new Color(1f,.5f,0f), ItemForm.Solid),
+            new ResourceData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
+            new ResourceData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
+        };
+
+        private static readonly TileBase[] Tiles = new[]
+        {
+            Resources.Load<TileBase>("Tiles/None"),
+            Resources.Load<TileBase>("Tiles/H"),
+            Resources.Load<TileBase>("Tiles/C"),
+            Resources.Load<TileBase>("Tiles/O"),
+            Resources.Load<TileBase>("Tiles/N"),
+            Resources.Load<TileBase>("Tiles/S"),
+            Resources.Load<TileBase>("Tiles/Al"),
+            Resources.Load<TileBase>("Tiles/Fe"),
+            Resources.Load<TileBase>("Tiles/Na"),
         };
 
         public static Item CreateItemData(NativeArray<uint> resourceIDs)
@@ -62,6 +75,16 @@ namespace Project.Scripts.Utilities
         {
             return ResourceDataBank[resourceID];
         }
+
+        public static TileBase GetResourceTile(ResourceType resourceType)
+        {
+            return GetResourceTile((uint)resourceType);
+        }
+        
+        public static TileBase GetResourceTile(uint resourceID)
+        {
+            return Tiles[resourceID];
+        }
         
         #region BuildingHandeling
         public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
@@ -81,13 +104,11 @@ namespace Project.Scripts.Utilities
     {
         public string Name => resourceType.ToString();
         public ResourceType resourceType;
-        public TileBase tile; 
         public Color color;
         public ItemForm form;
 
-        public ResourceData(ResourceType resourceType, TileBase tile, Color color, ItemForm form)
+        public ResourceData(ResourceType resourceType, Color color, ItemForm form)
         {
-            this.tile = tile;
             this.color = color;
             this.form = form;
             this.resourceType = resourceType;

@@ -21,8 +21,6 @@ namespace Project.Scripts.EntitySystem.Systems
         private float timeSinceLastTick;
         public float Rate;
 
-        public Item[] existingItems;
-
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -30,12 +28,6 @@ namespace Project.Scripts.EntitySystem.Systems
             Rate = 1;
             state.RequireForUpdate<PrefapsDataComponent>();
         }
-
-        [BurstCompile]
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
@@ -50,42 +42,23 @@ namespace Project.Scripts.EntitySystem.Systems
             
             EntityCommandBuffer ecb = new EntityCommandBuffer( Allocator.Temp);
 
-            NativeArray<Item> existingItemsTemp = new NativeArray<Item>(existingItems,Allocator.Temp);
-
             NativeArray<Entity> entities = separatorQuery.ToEntityArray(Allocator.Temp);
 
             foreach (Entity entity in entities)
             {
                 var aspect = SystemAPI.GetAspect<ExtractorAspect>(entity);
 
-                if (aspect.Output.IsOccupied) continue;
-                
-                Item item = existingItemsTemp[(int)aspect.ItemID];
+                var aspectOutput = aspect.Output;
+                if (aspectOutput.IsOccupied) continue;
 
-                Entity itemEntity = item.ItemForm switch
-                {
-                    ItemForm.Gas => ecb.Instantiate(prefaps.ItemGas),
-                    ItemForm.Fluid => ecb.Instantiate(prefaps.ItemLiquid),
-                    ItemForm.Solid => ecb.Instantiate(prefaps.ItemSolid),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-                    
-                ecb.SetComponent(itemEntity,new ItemColor(){Value = item.Color});
-                ecb.SetComponent(itemEntity, new ItemDataComponent()
-                {
-                    Arrived = true,
-                    DestinationPos = aspect.Location,
-                    PreviousPos = aspect.Location,
-                    ItemID = aspect.ItemID,
-                });
-                ecb.SetComponent(itemEntity, new LocalTransform()
-                {
-                    Position = aspect.Location,
-                    Scale = 10,
-                });
+                aspectOutput.SlotContent = ItemAspect.CreateItemEntity(aspect.Item, ecb, aspect.Output.Position, prefaps);
+                aspect.Output = aspectOutput;
             }
             
             ecb.Playback(state.EntityManager);
+            ecb.Dispose();
+            separatorQuery.Dispose();
+            entities.Dispose();
         }
     }
 }

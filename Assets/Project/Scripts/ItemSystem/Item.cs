@@ -20,8 +20,6 @@ namespace Project.Scripts.ItemSystem
         Na,
         Cl,
     }
-
-    
     public enum ItemForm : byte
     {
         Gas,
@@ -32,8 +30,6 @@ namespace Project.Scripts.ItemSystem
     [Serializable]
     public struct Item
     {
-        //public int[] ResourceIDs { get; }
-        
         public NativeArray<uint> ResourceIDs { get; }
         public ItemForm ItemForm{ get; }
         public float4 Color{ get; }

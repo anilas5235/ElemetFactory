@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.Grid;
@@ -21,6 +22,7 @@ namespace Project.Scripts.EntitySystem.Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<PrefapsDataComponent>();
             timeSinceLastTick = 0;
             Rate = 1;
         }
@@ -32,17 +34,29 @@ namespace Project.Scripts.EntitySystem.Systems
             if (timeSinceLastTick < 1f / Rate) return;
             timeSinceLastTick = 0;
             
-            var separatorQuery = SystemAPI.QueryBuilder().WithAll<SeparatorDataComponent>().Build();
-            if (separatorQuery.IsEmpty) return;
-
-            foreach (Entity entity in separatorQuery.ToEntityArray(Allocator.Temp))
+            EntityQuery separatorQuery = SystemAPI.QueryBuilder().WithAll<SeparatorDataComponent>().Build();
+            if (separatorQuery.IsEmpty)
             {
-                SeparatorDataComponent separatorDataComponent = SystemAPI.GetComponent<SeparatorDataComponent>(entity);
-                InputSlot input = separatorDataComponent.input;
-                OutputSlot output1 = separatorDataComponent.output1, output2 = separatorDataComponent.output2;
-                if (!input.IsOccupied && output1.IsOccupied && output2.IsOccupied) return;
+                separatorQuery.Dispose();
+                return;
+            }
             
-                if(!ItemMemory.GetItem(SystemAPI.GetComponent<ItemDataComponent>(input.SlotContent).ItemID,out Item itemA)) return;
+            PrefapsDataComponent prefaps = SystemAPI.GetSingleton<PrefapsDataComponent>();
+            
+            EntityCommandBuffer ecb = new EntityCommandBuffer( Allocator.Temp);
+
+            NativeArray<Entity> entities = separatorQuery.ToEntityArray(Allocator.Temp);
+
+            foreach (Entity entity in entities)
+            {
+                SeparatorAspect separatorData = SystemAPI.GetAspect<SeparatorAspect>(entity);
+
+
+                OutputSlot outputSlot0 = separatorData.OutputSlot0;
+                OutputSlot outputSlot1 = separatorData.OutputSlot1;
+                if (!separatorData.Input.IsOccupied || outputSlot0.IsOccupied || outputSlot1.IsOccupied) return;
+
+                Item itemA = SystemAPI.GetAspect<ItemAspect>(separatorData.ItemEntityInInput).Item;
                 
                 int itemLength = itemA.ResourceIDs.Length;
                 int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
@@ -53,15 +67,25 @@ namespace Project.Scripts.EntitySystem.Systems
                     if (i < item1Length) contentItem1[i] = itemA.ResourceIDs[i];
                     else contentItem2[i - item1Length] = itemA.ResourceIDs[i];
                 }
-
-                input.SlotContent = default;
                 
-                //BuildingGridEntityUtilities.CreateItemEntity(output1.Position,ResourcesUtility.CreateItemData(contentItem1),out output1.SlotContent);
-                //BuildingGridEntityUtilities.CreateItemEntity(output2.Position, ResourcesUtility.CreateItemData(contentItem2),out output2.SlotContent);
+                ecb.DestroyEntity(separatorData.ItemEntityInInput);
+                separatorData.ItemEntityInInput = default;
+
+                outputSlot0.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefaps);
+                separatorData.OutputSlot0 = outputSlot0;
+
+                
+                outputSlot1.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefaps);
+                separatorData.OutputSlot1 = outputSlot1;
 
                 contentItem1.Dispose();
                 contentItem2.Dispose();
             }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
+            entities.Dispose();
+            separatorQuery.Dispose();
         }
     }
 }
