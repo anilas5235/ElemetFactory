@@ -7,22 +7,21 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 {
     public struct CellObject
     {
-        public CellObject(int2 position, int2 chunkPosition, Entity visuals, NativeList<ResourcePatch> resourcePatches)
+        public CellObject(int2 position,float3 worldPosition, Entity visuals)
         {
             Position = position;
-            ChunkPosition = chunkPosition;
             Visuals = visuals;
-            ResourcePatches = resourcePatches;
+            WorldPosition = worldPosition;
             Building = default;
             Resource = default;
         }
-
-        public int2 ChunkPosition { get; }
+       
         public int2 Position { get; }
+        public float3 WorldPosition { get; }
+        
         public Entity Building;
         public bool IsOccupied => Building != default;
         public Item Resource;
-        public NativeList<ResourcePatch> ResourcePatches { get; }
         public Entity Visuals { get; }
     }
 }

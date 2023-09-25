@@ -8,7 +8,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     [Serializable]
     public struct ResourcePatch
     {
-        public NativeArray<float2> Positions;
+        public NativeArray<int2> Positions;
         public Item Resource;
     }
 }
