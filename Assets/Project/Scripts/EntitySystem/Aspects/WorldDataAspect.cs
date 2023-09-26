@@ -15,18 +15,20 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public ChunkDataAspect GetChunk(int2 chunkPosition)
         {
-            return TryGetValue(chunkPosition, out ChunkDataAspect chunkDataAspect)
-                ? chunkDataAspect
-                : GenerationSystem.Instance.GenerateChunk(chunkPosition, this);
+            if (TryGetValue(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
+
+            worldData.ValueRW.ChunkDataBank.Add(
+                new PositionChunkPair(GenerationSystem.Instance.GenerateChunk(chunkPosition, this), chunkPosition));
+            return worldData.ValueRO.ChunkDataBank.Last().Chunk;
         }
+
         public bool TryGetValue(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
         {
             chunkDataAspect = default;
-            foreach (var pair in from pair in ChunkDataBank
-                     let con = pair.Position == chunkPos
-                     where con.x && con.y
-                     select pair)
+            foreach (var pair in ChunkDataBank)
             {
+                if (pair.Chunk.ChunksPosition.x != chunkPos.x ||
+                    pair.Chunk.ChunksPosition.y != chunkPos.y) continue;
                 chunkDataAspect = pair.Chunk;
                 return true;
             }

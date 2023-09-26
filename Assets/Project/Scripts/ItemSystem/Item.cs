@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using Project.Scripts.Grid;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
@@ -26,9 +28,7 @@ namespace Project.Scripts.ItemSystem
         Fluid,
         Solid,
     }
-
-    [Serializable]
-    public struct Item
+    public readonly struct Item
     {
         public NativeArray<uint> ResourceIDs { get; }
         public ItemForm ItemForm{ get; }

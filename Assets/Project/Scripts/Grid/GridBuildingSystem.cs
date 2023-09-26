@@ -19,6 +19,7 @@ namespace Project.Scripts.Grid
     [RequireComponent(typeof(UnityEngine.Grid))]
     public class GridBuildingSystem : MonoBehaviour
     {
+        public static bool Work = false;
         [SerializeField] private bool buildingEnabled = true;
         
         private PossibleBuildings _selectedBuilding = PossibleBuildings.Extractor;
@@ -38,20 +39,20 @@ namespace Project.Scripts.Grid
 
         private void Awake()
         {
+            return;
             chunkPrefap = Resources.Load<GameObject>("Prefaps/chunk");
             GetComponent<UnityEngine.Grid>().cellSize = new Vector3(CellSize, CellSize, 0);
         }
 
         private void OnEnable()
         {
-            ItemMemory.SetUpItemDataBank();
-            LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
+            //LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
             UIWindowMaster.Instance.OnActiveUIChanged += CanBuild;
         }
 
         private void Update()
         {
-            if(!buildingEnabled) return;
+            if(!buildingEnabled|| !Work) return;
             
             if (Input
             .GetKeyDown(KeyCode.R))
@@ -88,12 +89,13 @@ namespace Project.Scripts.Grid
 
         private void FixedUpdate()
         {
+            if(!Work) return;
             UpdateLoadedChunks();
         }
 
         private void OnApplicationQuit()
         {
-            SaveAllChunksToFile(Chunks);
+            //SaveAllChunksToFile(Chunks);
         }
 
         private void CanBuild(bool val)

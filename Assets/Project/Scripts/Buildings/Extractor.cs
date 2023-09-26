@@ -18,11 +18,6 @@ namespace Project.Scripts.Buildings
         protected override void OnCreate()
         {
             if(GeneratedResource == ResourceType.None) return;
-            NativeArray<uint> ids = new NativeArray<uint>(1, Allocator.Temp);
-            ids[0] = (uint)GeneratedResource;
-
-            ItemMemory.GetItemID(ResourcesUtility.CreateItemData(ids));
-            ids.Dispose();
         }
 
         public bool GetOutput(PlacedBuildingEntity caller, out Entity entity, out int outputIndex)
