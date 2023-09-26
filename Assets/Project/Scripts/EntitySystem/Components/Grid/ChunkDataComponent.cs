@@ -9,14 +9,15 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     public struct ChunkDataComponent : IComponentData
     {
         public static readonly int ChunkSize = 16;
-        public static float HalfChunkSize => ChunkSize/2f;
         public static readonly int CellSize = 1;
+        public static readonly int ChunkUnitSize = ChunkSize * CellSize;
+        public static float HalfChunkSize => ChunkSize/2f;
         public ChunkDataComponent(int2 chunkPosition, float3 worldPosition, EntityCommandBuffer ecb,
-            Entity visualPrefap, NativeArray<ResourcePatch> resourcePatches)
+            Entity visualPrefap,ResourcePatch[] resourcePatches)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
-            ResourcePatches = resourcePatches;
+            ResourcePatches = new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent);
             Buildings = new NativeList<Entity>(0, Allocator.Persistent);
 
             var obj = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.TempJob);
@@ -48,6 +49,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
             CellObjects = new NativeArray<CellObject>(obj, Allocator.Persistent);
             obj.Dispose();
+            InView = false;
         }
 
         public NativeArray<CellObject> CellObjects { get; }
@@ -55,5 +57,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public NativeArray<ResourcePatch> ResourcePatches { get; }
         public int2 ChunkPosition { get; }
         public float3 WorldPosition { get; }
+
+        public bool InView;
     }
 }

@@ -1,3 +1,4 @@
+using Project.Scripts.EntitySystem.Aspects;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -12,13 +13,13 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
     public struct PositionChunkPair
     {
-        public PositionChunkPair(Entity chunk, int2 position)
+        public PositionChunkPair(ChunkDataAspect chunk, int2 position)
         {
             Chunk = chunk;
             Position = position;
         }
 
         public int2 Position { get; }
-        public Entity Chunk { get; }
+        public ChunkDataAspect Chunk { get; }
     }
 }

@@ -65,6 +65,14 @@ namespace Project.Scripts.Utilities
             
             return new Item(resourceIDs,(ItemForm)form,color);
         }
+
+        public static Item CreateItemData(uint[] resourceIDs)
+        {
+            NativeArray<uint> ids = new NativeArray<uint>(resourceIDs, Allocator.TempJob);
+            Item item = CreateItemData(ids);
+            ids.Dispose();
+            return item;
+        }
         
         public static ResourceData GetResourceData(ResourceType resourceType)
         {

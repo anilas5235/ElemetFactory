@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
@@ -102,10 +104,10 @@ namespace Project.Scripts.Grid
         #region PlayTimeLoad&UnLoadChunksSystem
         private void UpdateLoadedChunks()
         {
-            Vector2Int currentPos = GetChunkPosition(PlayerCam.transform.position);
+            var currentPos = WorldDataAspect.GetChunkPosition(PlayerCam.transform.position);
             int radius = Mathf.CeilToInt(PlayerCam.orthographicSize * PlayerCam.aspect / ChunkSizeIntUnits.x);
-            if (chunkPosWithPlayer == currentPos && playerViewRadius == radius) return;
-            chunkPosWithPlayer = currentPos;
+            if (chunkPosWithPlayer.x == currentPos.x && chunkPosWithPlayer.y == currentPos.y && playerViewRadius == radius) return;
+            chunkPosWithPlayer = new Vector2Int(currentPos.x,currentPos.y);
             playerViewRadius = radius;
 
             List<Vector2Int> chunksToLoad = new List<Vector2Int>();
@@ -124,9 +126,8 @@ namespace Project.Scripts.Grid
                 if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
                 else chunksToUnLoad.Add(loadedChunkPos);
             }
-
-            foreach (Vector2Int chunkPos in chunksToLoad) StartCoroutine(LoadChunk(chunkPos));
-            foreach (Vector2Int chunkPos in chunksToUnLoad) StartCoroutine( UnLoadChunk(chunkPos));
+            
+            GenerationSystem.Instance.UpdateInView(chunksToLoad.ToArray(),chunksToUnLoad.ToArray());
         }
 
         private IEnumerator LoadChunk(Vector2Int position)
