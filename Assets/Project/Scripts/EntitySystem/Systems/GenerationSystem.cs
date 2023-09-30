@@ -17,6 +17,8 @@ namespace Project.Scripts.EntitySystem.Systems
 {
     public partial struct GenerationSystem : ISystem
     {
+        public static readonly int WorldScale = 10;
+        
         public static GenerationSystem Instance;
         private static EntityManager _entityManager;
         public static Entity worldDataEntity;
@@ -54,7 +56,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
         public void OnUpdate(ref SystemState state)
         {
-            GridBuildingSystem.Work = true;
+            if(SystemAPI.TryGetSingleton(out PrefapsDataComponent pref)) GridBuildingSystem.Work = true;
             if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
         }
 
@@ -63,31 +65,31 @@ namespace Project.Scripts.EntitySystem.Systems
             var worldData = _entityManager.GetAspect<WorldDataAspect>(worldDataEntity);
             foreach (Vector2Int pos in chunksExitingView)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y));
+                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y),out bool gen);
+                if(gen)continue;
                 chunk.InView = false;
             }
             foreach (Vector2Int pos in chunksEnteringView)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y));
+                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y), out bool gen);
+                if(gen)continue;
                 chunk.InView = true;
             }
         }
 
         public ChunkDataAspect GenerateChunk(int2 chunkPosition, WorldDataAspect worldDataAspect)
         {
-            var ecb = new EntityCommandBuffer(Allocator.TempJob);
-            Entity entity = ecb.CreateEntity();
+            Entity entity = _entityManager.CreateEntity();
             float3 worldPos = WorldDataAspect.GetChunkWorldPosition(chunkPosition);
-            ecb.AddComponent(entity, new LocalTransform()
+            _entityManager.AddComponentData(entity, new LocalTransform()
             {
                 Position = worldPos,
-                Scale = 1,
+                Scale = WorldScale,
             });
             ResourcePatch[] patches = GenerateResources();
-            ecb.AddComponent(entity,new ChunkDataComponent(chunkPosition, worldPos, ecb,
+            _entityManager.AddComponentData(entity,new ChunkDataComponent(chunkPosition, worldPos,_entityManager,
                 SystemAPI.GetSingleton<PrefapsDataComponent>().TileVisual, patches));
-            ecb.Playback(_entityManager);
-            ecb.Dispose();
+            _entityManager.SetName(entity,$"Chunk({chunkPosition})");
             return _entityManager.GetAspect<ChunkDataAspect>(entity);
 
             ResourcePatch[] GenerateResources()

@@ -1,4 +1,5 @@
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -9,16 +10,18 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     public struct ChunkDataComponent : IComponentData
     {
         public static readonly int ChunkSize = 16;
-        public static readonly int CellSize = 1;
+        public static int CellSize => GenerationSystem.WorldScale;
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
         public static float HalfChunkSize => ChunkSize/2f;
-        public ChunkDataComponent(int2 chunkPosition, float3 worldPosition, EntityCommandBuffer ecb,
+        public ChunkDataComponent(int2 chunkPosition, float3 worldPosition, EntityManager entityManager,
             Entity visualPrefap,ResourcePatch[] resourcePatches)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
             ResourcePatches = new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent);
             Buildings = new NativeList<Entity>(0, Allocator.Persistent);
+
+            var ecb = new EntityCommandBuffer(Allocator.TempJob);
 
             var obj = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.TempJob);
             for (int y = 0; y < ChunkSize; y++)
@@ -33,9 +36,13 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                         Position = cellWorldPosition,
                         Scale = CellSize,
                     });
+                    ecb.SetName(entity,$"Tile({pos})ofChunk({chunkPosition})");
                     obj[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition, entity);
                 }
             }
+            
+            ecb.Playback(entityManager);
+            ecb.Dispose();
 
             foreach (ResourcePatch resourcePatch in ResourcePatches)
             {
@@ -49,7 +56,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
             CellObjects = new NativeArray<CellObject>(obj, Allocator.Persistent);
             obj.Dispose();
-            InView = false;
+            InView = true;
         }
 
         public NativeArray<CellObject> CellObjects { get; }

@@ -1,12 +1,11 @@
 using System;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
-
-
 
 namespace Project.Scripts.Grid
 {
@@ -36,7 +35,7 @@ namespace Project.Scripts.Grid
             _entityManager.SetComponentData(entity, new LocalTransform()
             {
                 Position = worldPosition,
-                Scale = 10,
+                Scale = GenerationSystem.WorldScale,
                 Rotation = rotation,
             });
 

@@ -13,13 +13,15 @@ namespace Project.Scripts.EntitySystem.Aspects
         private readonly RefRW<WorldDataComponent> worldData;
         public NativeList<PositionChunkPair> ChunkDataBank => worldData.ValueRO.ChunkDataBank;
 
-        public ChunkDataAspect GetChunk(int2 chunkPosition)
+        public ChunkDataAspect GetChunk(int2 chunkPosition, out bool newGenerated)
         {
+            newGenerated = false;
             if (TryGetValue(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
 
+            newGenerated = true;
             worldData.ValueRW.ChunkDataBank.Add(
                 new PositionChunkPair(GenerationSystem.Instance.GenerateChunk(chunkPosition, this), chunkPosition));
-            return worldData.ValueRO.ChunkDataBank.Last().Chunk;
+            return default;
         }
 
         public bool TryGetValue(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
