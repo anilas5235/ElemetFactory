@@ -11,16 +11,22 @@ namespace Project.Scripts.EntitySystem.Aspects
     public readonly partial struct WorldDataAspect : IAspect
     {
         private readonly RefRW<WorldDataComponent> worldData;
-        public NativeList<PositionChunkPair> ChunkDataBank => worldData.ValueRO.ChunkDataBank;
 
-        public ChunkDataAspect GetChunk(int2 chunkPosition, out bool newGenerated)
+        public NativeList<PositionChunkPair> ChunkDataBank
+        {
+            get => worldData.ValueRO.ChunkDataBank;
+            set => worldData.ValueRW.ChunkDataBank = value;
+        }
+
+        public ChunkDataAspect GetChunk(int2 chunkPosition, out bool newGenerated, EntityCommandBuffer ecb)
         {
             newGenerated = false;
             if (TryGetValue(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
 
             newGenerated = true;
-            worldData.ValueRW.ChunkDataBank.Add(
-                new PositionChunkPair(GenerationSystem.Instance.GenerateChunk(chunkPosition, this), chunkPosition));
+            PositionChunkPair pair = new PositionChunkPair(GenerationSystem.Instance.GenerateChunk(chunkPosition, this,ecb),
+                chunkPosition);
+            ChunkDataBank.Add(pair);
             return default;
         }
 
@@ -29,8 +35,8 @@ namespace Project.Scripts.EntitySystem.Aspects
             chunkDataAspect = default;
             foreach (var pair in ChunkDataBank)
             {
-                if (pair.Chunk.ChunksPosition.x != chunkPos.x ||
-                    pair.Chunk.ChunksPosition.y != chunkPos.y) continue;
+                if (pair.Position.x != chunkPos.x ||
+                    pair.Position.y != chunkPos.y) continue;
                 chunkDataAspect = pair.Chunk;
                 return true;
             }

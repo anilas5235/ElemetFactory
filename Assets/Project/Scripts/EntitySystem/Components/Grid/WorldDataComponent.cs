@@ -16,13 +16,17 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     [Serializable]
     public struct PositionChunkPair
     {
-        public PositionChunkPair(ChunkDataAspect chunk, int2 position)
+        public PositionChunkPair(Entity chunkEntity, int2 position)
         {
-            Chunk = chunk;
+            ChunkEntity = chunkEntity;
             Position = position;
+            Chunk = default;
         }
 
         public int2 Position { get; }
-        public ChunkDataAspect Chunk { get; }
+        
+        public ChunkDataAspect Chunk;
+        
+        public Entity ChunkEntity { get; }
     }
 }

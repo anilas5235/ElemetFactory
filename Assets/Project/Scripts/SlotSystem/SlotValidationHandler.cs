@@ -1,4 +1,5 @@
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid;
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace Project.Scripts.SlotSystem
                 return false;
 
             Vector2Int chunkOffset = me.MyGridObject.Chunk.ChunkPosition - requester.MyGridObject.Chunk.ChunkPosition;
-            Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * GridBuildingSystem.ChunkSize;
+            Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * ChunkDataComponent.ChunkSize;
 
             Vector2Int search = newPos - me.MyGridObject.Position;
 

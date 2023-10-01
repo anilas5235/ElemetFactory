@@ -1,4 +1,5 @@
 using Project.Scripts.EntitySystem.Components.Grid;
+using Project.Scripts.EntitySystem.Systems;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -8,7 +9,6 @@ namespace Project.Scripts.EntitySystem.Aspects
     public readonly partial struct ChunkDataAspect : IAspect
     {
         private readonly RefRW<ChunkDataComponent> _chunkData;
-
         public int2 ChunksPosition => _chunkData.ValueRO.ChunkPosition;
         public float3 WorldPosition => _chunkData.ValueRO.WorldPosition;
         public int NumPatches => _chunkData.ValueRO.ResourcePatches.Length;
@@ -17,6 +17,18 @@ namespace Project.Scripts.EntitySystem.Aspects
         {
             get => _chunkData.ValueRO.InView;
             set => _chunkData.ValueRW.InView = value;
+        }
+
+        public CellObject GetCell(int2 position)
+        {
+           return IsValidPositionInChunk(position) ?
+               _chunkData.ValueRO.CellObjects[GetAryIndex(position)]:
+               GetCellFormPseudoPosition(position);
+        }
+
+        private CellObject GetCellFormPseudoPosition(int2 position)
+        {
+            
         }
         
         public static int GetAryIndex(int2 position)

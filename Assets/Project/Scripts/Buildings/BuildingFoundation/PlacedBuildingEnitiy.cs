@@ -1,5 +1,5 @@
+using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid;
-using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;
@@ -27,7 +27,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <param name="facingDirection">The facing direction of the building</param>
         /// <param name="buildingData">The typeData of the building</param>
         /// <returns>Reference to the newly created PlacedBuildingEntity</returns>
-        public  static PlacedBuildingEntity CreateBuilding<T>(GridObject gridObject, Vector3 worldPosition,
+        public  static PlacedBuildingEntity CreateBuilding<T>(CellObject gridObject, Vector3 worldPosition,
             Vector2Int origin, FacingDirection facingDirection, PossibleBuildings buildingData) where T : PlacedBuildingEntity,new()
         {
             PlacedBuildingEntity placedBuilding = new T()
@@ -50,7 +50,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         protected static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         public Entity BuildingEntity { get; private set; }
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
-        public GridObject MyGridObject { get; private set; }
+        public CellObject MyGridObject { get; private set; }
 
         protected SlotValidationHandler mySlotValidationHandler;
 

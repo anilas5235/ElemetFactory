@@ -1,18 +1,21 @@
 using System;
+using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid.DataContainers;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
     public static class PlacedBuildingUtility 
     {
-        public static bool CheckForBuilding(Vector2Int targetPos, GridChunk myChunk,out PlacedBuildingEntity building)
+        
+        public static bool CheckForBuilding(int2 targetPos, ChunkDataAspect myChunk,out PlacedBuildingEntity building)
         {
-            GridObject cell = myChunk.ChunkBuildingGrid.IsValidPosition(targetPos)
-                ? myChunk.ChunkBuildingGrid.GetCellData(targetPos)
-                : myChunk.myGridBuildingSystem.GetGridObjectFormPseudoPosition(targetPos, myChunk);
+
+            CellObject cell = myChunk.GetCell(targetPos);
             building = cell.Building;
-            return cell.Occupied;
+            return cell.IsOccupied;
         }
         
         public static FacingDirection GetNextDirectionClockwise(FacingDirection facingDirection)

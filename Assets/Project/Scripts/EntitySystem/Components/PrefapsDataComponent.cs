@@ -4,9 +4,10 @@ namespace Project.Scripts.EntitySystem.Components
 {
     public struct PrefapsDataComponent : IComponentData
     {
+        public readonly Entity entity;
         public readonly Entity Excavator, Conveyor, Separator, Combiner, TrashCan, ItemGas, ItemLiquid, ItemSolid, TileVisual;
 
-        public PrefapsDataComponent(Entity excavator, Entity separator, Entity conveyor, Entity combiner,
+        public PrefapsDataComponent( Entity selfEntity,Entity excavator, Entity separator, Entity conveyor, Entity combiner,
             Entity trashCan, Entity itemGas, Entity itemLiquid, Entity itemSolid, Entity tileVisual)
         {
             Excavator = excavator;
@@ -18,6 +19,7 @@ namespace Project.Scripts.EntitySystem.Components
             ItemLiquid = itemLiquid;
             ItemSolid = itemSolid;
             TileVisual = tileVisual;
+            entity = selfEntity;
         }
     }
 }

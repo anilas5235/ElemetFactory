@@ -17,6 +17,7 @@ namespace Project.Scripts.EntitySystem.Baker
             
             AddComponent(entity, new PrefapsDataComponent(
             
+                entity,
                 GetEntity(authoring.Excavator, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.Separator, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.Conveyor, TransformUsageFlags.Dynamic),

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Grid;
@@ -15,30 +16,38 @@ using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+    [StructLayout(LayoutKind.Auto)]
     public partial struct GenerationSystem : ISystem
     {
         public static readonly int WorldScale = 10;
         
         public static GenerationSystem Instance;
         private static EntityManager _entityManager;
-        public static Entity worldDataEntity;
+        public static Entity worldDataEntity, prefabsEntity;
+        
         
         private static System.Random _random = new System.Random();
 
-        private static readonly float[] ResourcePatchSizeProbabilities = { 60f, 39f, 1f };
-        private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
+        #region Consts
 
-        private static readonly int2[] Patch0Positions = { new int2(0, 0) };
+           private static readonly float[] ResourcePatchSizeProbabilities = { 60f, 39f, 1f };
+                private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
+        
+                private static readonly int2[] Patch0Positions = { new int2(0, 0) };
+        
+                private static readonly int2[] Patch1Positions =
+                    { new int2(0, 1), new int2(1, 1), new int2(1, 0) };
 
-        private static readonly int2[] Patch1Positions =
-            { new int2(0, 1), new int2(1, 1), new int2(1, 0) };
+                private static readonly int2[] Patch2Positions =
+                {
+                    new int2(-1, 1), new int2(-1, 0), new int2(-1, -1), new int2(0, -1),
+                    new int2(1, -1),
+                };
 
-        private static readonly int2[] Patch2Positions =
-        {
-            new int2(-1, 1), new int2(-1, 0), new int2(-1, -1), new int2(0, -1),
-            new int2(1, -1),
-        };
 
+        #endregion
+        
         private static readonly int2[] Patch3Positions =
         {
             new int2(-2, 0), new int2(-2, 1), new int2(-2, -1), new int2(2, -1),
@@ -46,51 +55,84 @@ namespace Project.Scripts.EntitySystem.Systems
             new int2(0, -2), new int2(-1, 2), new int2(1, 2), new int2(0, 2),
         };
 
+        private static int playerViewRadius;
+        private static int2 chunkPosWithPlayer;
+        private static List<int2> LoadedChunks;
+
         public void OnCreate(ref SystemState state)
         {
             Instance = this;
             _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
             state.RequireForUpdate<PrefapsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
+            LoadedChunks = new List<int2>();
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            if(SystemAPI.TryGetSingleton(out PrefapsDataComponent pref)) GridBuildingSystem.Work = true;
+            GridBuildingSystem.Work = true;
             if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
-        }
+            if (prefabsEntity == default) prefabsEntity = SystemAPI.GetSingleton<PrefapsDataComponent>().entity;
+            
+            Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
+            int2 currentPos = WorldDataAspect.GetChunkPosition(playerCam.transform.position);
+            int radius = Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect / ChunkDataComponent.ChunkUnitSize);
+            if (chunkPosWithPlayer.x == currentPos.x && chunkPosWithPlayer.y == currentPos.y && playerViewRadius == radius) return;
+            chunkPosWithPlayer = new int2(currentPos.x,currentPos.y);
+            playerViewRadius = radius;
 
-        public void UpdateInView(Vector2Int[]chunksEnteringView, Vector2Int[]chunksExitingView)
-        {
-            var worldData = _entityManager.GetAspect<WorldDataAspect>(worldDataEntity);
-            foreach (Vector2Int pos in chunksExitingView)
+            List<int2> chunksToLoad = new List<int2>();
+            List<int2> chunksToUnLoad = new List<int2>();
+            
+            for (int x = -playerViewRadius; x < playerViewRadius+1; x++)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y),out bool gen);
+                for (int y = -playerViewRadius; y < playerViewRadius+1; y++)
+                { 
+                    chunksToLoad.Add(new int2(x, y) + chunkPosWithPlayer);
+                }
+            }
+
+            foreach (int2 loadedChunkPos in LoadedChunks)
+            {
+                if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
+                else chunksToUnLoad.Add(loadedChunkPos);
+            }
+            
+            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
+            var worldData = _entityManager.GetAspect<WorldDataAspect>(worldDataEntity);
+            foreach (int2 pos in chunksToUnLoad)
+            {
+                ChunkDataAspect chunk = worldData.GetChunk(pos,out bool gen,ecb);
+                LoadedChunks.Remove(pos);
                 if(gen)continue;
                 chunk.InView = false;
             }
-            foreach (Vector2Int pos in chunksEnteringView)
+            foreach (int2 pos in chunksToLoad)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(new int2(pos.x, pos.y), out bool gen);
+                ChunkDataAspect chunk = worldData.GetChunk(pos, out bool gen,ecb);
+                LoadedChunks.Add(pos);
                 if(gen)continue;
                 chunk.InView = true;
             }
+
+            ecb.Playback(_entityManager);
+            
         }
 
-        public ChunkDataAspect GenerateChunk(int2 chunkPosition, WorldDataAspect worldDataAspect)
+        public Entity GenerateChunk(int2 chunkPosition, WorldDataAspect worldDataAspect, EntityCommandBuffer ecb)
         {
-            Entity entity = _entityManager.CreateEntity();
+            Entity entity = ecb.CreateEntity();
             float3 worldPos = WorldDataAspect.GetChunkWorldPosition(chunkPosition);
-            _entityManager.AddComponentData(entity, new LocalTransform()
+            ecb.AddComponent(entity, new LocalTransform()
             {
                 Position = worldPos,
                 Scale = WorldScale,
             });
             ResourcePatch[] patches = GenerateResources();
-            _entityManager.AddComponentData(entity,new ChunkDataComponent(chunkPosition, worldPos,_entityManager,
-                SystemAPI.GetSingleton<PrefapsDataComponent>().TileVisual, patches));
-            _entityManager.SetName(entity,$"Chunk({chunkPosition})");
-            return _entityManager.GetAspect<ChunkDataAspect>(entity);
+            ecb.AddComponent(entity,new ChunkDataComponent(chunkPosition, worldPos,
+                SystemAPI.GetSingleton<PrefapsDataComponent>().TileVisual, patches,ecb));
+            ecb.SetName(entity,$"Chunk({chunkPosition})");
+            return entity;
 
             ResourcePatch[] GenerateResources()
             {
@@ -178,8 +220,8 @@ namespace Project.Scripts.EntitySystem.Systems
                 int2 center;
                 do
                 {
-                    center = new int2(_random.Next(patchSize + 1, GridBuildingSystem.ChunkSize.x - patchSize - 1),
-                        _random.Next(patchSize + 1, GridBuildingSystem.ChunkSize.y - patchSize - 1));
+                    center = new int2(_random.Next(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1),
+                        _random.Next(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1));
                 } while (blocked.Contains(center));
 
                 for (int i = 0; i < cellPositions.Count; i++) cellPositions[i] += center;
