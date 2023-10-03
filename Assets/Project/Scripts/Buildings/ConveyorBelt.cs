@@ -1,8 +1,10 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings
@@ -23,7 +25,7 @@ namespace Project.Scripts.Buildings
             
             if (inputSlot.EntityToPullFrom != default) return;
             
-            Vector2Int[] offsets = new Vector2Int[]
+            int2[] offsets = new int2[]
             {
                 PlacedBuildingUtility.FacingDirectionToVector(PlacedBuildingUtility.GetOppositeDirection(MyPlacedBuildingData.directionID)) ,
                 PlacedBuildingUtility.FacingDirectionToVector(PlacedBuildingUtility.GetNextDirectionClockwise(MyPlacedBuildingData.directionID)) ,
@@ -33,9 +35,10 @@ namespace Project.Scripts.Buildings
             for (var i = 0; i < offsets.Length; i++)
             {
                 var offset = offsets[i];
-                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyGridObject.Position, MyGridObject.Chunk,
-                        out PlacedBuildingEntity building)) continue;
-                
+                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyCellObject.Position,
+                        GenerationSystem.worldAspect.GetChunk(MyCellObject.ChunkPosition),
+                        out Entity building)) continue;
+                /*
                 IEntityOutput entityInput = (IEntityOutput)building;
                 if (entityInput == null) continue;
                 if (!entityInput.GetOutput(this, out Entity entity, out int index)) continue;
@@ -48,6 +51,7 @@ namespace Project.Scripts.Buildings
                     output = conveyorDataComponent.output,
                 });
                 break;
+                */
             }
         }
 
@@ -58,10 +62,11 @@ namespace Project.Scripts.Buildings
            
             if (outputSlot.EntityToPushTo != default) return;
 
-            Vector2Int targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
-                                   MyGridObject.Position;
-            if (PlacedBuildingUtility.CheckForBuilding(targetPos, MyGridObject.Chunk, out PlacedBuildingEntity building)) return;
-            
+            int2 targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
+                                   MyCellObject.Position;
+            if (PlacedBuildingUtility.CheckForBuilding(targetPos, GenerationSystem.worldAspect.GetChunk(MyCellObject.ChunkPosition)
+                    , out Entity building)) return;
+            /*
             IEntityInput entityInput = (IEntityInput) building;
             if(entityInput == null) return;
             if(!entityInput.GetInput(this, out Entity entity, out int index)) return;
@@ -72,6 +77,7 @@ namespace Project.Scripts.Buildings
                 input = conveyorDataComponent.input,
                 output = outputSlot,
             });
+            */
         }
         
         public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)

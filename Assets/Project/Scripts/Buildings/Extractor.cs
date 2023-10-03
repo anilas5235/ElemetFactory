@@ -2,6 +2,7 @@ using System;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
@@ -13,11 +14,11 @@ namespace Project.Scripts.Buildings
 {
     public class Extractor : PlacedBuildingEntity,IEntityOutput
     {
-        public ResourceType GeneratedResource { get; private set; }
+        public Item GeneratedResource { get; private set; }
 
         protected override void OnCreate()
         {
-            if(GeneratedResource == ResourceType.None) return;
+            if(GeneratedResource.ResourceIDs.Length < 1) return;
         }
 
         public bool GetOutput(PlacedBuildingEntity caller, out Entity entity, out int outputIndex)
@@ -41,9 +42,9 @@ namespace Project.Scripts.Buildings
                 3 => Resources.Load<SlotValidationHandler>("Buildings/SlotValidation/Extractor/ExtractorLeft"),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            
-            GeneratedResource = MyGridObject.Chunk.ChunkBuildingGrid.GetCellData(MyPlacedBuildingData.origin).ResourceNode;
-            if (GeneratedResource != ResourceType.None)
+
+            GeneratedResource = MyCellObject.Resource;
+            if (GeneratedResource.ResourceIDs.Length > 0)
             {
                 //TODO: link with dataComponent
             }

@@ -35,7 +35,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                         Scale = CellSize,
                     });
                     ecb.SetName(entity,$"Tile({pos})ofChunk({chunkPosition})");
-                    obj[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition, entity);
+                    obj[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition, entity,chunkPosition);
                 }
             }
 

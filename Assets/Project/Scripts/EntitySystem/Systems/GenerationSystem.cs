@@ -23,8 +23,9 @@ namespace Project.Scripts.EntitySystem.Systems
         public static readonly int WorldScale = 10;
         
         public static GenerationSystem Instance;
-        private static EntityManager _entityManager;
+        public static EntityManager _entityManager;
         public static Entity worldDataEntity, prefabsEntity;
+        public static WorldDataAspect worldAspect;
         
         
         private static System.Random _random = new System.Random();
@@ -72,6 +73,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             GridBuildingSystem.Work = true;
             if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
+            worldAspect = state.EntityManager.GetAspect<WorldDataAspect>(worldDataEntity);
             if (prefabsEntity == default) prefabsEntity = SystemAPI.GetSingleton<PrefapsDataComponent>().entity;
             
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
@@ -99,24 +101,22 @@ namespace Project.Scripts.EntitySystem.Systems
             }
             
             EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
-            var worldData = _entityManager.GetAspect<WorldDataAspect>(worldDataEntity);
             foreach (int2 pos in chunksToUnLoad)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(pos,out bool gen,ecb);
+                ChunkDataAspect chunk = worldAspect.GetChunk(pos,out bool gen,ecb);
                 LoadedChunks.Remove(pos);
                 if(gen)continue;
                 chunk.InView = false;
             }
             foreach (int2 pos in chunksToLoad)
             {
-                ChunkDataAspect chunk = worldData.GetChunk(pos, out bool gen,ecb);
+                ChunkDataAspect chunk = worldAspect.GetChunk(pos, out bool gen,ecb);
                 LoadedChunks.Add(pos);
                 if(gen)continue;
                 chunk.InView = true;
             }
 
             ecb.Playback(_entityManager);
-            
         }
 
         public Entity GenerateChunk(int2 chunkPosition, WorldDataAspect worldDataAspect, EntityCommandBuffer ecb)

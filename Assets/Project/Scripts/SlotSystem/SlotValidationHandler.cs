@@ -1,6 +1,7 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.SlotSystem
@@ -16,11 +17,11 @@ namespace Project.Scripts.SlotSystem
     public class SlotValidationHandler : ScriptableObject
     {
         [SerializeField] private FacingDirection ownFacingDirection;
-        [SerializeField] private Vector2Int[] validInputPositions;
-        [SerializeField] private Vector2Int[] validOutputPositions;
+        [SerializeField] private int2[] validInputPositions;
+        [SerializeField] private int2[] validOutputPositions;
 
-        public Vector2Int[] ValidInputPositions => validInputPositions;
-        public Vector2Int[] ValidOutputPositions => validOutputPositions;
+        public int2[] ValidInputPositions => validInputPositions;
+        public int2[] ValidOutputPositions => validOutputPositions;
 
         public bool ValidateInputSlotRequest(PlacedBuildingEntity me, PlacedBuildingEntity requester, out int index)
         {
@@ -40,16 +41,16 @@ namespace Project.Scripts.SlotSystem
                 (PossibleBuildings)requester.MyPlacedBuildingData.buildingDataID != PossibleBuildings.Conveyor)
                 return false;
 
-            Vector2Int chunkOffset = me.MyGridObject.Chunk.ChunkPosition - requester.MyGridObject.Chunk.ChunkPosition;
-            Vector2Int newPos = requester.MyGridObject.Position - chunkOffset * ChunkDataComponent.ChunkSize;
+            int2 chunkOffset = me.MyCellObject.ChunkPosition - requester.MyCellObject.ChunkPosition;
+            int2 newPos = requester.MyCellObject.Position - chunkOffset * ChunkDataComponent.ChunkSize;
 
-            Vector2Int search = newPos - me.MyGridObject.Position;
+            int2 search = newPos - me.MyCellObject.Position;
 
-            Vector2Int[] validSlots = input ? validInputPositions : validOutputPositions;
+            int2[] validSlots = input ? validInputPositions : validOutputPositions;
 
             for (int i = 0; i < validSlots.Length; i++)
             {
-                if (validSlots[i] != search) continue;
+                if (validSlots[i].x != search.x ||validSlots[i].y != search.y) continue;
                 index = i;
                 return true;
             }

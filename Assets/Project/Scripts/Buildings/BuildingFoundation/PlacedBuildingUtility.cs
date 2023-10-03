@@ -2,18 +2,22 @@ using System;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid.DataContainers;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
 {
-    public static class PlacedBuildingUtility 
+    public static class PlacedBuildingUtility
     {
+        public static readonly int2 INT2Up = new int2(0, 1),
+            INT2Down = new int2(0, -1),
+            INT2Left = new int2(-1, 0),
+            INT2Right = new int2(1, 0);
         
-        public static bool CheckForBuilding(int2 targetPos, ChunkDataAspect myChunk,out PlacedBuildingEntity building)
+        public static bool CheckForBuilding(int2 targetPos, ChunkDataAspect myChunk,out Entity building)
         {
-
-            CellObject cell = myChunk.GetCell(targetPos);
+            CellObject cell = myChunk.GetCell(targetPos,myChunk.ChunksPosition);
             building = cell.Building;
             return cell.IsOccupied;
         }
@@ -59,19 +63,19 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             };
         }
 
-        public static Vector2Int FacingDirectionToVector(FacingDirection facingDirection)
+        public static int2 FacingDirectionToVector(FacingDirection facingDirection)
         {
             return FacingDirectionToVector((int)facingDirection);
         }
         
-        public static Vector2Int FacingDirectionToVector(int facingDirectionID)
+        public static int2 FacingDirectionToVector(int facingDirectionID)
         {
             return facingDirectionID switch
             {
-                0 => Vector2Int.up,
-                1 => Vector2Int.right,
-                2 => Vector2Int.down,
-                3 => Vector2Int.left,
+                0 => INT2Up,
+                1 => INT2Right,
+                2 => INT2Down,
+                3 => INT2Left,
                 _ => throw new ArgumentOutOfRangeException(nameof(facingDirectionID), facingDirectionID, null)
             };
         }

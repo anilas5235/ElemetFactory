@@ -38,7 +38,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
                     buildingDataID = (int)buildingData,
                     directionID = (int)facingDirection,
                 },
-                MyGridObject = gridObject
+                MyCellObject = gridObject
             };
             placedBuilding.BuildingEntity =
                 BuildingGridEntityUtilities.CreateBuildingEntity(worldPosition, placedBuilding.MyPlacedBuildingData);
@@ -50,7 +50,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         protected static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         public Entity BuildingEntity { get; private set; }
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
-        public CellObject MyGridObject { get; private set; }
+        public CellObject MyCellObject { get; private set; }
 
         protected SlotValidationHandler mySlotValidationHandler;
 

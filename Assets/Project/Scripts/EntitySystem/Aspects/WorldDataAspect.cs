@@ -29,6 +29,11 @@ namespace Project.Scripts.EntitySystem.Aspects
             ChunkDataBank.Add(pair);
             return default;
         }
+        
+        public ChunkDataAspect GetChunk(int2 chunkPosition)
+        {
+            return TryGetValue(chunkPosition, out ChunkDataAspect chunkDataAspect) ? chunkDataAspect : default;
+        }
 
         public bool TryGetValue(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
         {

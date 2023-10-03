@@ -7,16 +7,18 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 {
     public struct CellObject
     {
-        public CellObject(int2 position,float3 worldPosition, Entity visuals)
+        public CellObject(int2 position,float3 worldPosition, Entity visuals, int2 chunkPosition)
         {
             Position = position;
             Visuals = visuals;
+            ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
             Building = default;
             Resource = default;
         }
        
         public int2 Position { get; }
+        public int2 ChunkPosition { get; }
         public float3 WorldPosition { get; }
         
         public Entity Building;

@@ -1,5 +1,6 @@
 using System;
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -20,12 +21,11 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         {
             ChunkEntity = chunkEntity;
             Position = position;
-            Chunk = default;
         }
 
         public int2 Position { get; }
         
-        public ChunkDataAspect Chunk;
+        public ChunkDataAspect Chunk => GenerationSystem._entityManager.GetAspect<ChunkDataAspect>(ChunkEntity);
         
         public Entity ChunkEntity { get; }
     }

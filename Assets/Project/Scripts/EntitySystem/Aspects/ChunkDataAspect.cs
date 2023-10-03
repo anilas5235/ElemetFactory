@@ -9,6 +9,7 @@ namespace Project.Scripts.EntitySystem.Aspects
     public readonly partial struct ChunkDataAspect : IAspect
     {
         private readonly RefRW<ChunkDataComponent> _chunkData;
+        private static int ChunkSize => ChunkDataComponent.ChunkSize;
         public int2 ChunksPosition => _chunkData.ValueRO.ChunkPosition;
         public float3 WorldPosition => _chunkData.ValueRO.WorldPosition;
         public int NumPatches => _chunkData.ValueRO.ResourcePatches.Length;
@@ -19,18 +20,27 @@ namespace Project.Scripts.EntitySystem.Aspects
             set => _chunkData.ValueRW.InView = value;
         }
 
-        public CellObject GetCell(int2 position)
+        public CellObject GetCell(int2 position,int2 chunkPosition)
         {
            return IsValidPositionInChunk(position) ?
                _chunkData.ValueRO.CellObjects[GetAryIndex(position)]:
-               GetCellFormPseudoPosition(position);
+               GetCellFormPseudoPosition(position,chunkPosition);
         }
 
-        private CellObject GetCellFormPseudoPosition(int2 position)
+        private CellObject GetCellFormPseudoPosition(int2 position, int2 chunkPosition)
         {
-            
+            int2 chunkOffset = new int2( Mathf.FloorToInt((float)position.x / ChunkSize), Mathf.FloorToInt((float)position.y / ChunkSize));
+            int2 newPos = position - chunkOffset * ChunkSize;
+            int2 newChunkPos = chunkPosition + chunkOffset;
+            return GenerationSystem.worldAspect.GetChunk(newChunkPos).GetCell(newPos,newChunkPos);
         }
-        
+
+        public static int2 GetPseudoPosition(int2 myChunkPosition, int2 otherChunkPosition, int2 position)
+        {
+            int2 chunkOffset = otherChunkPosition - myChunkPosition;
+            return position + chunkOffset * ChunkSize;
+        }
+
         public static int GetAryIndex(int2 position)
         {
             return position.y * ChunkDataComponent.ChunkSize + position.x;
