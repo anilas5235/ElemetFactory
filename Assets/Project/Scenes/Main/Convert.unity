@@ -161,6 +161,9 @@ MonoBehaviour:
   ItemLiquid: {fileID: 8099156330893030993, guid: 38a20dfe0ef9da2429baaebc06ec873f, type: 3}
   ItemSolid: {fileID: 8099156330893030993, guid: 7d781a65c6cbcaf41a00a251370cabe4, type: 3}
   Tile: {fileID: 7548931456545085481, guid: ab30369ccc864b646894ad850f5fc7ce, type: 3}
+  GasResource: {fileID: 7548931456545085481, guid: 279097ca668111d40b20f4f253d2d847, type: 3}
+  LiquidResource: {fileID: 7548931456545085481, guid: 8110e382d6a84474489fad13ce4d80ca, type: 3}
+  SolidResource: {fileID: 7548931456545085481, guid: f71c1628a30da9946ba160ae48b64522, type: 3}
 --- !u!4 &1842601375
 Transform:
   m_ObjectHideFlags: 0

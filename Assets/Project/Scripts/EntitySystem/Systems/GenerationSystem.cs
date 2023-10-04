@@ -11,6 +11,7 @@ using Project.Scripts.Utilities;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -25,8 +26,9 @@ namespace Project.Scripts.EntitySystem.Systems
         public static GenerationSystem Instance;
         public static EntityManager _entityManager;
         public static Entity worldDataEntity, prefabsEntity;
-        public static WorldDataAspect worldAspect;
-        
+        public static ComponentLookup<WorldDataComponent> worldDataLookup;
+
+        public static MaterialMeshInfo tileMaterialMeshInfo;
         
         private static System.Random _random = new System.Random();
 
@@ -73,11 +75,17 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             GridBuildingSystem.Work = true;
             if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
-            worldAspect = state.EntityManager.GetAspect<WorldDataAspect>(worldDataEntity);
-            if (prefabsEntity == default) prefabsEntity = SystemAPI.GetSingleton<PrefapsDataComponent>().entity;
+            if (prefabsEntity == default)
+            {
+                prefabsEntity = SystemAPI.GetSingleton<PrefapsDataComponent>().entity;
+                tileMaterialMeshInfo =
+                    state.EntityManager.GetComponentData<MaterialMeshInfo>(state.EntityManager
+                        .GetComponentData<PrefapsDataComponent>(prefabsEntity).TileVisual);
+            }
+            worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
             
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
-            int2 currentPos = WorldDataAspect.GetChunkPosition(playerCam.transform.position);
+            int2 currentPos = GetChunkPosition(playerCam.transform.position);
             int radius = Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect / ChunkDataComponent.ChunkUnitSize);
             if (chunkPosWithPlayer.x == currentPos.x && chunkPosWithPlayer.y == currentPos.y && playerViewRadius == radius) return;
             chunkPosWithPlayer = new int2(currentPos.x,currentPos.y);
@@ -100,38 +108,38 @@ namespace Project.Scripts.EntitySystem.Systems
                 else chunksToUnLoad.Add(loadedChunkPos);
             }
             
-            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
             foreach (int2 pos in chunksToUnLoad)
             {
-                ChunkDataAspect chunk = worldAspect.GetChunk(pos,out bool gen,ecb);
+                ChunkDataAspect chunk = GetChunk(pos,out bool gen,ref state);
                 LoadedChunks.Remove(pos);
                 if(gen)continue;
                 chunk.InView = false;
             }
             foreach (int2 pos in chunksToLoad)
             {
-                ChunkDataAspect chunk = worldAspect.GetChunk(pos, out bool gen,ecb);
+                ChunkDataAspect chunk = GetChunk(pos, out bool gen,ref state);
                 LoadedChunks.Add(pos);
                 if(gen)continue;
                 chunk.InView = true;
             }
-
-            ecb.Playback(_entityManager);
         }
 
-        public Entity GenerateChunk(int2 chunkPosition, WorldDataAspect worldDataAspect, EntityCommandBuffer ecb)
+        private Entity GenerateChunk(int2 chunkPosition)
         {
-            Entity entity = ecb.CreateEntity();
-            float3 worldPos = WorldDataAspect.GetChunkWorldPosition(chunkPosition);
+            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
+            Entity entity = _entityManager.CreateEntity();
+            float3 worldPos = GetChunkWorldPosition(chunkPosition);
+            ecb.SetName(entity,$"Chunk({chunkPosition.x},{chunkPosition.y})");
             ecb.AddComponent(entity, new LocalTransform()
             {
                 Position = worldPos,
                 Scale = WorldScale,
             });
             ResourcePatch[] patches = GenerateResources();
-            ecb.AddComponent(entity,new ChunkDataComponent(chunkPosition, worldPos,
-                SystemAPI.GetSingleton<PrefapsDataComponent>().TileVisual, patches,ecb));
-            ecb.SetName(entity,$"Chunk({chunkPosition})");
+            _entityManager.AddComponentData(entity,new ChunkDataComponent(chunkPosition, worldPos,
+                SystemAPI.GetSingleton<PrefapsDataComponent>(), patches,ecb));
+            ecb.Playback(_entityManager);
+            ecb.Dispose();
             return entity;
 
             ResourcePatch[] GenerateResources()
@@ -281,7 +289,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
                 {
                     int2 chunkPos = new int2(neighbourOffset.x, neighbourOffset.y) + chunkPosition;
-                    if (worldDataAspect.TryGetValue(chunkPos, out var chunk))
+                    if (TryGetChunk(chunkPos, out ChunkDataAspect chunk))
                     {
                         random -= chunk.NumPatches * antiCrowdingMultiplier;
                     }
@@ -321,6 +329,45 @@ namespace Project.Scripts.EntitySystem.Systems
             {
                 return math.sqrt(vec.x * vec.x + vec.y * vec.y);
             }
+        }
+        
+        public static ChunkDataAspect GetChunk(int2 chunkPosition, out bool newGenerated, ref SystemState systemState)
+        {
+            newGenerated = false;
+            if (TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
+
+            newGenerated = true;
+            PositionChunkPair pair = new PositionChunkPair(Instance.GenerateChunk(chunkPosition),
+                chunkPosition);
+            worldDataLookup.Update(ref systemState);
+            worldDataLookup.GetRefRW(worldDataEntity).ValueRW.ChunkDataBank.Add(pair);
+            return default;
+        }
+        public static bool TryGetChunk(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
+        {
+            chunkDataAspect = default;
+            foreach (var pair in worldDataLookup.GetRefRO(worldDataEntity).ValueRO.ChunkDataBank)
+            {
+                if (pair.Position.x != chunkPos.x ||
+                    pair.Position.y != chunkPos.y) continue;
+                chunkDataAspect = pair.Chunk;
+                return true;
+            }
+            return false;
+        }
+
+        public static float3 GetChunkWorldPosition(int2 chunkPosition)
+        {
+            float factor = ChunkDataComponent.ChunkSize * ChunkDataComponent.CellSize;
+            return new float3((float2)chunkPosition * factor, 0);
+        }
+
+
+        public static int2 GetChunkPosition(float3 transformPosition)
+        {
+            return new int2(
+                Mathf.RoundToInt(transformPosition.x / ChunkDataComponent.ChunkUnitSize),
+                Mathf.RoundToInt(transformPosition.y / ChunkDataComponent.ChunkUnitSize));
         }
     }
 }

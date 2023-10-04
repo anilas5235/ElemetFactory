@@ -6,7 +6,18 @@ namespace Project.Scripts.EntitySystem.Baker
 {
     public class PrefapsDataMono : MonoBehaviour
     {
-        public GameObject Excavator, Conveyor, Separator, Combiner, TrashCan, ItemGas, ItemLiquid, ItemSolid,Tile;
+        public GameObject Excavator,
+            Conveyor,
+            Separator,
+            Combiner,
+            TrashCan,
+            ItemGas,
+            ItemLiquid,
+            ItemSolid,
+            Tile,
+            GasResource,
+            LiquidResource,
+            SolidResource;
     }
 
     public class PrefapsDataBaker : Baker<PrefapsDataMono>
@@ -26,7 +37,10 @@ namespace Project.Scripts.EntitySystem.Baker
                 GetEntity(authoring.ItemGas, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemLiquid, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemSolid, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Tile, TransformUsageFlags.Dynamic)
+                GetEntity(authoring.Tile, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.GasResource, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.LiquidResource, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.SolidResource, TransformUsageFlags.Dynamic)
             ));
         }
     }

@@ -1,5 +1,6 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.Buildings.Parts;
+using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
@@ -35,8 +36,8 @@ namespace Project.Scripts.Buildings
             for (var i = 0; i < offsets.Length; i++)
             {
                 var offset = offsets[i];
-                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyCellObject.Position,
-                        GenerationSystem.worldAspect.GetChunk(MyCellObject.ChunkPosition),
+                GenerationSystem.TryGetChunk(MyCellObject.ChunkPosition, out ChunkDataAspect chunkData);
+                if (!PlacedBuildingUtility.CheckForBuilding(offset + MyCellObject.Position, chunkData,
                         out Entity building)) continue;
                 /*
                 IEntityOutput entityInput = (IEntityOutput)building;
@@ -64,8 +65,8 @@ namespace Project.Scripts.Buildings
 
             int2 targetPos = PlacedBuildingUtility.FacingDirectionToVector(MyPlacedBuildingData.directionID) +
                                    MyCellObject.Position;
-            if (PlacedBuildingUtility.CheckForBuilding(targetPos, GenerationSystem.worldAspect.GetChunk(MyCellObject.ChunkPosition)
-                    , out Entity building)) return;
+            GenerationSystem.TryGetChunk(MyCellObject.ChunkPosition, out ChunkDataAspect chunkData);
+            if (PlacedBuildingUtility.CheckForBuilding(targetPos, chunkData, out Entity building)) return;
             /*
             IEntityInput entityInput = (IEntityInput) building;
             if(entityInput == null) return;

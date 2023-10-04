@@ -11,6 +11,8 @@ namespace Project.Scripts.Utilities
 {
     public static class ResourcesUtility
     {
+        public static readonly Material fluid = Resources.Load<Material>("Materials/GrayFluid");
+        
         //data arrays
         private static readonly BuildingScriptableData[] PossibleBuildingData =
         {

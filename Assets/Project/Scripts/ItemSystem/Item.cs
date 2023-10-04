@@ -30,6 +30,7 @@ namespace Project.Scripts.ItemSystem
     }
     public readonly struct Item
     {
+        public static readonly Item EmptyItem = new Item();
         public NativeArray<uint> ResourceIDs { get; }
         public ItemForm ItemForm{ get; }
         public float4 Color{ get; }

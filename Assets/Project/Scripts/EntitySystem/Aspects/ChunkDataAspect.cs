@@ -32,7 +32,8 @@ namespace Project.Scripts.EntitySystem.Aspects
             int2 chunkOffset = new int2( Mathf.FloorToInt((float)position.x / ChunkSize), Mathf.FloorToInt((float)position.y / ChunkSize));
             int2 newPos = position - chunkOffset * ChunkSize;
             int2 newChunkPos = chunkPosition + chunkOffset;
-            return GenerationSystem.worldAspect.GetChunk(newChunkPos).GetCell(newPos,newChunkPos);
+            GenerationSystem.TryGetChunk(newChunkPos, out ChunkDataAspect chunkData);
+            return chunkData.GetCell(newPos,newChunkPos);
         }
 
         public static int2 GetPseudoPosition(int2 myChunkPosition, int2 otherChunkPosition, int2 position)
