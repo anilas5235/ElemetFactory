@@ -1,4 +1,6 @@
-﻿using Project.Scripts.ItemSystem;
+﻿using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Systems;
+using Project.Scripts.ItemSystem;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -25,5 +27,22 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public bool IsOccupied => Building != default;
         public Item Resource;
         public Entity Visuals { get; }
+
+        public bool DeleteBuilding()
+        {
+            if (Building == default) return false;
+            GenerationSystem._entityManager.DestroyEntity(Building);
+            Building = default;
+            return true;
+        }
+
+        public bool PlaceBuilding(Entity entity)
+        {
+            if (Building != default) return false;
+
+            Building = entity;
+
+            return true;
+        }
     }
 }

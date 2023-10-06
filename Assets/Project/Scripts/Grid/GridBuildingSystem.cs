@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.General;
 using Project.Scripts.Grid.DataContainers;
 using Project.Scripts.Interaction;
@@ -17,14 +18,44 @@ namespace Project.Scripts.Grid
     {
         public static bool Work = false;
         [SerializeField] private bool buildingEnabled = true;
-        
-        private PossibleBuildings _selectedBuilding = PossibleBuildings.Extractor;
+
+        private int _selectedBuilding = 0;
         private FacingDirection _facingDirection = FacingDirection.Down;
         public Camera PlayerCam => CameraMovement.Instance.Camera;
         private void OnEnable()
         {
             //LoadAllChunksFromSave(WorldSaveHandler.GetWorldSave());
             UIWindowMaster.Instance.OnActiveUIChanged += CanBuild;
+        }
+
+        private void Update()
+        {
+            if (!buildingEnabled || !Work) return;
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                _facingDirection = PlacedBuildingUtility.GetNextDirectionClockwise(_facingDirection);
+                Debug.Log($"rotation: {_facingDirection}");
+            }
+            if (Input.GetMouseButton(0))
+            {
+                Vector3 mousePos = GeneralUtilities.GetMousePosition();
+                bool place = PlacingSystem.Instance.TryToPlaceBuilding(mousePos,_selectedBuilding, _facingDirection);
+                Debug.Log("placed "+place);
+            }
+
+            if (Input.GetMouseButton(1))
+            {
+                Vector3 mousePos = GeneralUtilities.GetMousePosition();
+                bool del = PlacingSystem.Instance.TryToDeleteBuilding(mousePos);
+                Debug.Log("deleted "+del);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = 0;
+            else if (Input.GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = 1;
+            else if (Input.GetKeyDown(KeyCode.Alpha3)) _selectedBuilding = 2;
+            else if (Input.GetKeyDown(KeyCode.Alpha4)) _selectedBuilding = 3;
+            else if (Input.GetKeyDown(KeyCode.Alpha5)) _selectedBuilding = 4;
         }
 
         private void OnApplicationQuit()
