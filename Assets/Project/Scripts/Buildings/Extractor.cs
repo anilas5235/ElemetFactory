@@ -26,7 +26,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
-            OutputSlot output =_entityManager.GetComponentData<ExtractorDataComponent>(BuildingEntity).output;
+            OutputSlot output =entityManager.GetComponentData<ExtractorDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;

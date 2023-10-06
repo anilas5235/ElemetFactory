@@ -27,45 +27,6 @@ namespace Project.Scripts.Grid
             UIWindowMaster.Instance.OnActiveUIChanged += CanBuild;
         }
 
-        private void Update()
-        {
-            if(!buildingEnabled|| !Work) return;
-            
-            /*
-            if (Input
-            .GetKeyDown(KeyCode.R))
-            {
-                _facingDirection = PlacedBuildingUtility.GetNextDirectionClockwise(_facingDirection);
-                Debug.Log($"rotation: {_facingDirection}");
-            }
-
-            if (Input
-            .GetMouseButton(0))
-            {
-                Vector3 mousePos =GeneralUtilities.GetMousePosition();
-                GridChunk.TryToPlaceBuilding(GetChunk(mousePos),_selectedBuilding,mousePos,_facingDirection);
-            }
-
-            if (Input
-            .GetMouseButton(1))
-            {
-                Vector3 mousePos =GeneralUtilities.GetMousePosition();
-                GridChunk.TryToDeleteBuilding(GetChunk(mousePos),mousePos);
-            }
-
-            if (Input
-            .GetKeyDown(KeyCode.Alpha1)) _selectedBuilding = PossibleBuildings.Extractor;
-            else if (Input
-            .GetKeyDown(KeyCode.Alpha2)) _selectedBuilding = PossibleBuildings.Conveyor;
-            else if (Input
-            .GetKeyDown(KeyCode.Alpha3)) _selectedBuilding = PossibleBuildings.Combiner;
-            else if (Input
-            .GetKeyDown(KeyCode.Alpha4)) _selectedBuilding = PossibleBuildings.TrashCan;
-            else if (Input
-            .GetKeyDown(KeyCode.Alpha5)) _selectedBuilding = PossibleBuildings.Separator;
-            */
-        }
-
         private void OnApplicationQuit()
         {
             //SaveAllChunksToFile(Chunks);

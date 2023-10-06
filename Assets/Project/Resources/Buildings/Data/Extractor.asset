@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Extractor
   m_EditorClassIdentifier: 
   nameString: Extractor
-  prefab: {fileID: 4448775618434482045, guid: 1991d4a52d8193341babfc016f92130f, type: 3}
-  visual: {fileID: 0}
+  prefab: {fileID: 8232190868387762745, guid: ff6bea3cc3d78f645b73adeb698fb905, type: 3}
   size: {x: 1, y: 1}
+  InputOffsets: []
+  OutputOffsets:
+  - x: 0
+    y: 1

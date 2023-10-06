@@ -19,7 +19,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
         public static float HalfChunkSize => ChunkSize/2f;
         public ChunkDataComponent(int2 chunkPosition, float3 worldPosition,
-            PrefapsDataComponent Prefaps,ResourcePatch[] resourcePatches, EntityCommandBuffer ecb)
+            PrefabsDataComponent prefabs,ResourcePatch[] resourcePatches, EntityCommandBuffer ecb)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
@@ -50,16 +50,16 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
                     if (itemEmpty)
                     {
-                       entity= ecb.Instantiate(Prefaps.TileVisual);
+                       entity= ecb.Instantiate(prefabs.TileVisual);
                        ecb.SetName(entity,$"Tile");
                     }
                     else
                     {
                         entity = item.ItemForm switch
                         {
-                            ItemForm.Gas => ecb.Instantiate(Prefaps.GasTile),
-                            ItemForm.Fluid => ecb.Instantiate(Prefaps.LiquidTile),
-                            ItemForm.Solid => ecb.Instantiate(Prefaps.SolidTile),
+                            ItemForm.Gas => ecb.Instantiate(prefabs.GasTile),
+                            ItemForm.Fluid => ecb.Instantiate(prefabs.LiquidTile),
+                            ItemForm.Solid => ecb.Instantiate(prefabs.SolidTile),
                             _ => throw new ArgumentOutOfRangeException()
                         };
                         ecb.AddComponent(entity, new TileColor()

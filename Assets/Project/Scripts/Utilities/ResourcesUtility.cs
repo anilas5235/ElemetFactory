@@ -1,27 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 namespace Project.Scripts.Utilities
 {
     public static class ResourcesUtility
     {
-        public static readonly Material fluid = Resources.Load<Material>("Materials/GrayFluid");
-        
-        //data arrays
-        private static readonly BuildingScriptableData[] PossibleBuildingData =
-        {
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
-        };
+        private static BuildingData[] BuildingsData;
         
         private static readonly ResourceData[] ResourceDataBank = new[]
         {
@@ -35,19 +26,16 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
             new ResourceData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
         };
-
-        private static readonly TileBase[] Tiles = new[]
+        
+        public static void SetBuildingData(BuildingData[] buildingData)
         {
-            Resources.Load<TileBase>("Tiles/None"),
-            Resources.Load<TileBase>("Tiles/H"),
-            Resources.Load<TileBase>("Tiles/C"),
-            Resources.Load<TileBase>("Tiles/O"),
-            Resources.Load<TileBase>("Tiles/N"),
-            Resources.Load<TileBase>("Tiles/S"),
-            Resources.Load<TileBase>("Tiles/Al"),
-            Resources.Load<TileBase>("Tiles/Fe"),
-            Resources.Load<TileBase>("Tiles/Na"),
-        };
+            BuildingsData = buildingData;
+        }
+
+        public static BuildingData GetBuildingData(int buildingID)
+        {
+            return BuildingsData[buildingID];
+        }
 
         public static Item CreateItemData(NativeArray<uint> resourceIDs)
         {
@@ -86,42 +74,107 @@ namespace Project.Scripts.Utilities
             return ResourceDataBank[resourceID];
         }
 
-        public static TileBase GetResourceTile(ResourceType resourceType)
+        public static int2[] GetGridPositionList(PlacedBuildingData myPlacedBuildingData)
         {
-            return GetResourceTile((uint)resourceType);
+            BuildingData buildingData = GetBuildingData(myPlacedBuildingData.buildingDataID);
+
+            List<int2> positions = new List<int2>();
+            
+            for (int x = 0; x < buildingData.size.x; x++)
+            {
+                for (int y = 0; y < buildingData.size.y; y++)
+                {
+                    int2 position = new int2(x, y);
+                    for (int i = 0; i < myPlacedBuildingData.directionID; i++)
+                    {
+                        position = PlacedBuildingUtility.GetRotatedVectorClockwise(position);
+                    }
+                    position += myPlacedBuildingData.origin;
+                    positions.Add(position);
+                }
+            }
+
+            return positions.ToArray();
         }
-        
-        public static TileBase GetResourceTile(uint resourceID)
-        {
-            return Tiles[resourceID];
-        }
-        
-        #region BuildingHandeling
-        public static BuildingScriptableData GetBuildingDataBase(PossibleBuildings buildingType)
-        {
-            return GetBuildingDataBase((int)buildingType);
-        }
-        
-        public static BuildingScriptableData GetBuildingDataBase(int buildingTypeID)
-        {
-            return PossibleBuildingData[buildingTypeID];
-        }
-        #endregion
     }
 
     [Serializable]
-    public struct ResourceData
+    public readonly struct ResourceData
     {
         public string Name => resourceType.ToString();
-        public ResourceType resourceType;
-        public Color color;
-        public ItemForm form;
+        public readonly ResourceType resourceType;
+        public readonly Color color;
+        public readonly ItemForm form;
 
         public ResourceData(ResourceType resourceType, Color color, ItemForm form)
         {
             this.color = color;
             this.form = form;
             this.resourceType = resourceType;
+        }
+    }
+    
+    [Serializable]
+    public readonly struct BuildingData
+    {
+        public readonly FixedString64Bytes Name;
+        public readonly Entity Prefab;
+        public readonly int BuildingID;
+        public readonly int2 size;
+        private readonly PortDirections[] _inputPortDirections, _outputPortDirections;
+        
+        public BuildingData(FixedString64Bytes name, Entity prefab, int2[] inputDirections, int2[] outputDirections, int buildingID, int2 size)
+        {
+            Name = name;
+            Prefab = prefab;
+            BuildingID = buildingID;
+            this.size = size;
+            _inputPortDirections = new PortDirections[inputDirections.Length];
+            for (int i = 0; i < _inputPortDirections.Length; i++)
+            {
+                _inputPortDirections[i] = new PortDirections(inputDirections[i]);
+            }
+            _outputPortDirections = new PortDirections[outputDirections.Length];
+            for (int i = 0; i < _outputPortDirections.Length; i++)
+            {
+                _outputPortDirections[i] = new PortDirections(outputDirections[i]);
+            }
+        }
+
+        public int2[] GetInputPortDirections(FacingDirection facingDirectionOfBuilding)
+        {
+            return _inputPortDirections.Select(inputPort => inputPort.GetPortDirection(facingDirectionOfBuilding)).ToArray();
+        }
+        
+        public int2[] GetOutputPortDirections(FacingDirection facingDirectionOfBuilding)
+        {
+            return _outputPortDirections.Select(outputPort => outputPort.GetPortDirection(facingDirectionOfBuilding)).ToArray();
+        }
+    }
+
+    [Serializable]
+    public readonly struct PortDirections
+    {
+        private readonly int2 _up, _right, _down, _left;
+        public PortDirections(int2 directionOffsetFacingUp) : this()
+        {
+            _up = directionOffsetFacingUp;
+            _right = PlacedBuildingUtility.GetRotatedVectorClockwise(_up);
+            _down = PlacedBuildingUtility.GetRotatedVectorClockwise(_right);
+            _left = PlacedBuildingUtility.GetRotatedVectorClockwise(_down);
+        }
+
+        public int2 GetPortDirection(FacingDirection facingDirectionOfBuilding)
+        {
+            return facingDirectionOfBuilding switch
+            {
+                FacingDirection.Up => _up,
+                FacingDirection.Right => _right,
+                FacingDirection.Down => _left,
+                FacingDirection.Left => _down,
+                _ => throw new ArgumentOutOfRangeException(nameof(facingDirectionOfBuilding), facingDirectionOfBuilding,
+                    null)
+            };
         }
     }
 }

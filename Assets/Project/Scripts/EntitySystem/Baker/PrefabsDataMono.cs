@@ -1,16 +1,14 @@
+using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.Utilities;
 using Unity.Entities;
 using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Baker
 {
-    public class PrefapsDataMono : MonoBehaviour
+    public class PrefabsDataMono : MonoBehaviour
     {
-        public GameObject Excavator,
-            Conveyor,
-            Separator,
-            Combiner,
-            TrashCan,
+        public GameObject
             ItemGas,
             ItemLiquid,
             ItemSolid,
@@ -18,22 +16,19 @@ namespace Project.Scripts.EntitySystem.Baker
             GasResource,
             LiquidResource,
             SolidResource;
+
+         public BuildingScriptableData[] buildingScriptableData;
     }
 
-    public class PrefapsDataBaker : Baker<PrefapsDataMono>
+    public class PrefabsDataBaker : Baker<PrefabsDataMono>
     {
-        public override void Bake(PrefapsDataMono authoring)
+        public override void Bake(PrefabsDataMono authoring)
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic);
-            
-            AddComponent(entity, new PrefapsDataComponent(
+
+            AddComponent(entity, new PrefabsDataComponent(
             
                 entity,
-                GetEntity(authoring.Excavator, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Separator, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Conveyor, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Combiner, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.TrashCan, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemGas, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemLiquid, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemSolid, TransformUsageFlags.Dynamic),
@@ -42,6 +37,18 @@ namespace Project.Scripts.EntitySystem.Baker
                 GetEntity(authoring.LiquidResource, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.SolidResource, TransformUsageFlags.Dynamic)
             ));
+
+            BuildingData[] buildingData = new BuildingData[authoring.buildingScriptableData.Length];
+
+            for (int i = 0; i < buildingData.Length; i++)
+            {
+                BuildingScriptableData data = authoring.buildingScriptableData[i];
+                buildingData[i] = new BuildingData(data.nameString,
+                    GetEntity(data.prefab, TransformUsageFlags.Dynamic),
+                    data.InputOffsets, data.OutputOffsets, i,data.size);
+            }
+            
+            ResourcesUtility.SetBuildingData(buildingData);
         }
     }
 }

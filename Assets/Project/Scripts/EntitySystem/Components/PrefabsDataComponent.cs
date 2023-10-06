@@ -1,16 +1,17 @@
+using System;
+using System.Linq;
+using Project.Scripts.Buildings.BuildingFoundation;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Components
 {
-    public struct PrefapsDataComponent : IComponentData
+    public struct PrefabsDataComponent : IComponentData
     {
         public readonly Entity entity;
 
-        public readonly Entity Excavator,
-            Conveyor,
-            Separator,
-            Combiner,
-            TrashCan,
+        public readonly Entity
             ItemGas,
             ItemLiquid,
             ItemSolid,
@@ -19,15 +20,9 @@ namespace Project.Scripts.EntitySystem.Components
             LiquidTile,
             SolidTile;
 
-        public PrefapsDataComponent(Entity selfEntity, Entity excavator, Entity separator, Entity conveyor,
-            Entity combiner, Entity trashCan, Entity itemGas, Entity itemLiquid, Entity itemSolid,
+        public PrefabsDataComponent(Entity selfEntity, Entity itemGas, Entity itemLiquid, Entity itemSolid,
             Entity tileVisual, Entity gasTile, Entity liquidTile, Entity solidTile)
         {
-            Excavator = excavator;
-            Separator = separator;
-            Conveyor = conveyor;
-            Combiner = combiner;
-            TrashCan = trashCan;
             ItemGas = itemGas;
             ItemLiquid = itemLiquid;
             ItemSolid = itemSolid;

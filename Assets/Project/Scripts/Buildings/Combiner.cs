@@ -38,7 +38,7 @@ namespace Project.Scripts.Buildings
 
         public bool GetInput(PlacedBuildingEntity caller, out Entity entity, out int inputIndex)
         {
-            CombinerDataComponent combinerDataComponent = _entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity);
+            CombinerDataComponent combinerDataComponent = entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity);
             
             entity = default;
             inputIndex = default;
@@ -59,7 +59,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
-            OutputSlot output =_entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity).output;
+            OutputSlot output =entityManager.GetComponentData<CombinerDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;

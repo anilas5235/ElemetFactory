@@ -3,6 +3,7 @@ using Project.Scripts.Grid;
 using Project.Scripts.SlotSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
@@ -28,7 +29,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// <param name="buildingData">The typeData of the building</param>
         /// <returns>Reference to the newly created PlacedBuildingEntity</returns>
         public  static PlacedBuildingEntity CreateBuilding<T>(CellObject gridObject, Vector3 worldPosition,
-            Vector2Int origin, FacingDirection facingDirection, PossibleBuildings buildingData) where T : PlacedBuildingEntity,new()
+            int2 origin, FacingDirection facingDirection, PossibleBuildings buildingData) where T : PlacedBuildingEntity,new()
         {
             PlacedBuildingEntity placedBuilding = new T()
             {
@@ -47,7 +48,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             return placedBuilding;
         }
         
-        protected static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        protected static EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         public Entity BuildingEntity { get; private set; }
         public PlacedBuildingData MyPlacedBuildingData { get; private set; }
         public CellObject MyCellObject { get; private set; }
@@ -63,15 +64,14 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         /// Give back a list of positions, that this building occupies
         /// </summary>
         /// <returns>Ary of Vector2Int pseudo positions, not all maybe in the same Chunk</returns>
-        public Vector2Int[] GetGridPositionList()
+        public int2[] GetGridPositionList()
         {
-            return ResourcesUtility.GetBuildingDataBase(MyPlacedBuildingData.buildingDataID)
-                .GetGridPositionList(MyPlacedBuildingData);
+            return ResourcesUtility.GetGridPositionList(MyPlacedBuildingData);
         }
 
         public virtual void Destroy()
         {
-            _entityManager.DestroyEntity(BuildingEntity);
+            entityManager.DestroyEntity(BuildingEntity);
         }
 
         protected abstract void SetUpSlots(FacingDirection facingDirection);

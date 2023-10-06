@@ -21,7 +21,7 @@ namespace Project.Scripts.Buildings
         protected override void CheckForSlotToPullForm()
         {
             
-            ConveyorDataComponent conveyorDataComponent = _entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
+            ConveyorDataComponent conveyorDataComponent = entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
             InputSlot inputSlot = conveyorDataComponent.input;
             
             if (inputSlot.EntityToPullFrom != default) return;
@@ -58,7 +58,7 @@ namespace Project.Scripts.Buildings
 
         protected override void CheckForSlotsToPushTo()
         {
-            ConveyorDataComponent conveyorDataComponent = _entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
+            ConveyorDataComponent conveyorDataComponent = entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity);
             OutputSlot outputSlot = conveyorDataComponent.output;
            
             if (outputSlot.EntityToPushTo != default) return;
@@ -85,7 +85,7 @@ namespace Project.Scripts.Buildings
         {
             entity = default;
             inputIndex = default;
-            InputSlot input =_entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).input;
+            InputSlot input =entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).input;
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
             return true;
@@ -95,7 +95,7 @@ namespace Project.Scripts.Buildings
         {
             entity = default;
             outputIndex = default;
-            OutputSlot output =_entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).output;
+            OutputSlot output =entityManager.GetComponentData<ConveyorDataComponent>(BuildingEntity).output;
             if (output.EntityToPushTo != default) return false;
             output.EntityToPushTo = entity;
             return true;

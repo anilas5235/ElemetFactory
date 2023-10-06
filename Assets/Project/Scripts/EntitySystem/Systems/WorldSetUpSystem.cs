@@ -20,7 +20,7 @@ namespace Project.Scripts.EntitySystem.Systems
             });
             state.EntityManager.SetName(worldData,"WorldData");
             GenerationSystem.worldDataEntity = worldData;
-            state.RequireForUpdate<PrefapsDataComponent>();
+            state.RequireForUpdate<PrefabsDataComponent>();
         }
 
         public void OnUpdate(ref SystemState state)

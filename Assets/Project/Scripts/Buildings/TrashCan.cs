@@ -16,7 +16,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             inputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
-            var can = _entityManager.GetComponentData<TrashCanDataComponent>(BuildingEntity);
+            var can = entityManager.GetComponentData<TrashCanDataComponent>(BuildingEntity);
             InputSlot input = inputIndex switch
             {
                 0 => can.input1,

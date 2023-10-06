@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.BuildingFoundation
@@ -7,7 +8,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
     public struct PlacedBuildingData
     {
         public int buildingDataID;
-        public Vector2Int origin;
+        public int2 origin;
         public int directionID;
     }
 }

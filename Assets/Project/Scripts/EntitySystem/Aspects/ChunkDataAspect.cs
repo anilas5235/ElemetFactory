@@ -52,6 +52,11 @@ namespace Project.Scripts.EntitySystem.Aspects
                 cellPos.y + .5f - ChunkDataComponent.HalfChunkSize, 0) * ChunkDataComponent.CellSize;
         }
 
+        public static int2 GetCellPositionFormWorldPosition(float3 worldPosition)
+        {
+            
+        }
+
         public static bool IsValidPositionInChunk(int2 position)
         {
             return position.x >= 0 && position.x < ChunkDataComponent.ChunkSize &&

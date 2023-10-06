@@ -20,7 +20,5 @@ namespace Project.Scripts.EntitySystem.Aspects
             set => dataComponent.ValueRW.output = value;
         }
         public float3 Location => _transform.ValueRO.Position;
-
-        public Item Item => dataComponent.ValueRO.item;
     }
 }

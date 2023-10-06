@@ -152,11 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfff8894c8975c142baac24b15d553a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Excavator: {fileID: 8099156330893030993, guid: ff6bea3cc3d78f645b73adeb698fb905, type: 3}
-  Conveyor: {fileID: 8099156330893030993, guid: d5ae1350c43a06448809309f63a61b92, type: 3}
-  Separator: {fileID: 8099156330893030993, guid: 168436c89c1b2be44ae55b539f4284d6, type: 3}
-  Combiner: {fileID: 8099156330893030993, guid: e2808ff3c505749459fac3741a44dfa0, type: 3}
-  TrashCan: {fileID: 8099156330893030993, guid: e15291d4668f28c449ed5885b70e1a73, type: 3}
   ItemGas: {fileID: 8099156330893030993, guid: 1000e5b0970191f43a2233b9bb4269b5, type: 3}
   ItemLiquid: {fileID: 8099156330893030993, guid: 38a20dfe0ef9da2429baaebc06ec873f, type: 3}
   ItemSolid: {fileID: 8099156330893030993, guid: 7d781a65c6cbcaf41a00a251370cabe4, type: 3}
@@ -164,6 +159,12 @@ MonoBehaviour:
   GasResource: {fileID: 7548931456545085481, guid: 279097ca668111d40b20f4f253d2d847, type: 3}
   LiquidResource: {fileID: 7548931456545085481, guid: 8110e382d6a84474489fad13ce4d80ca, type: 3}
   SolidResource: {fileID: 7548931456545085481, guid: f71c1628a30da9946ba160ae48b64522, type: 3}
+  buildingScriptableData:
+  - {fileID: 11400000, guid: f17712f547a3a064488bbf1bc9e1af9b, type: 2}
+  - {fileID: 11400000, guid: 9860de6acd046844589f6a5d30ae1102, type: 2}
+  - {fileID: 11400000, guid: db36dca40e288004793ad04444dee92c, type: 2}
+  - {fileID: 11400000, guid: 5124194c51be2df42a48f5222b21891d, type: 2}
+  - {fileID: 11400000, guid: 1f4588e5da816b449a0092a97136f063, type: 2}
 --- !u!4 &1842601375
 Transform:
   m_ObjectHideFlags: 0

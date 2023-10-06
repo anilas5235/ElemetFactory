@@ -27,8 +27,6 @@ namespace Project.Scripts.EntitySystem.Systems
         public static EntityManager _entityManager;
         public static Entity worldDataEntity, prefabsEntity;
         public static ComponentLookup<WorldDataComponent> worldDataLookup;
-
-        public static MaterialMeshInfo tileMaterialMeshInfo;
         
         private static System.Random _random = new System.Random();
 
@@ -47,16 +45,16 @@ namespace Project.Scripts.EntitySystem.Systems
                     new int2(-1, 1), new int2(-1, 0), new int2(-1, -1), new int2(0, -1),
                     new int2(1, -1),
                 };
+        
+                private static readonly int2[] Patch3Positions =
+                          {
+                              new int2(-2, 0), new int2(-2, 1), new int2(-2, -1), new int2(2, -1),
+                              new int2(2, 1), new int2(2, 0), new int2(-1, -2), new int2(1, -2),
+                              new int2(0, -2), new int2(-1, 2), new int2(1, 2), new int2(0, 2),
+                          };
 
 
         #endregion
-        
-        private static readonly int2[] Patch3Positions =
-        {
-            new int2(-2, 0), new int2(-2, 1), new int2(-2, -1), new int2(2, -1),
-            new int2(2, 1), new int2(2, 0), new int2(-1, -2), new int2(1, -2),
-            new int2(0, -2), new int2(-1, 2), new int2(1, 2), new int2(0, 2),
-        };
 
         private static int playerViewRadius;
         private static int2 chunkPosWithPlayer;
@@ -66,7 +64,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             Instance = this;
             _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            state.RequireForUpdate<PrefapsDataComponent>();
+            state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
             LoadedChunks = new List<int2>();
         }
@@ -77,10 +75,7 @@ namespace Project.Scripts.EntitySystem.Systems
             if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
             if (prefabsEntity == default)
             {
-                prefabsEntity = SystemAPI.GetSingleton<PrefapsDataComponent>().entity;
-                tileMaterialMeshInfo =
-                    state.EntityManager.GetComponentData<MaterialMeshInfo>(state.EntityManager
-                        .GetComponentData<PrefapsDataComponent>(prefabsEntity).TileVisual);
+                prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
             }
             worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
             
@@ -137,7 +132,7 @@ namespace Project.Scripts.EntitySystem.Systems
             });
             ResourcePatch[] patches = GenerateResources();
             _entityManager.AddComponentData(entity,new ChunkDataComponent(chunkPosition, worldPos,
-                SystemAPI.GetSingleton<PrefapsDataComponent>(), patches,ecb));
+                SystemAPI.GetSingleton<PrefabsDataComponent>(), patches,ecb));
             ecb.Playback(_entityManager);
             ecb.Dispose();
             return entity;

@@ -13,5 +13,13 @@ MonoBehaviour:
   m_Name: Combiner
   m_EditorClassIdentifier: 
   nameString: Combiner
-  prefab: {fileID: 1207112208540549613, guid: 6c8e8456ea8d68242a288ec636d8f6be, type: 3}
+  prefab: {fileID: 8232190868387762745, guid: e2808ff3c505749459fac3741a44dfa0, type: 3}
   size: {x: 2, y: 1}
+  InputOffsets:
+  - x: 0
+    y: -1
+  - x: 1
+    y: -1
+  OutputOffsets:
+  - x: 0
+    y: 1

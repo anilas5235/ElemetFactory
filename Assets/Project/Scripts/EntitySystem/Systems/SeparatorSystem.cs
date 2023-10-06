@@ -22,7 +22,7 @@ namespace Project.Scripts.EntitySystem.Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<PrefapsDataComponent>();
+            state.RequireForUpdate<PrefabsDataComponent>();
             timeSinceLastTick = 0;
             Rate = 1;
         }
@@ -41,7 +41,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 return;
             }
             
-            PrefapsDataComponent prefaps = SystemAPI.GetSingleton<PrefapsDataComponent>();
+            PrefabsDataComponent prefabs = SystemAPI.GetSingleton<PrefabsDataComponent>();
             
             EntityCommandBuffer ecb = new EntityCommandBuffer( Allocator.Temp);
 
@@ -71,11 +71,11 @@ namespace Project.Scripts.EntitySystem.Systems
                 ecb.DestroyEntity(separatorData.ItemEntityInInput);
                 separatorData.ItemEntityInInput = default;
 
-                outputSlot0.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefaps);
+                outputSlot0.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefabs);
                 separatorData.OutputSlot0 = outputSlot0;
 
                 
-                outputSlot1.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefaps);
+                outputSlot1.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefabs);
                 separatorData.OutputSlot1 = outputSlot1;
 
                 contentItem1.Dispose();

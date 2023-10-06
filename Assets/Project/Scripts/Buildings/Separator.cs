@@ -42,7 +42,7 @@ namespace Project.Scripts.Buildings
             entity = default;
             inputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
-            InputSlot input = _entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity).input;
+            InputSlot input = entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity).input;
             
             if (input.EntityToPullFrom != default) return false;
             input.EntityToPullFrom = entity;
@@ -55,7 +55,7 @@ namespace Project.Scripts.Buildings
             outputIndex = default;
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out outputIndex)) return false;
             
-            var data = _entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity);
+            var data = entityManager.GetComponentData<SeparatorDataComponent>(BuildingEntity);
             OutputSlot output = data.outputs[outputIndex];
             
             if (output.EntityToPushTo != default) return false;

@@ -26,7 +26,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             timeSinceLastTick = 0;
             Rate = 1;
-            state.RequireForUpdate<PrefapsDataComponent>();
+            state.RequireForUpdate<PrefabsDataComponent>();
         }
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
@@ -38,7 +38,7 @@ namespace Project.Scripts.EntitySystem.Systems
             EntityQuery separatorQuery = SystemAPI.QueryBuilder().WithAll<ExtractorAspect>().Build();
             if (separatorQuery.IsEmpty) return;
 
-            PrefapsDataComponent prefaps = SystemAPI.GetSingleton<PrefapsDataComponent>();
+            PrefabsDataComponent prefabs = SystemAPI.GetSingleton<PrefabsDataComponent>();
             
             EntityCommandBuffer ecb = new EntityCommandBuffer( Allocator.Temp);
 
@@ -46,12 +46,13 @@ namespace Project.Scripts.EntitySystem.Systems
 
             foreach (Entity entity in entities)
             {
-                var aspect = SystemAPI.GetAspect<ExtractorAspect>(entity);
+                ExtractorAspect aspect = SystemAPI.GetAspect<ExtractorAspect>(entity);
 
-                var aspectOutput = aspect.Output;
+                OutputSlot aspectOutput = aspect.Output;
                 if (aspectOutput.IsOccupied) continue;
 
-                aspectOutput.SlotContent = ItemAspect.CreateItemEntity(aspect.Item, ecb, aspect.Output.Position, prefaps);
+                aspectOutput.SlotContent = ItemAspect.CreateItemEntity(aspect.dataComponent.ValueRO.item, ecb,
+                    aspect.Output.Position, prefabs);
                 aspect.Output = aspectOutput;
             }
             

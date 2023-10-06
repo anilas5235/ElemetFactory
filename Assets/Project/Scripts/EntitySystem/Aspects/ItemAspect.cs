@@ -20,13 +20,13 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public Item Item => dataComponent.ValueRO.item;
 
-        public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,PrefapsDataComponent prefaps)
+        public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,PrefabsDataComponent prefabs)
         {
             Entity itemEntity = item.ItemForm switch
             {
-                ItemForm.Gas => ecb.Instantiate(prefaps.ItemGas),
-                ItemForm.Fluid => ecb.Instantiate(prefaps.ItemLiquid),
-                ItemForm.Solid => ecb.Instantiate(prefaps.ItemSolid),
+                ItemForm.Gas => ecb.Instantiate(prefabs.ItemGas),
+                ItemForm.Fluid => ecb.Instantiate(prefabs.ItemLiquid),
+                ItemForm.Solid => ecb.Instantiate(prefabs.ItemSolid),
                 _ => throw new ArgumentOutOfRangeException()
             };
                     
