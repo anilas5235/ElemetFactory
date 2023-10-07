@@ -14,27 +14,6 @@ namespace Project.Scripts.Grid
 {
     public static class BuildingGridEntityUtilities
     {
-        private static EntityManager _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-
-        public static Entity prefapHandler;
-
-        public static Entity CreateBuildingEntity(Vector3 worldPosition, PlacedBuildingData data)
-        {
-            if (prefapHandler == default) return default;
-            Entity prefab = ResourcesUtility.GetBuildingData(data.buildingDataID).Prefab;
-
-            Entity entity = _entityManager.Instantiate(prefab);
-            
-            var rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(data.directionID)));
-            _entityManager.SetComponentData(entity, new LocalTransform()
-            {
-                Position = worldPosition,
-                Scale = GenerationSystem.WorldScale,
-                Rotation = rotation,
-            });
-
-            return entity;
-        }
     }
       [Serializable]
     public readonly struct BuildingData

@@ -1,6 +1,7 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.Utilities;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
@@ -16,8 +17,13 @@ namespace Project.Scripts.EntitySystem.Baker
             GasResource,
             LiquidResource,
             SolidResource;
-
-         public BuildingScriptableData[] buildingScriptableData;
+        
+        public BuildingScriptableData
+            Extractor,
+            Conveyor,
+            Combiner,
+            Separator,
+            TrashCan;
     }
 
     public class PrefabsDataBaker : Baker<PrefabsDataMono>
@@ -35,20 +41,13 @@ namespace Project.Scripts.EntitySystem.Baker
                 GetEntity(authoring.Tile, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.GasResource, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.LiquidResource, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.SolidResource, TransformUsageFlags.Dynamic)
+                GetEntity(authoring.SolidResource, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Extractor.prefab, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Conveyor.prefab, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Combiner.prefab, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Separator.prefab, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.TrashCan.prefab, TransformUsageFlags.Dynamic)
             ));
-
-            BuildingData[] buildingData = new BuildingData[authoring.buildingScriptableData.Length];
-
-            for (int i = 0; i < buildingData.Length; i++)
-            {
-                BuildingScriptableData data = authoring.buildingScriptableData[i];
-                buildingData[i] = new BuildingData(data.nameString,
-                    GetEntity(data.prefab, TransformUsageFlags.Dynamic),
-                    data.InputOffsets, data.OutputOffsets, i,data.size);
-            }
-            
-            ResourcesUtility.SetBuildingData(buildingData);
         }
     }
 }

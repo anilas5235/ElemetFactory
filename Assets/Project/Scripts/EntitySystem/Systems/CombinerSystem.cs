@@ -18,11 +18,6 @@ namespace Project.Scripts.EntitySystem.Systems
             timeSinceLastTick = 0;
             Rate= .25f;
         }
-
-        [BurstCompile]
-        public void OnDestroy(ref SystemState state)
-        {
-        }
         
         [BurstCompile]
         public void OnUpdate(ref SystemState state)

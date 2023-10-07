@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: TrashCan
   m_EditorClassIdentifier: 
   nameString: TrashCan
+  buildingID: 4
   prefab: {fileID: 8232190868387762745, guid: e15291d4668f28c449ed5885b70e1a73, type: 3}
-  size: {x: 1, y: 1}
+  neededTiles:
+  - x: 0
+    y: 0
   InputOffsets:
   - x: 0
     y: 1

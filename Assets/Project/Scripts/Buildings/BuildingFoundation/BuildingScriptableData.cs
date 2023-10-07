@@ -19,8 +19,9 @@ namespace Project.Scripts.Buildings.BuildingFoundation
     public class BuildingScriptableData : ScriptableObject
     {
         public string nameString;
+        public int buildingID;
         public Transform prefab;
-        public int2 size;
+        public int2[] neededTiles;
         public int2[] InputOffsets, OutputOffsets;
         public override string ToString()
         {

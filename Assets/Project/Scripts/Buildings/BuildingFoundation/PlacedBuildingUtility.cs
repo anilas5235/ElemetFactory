@@ -64,7 +64,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         }
         public static int2 GetRotatedVectorClockwise(int2 vector)
         {
-            return new int2(vector.y * -1, vector.x * -1);
+            return new int2(vector.y, vector.x * -1);
         }
 
         public static int2 FacingDirectionToVector(FacingDirection facingDirection)

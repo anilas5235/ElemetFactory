@@ -41,8 +41,6 @@ namespace Project.Scripts.Buildings.BuildingFoundation
                 },
                 MyCellObject = gridObject
             };
-            placedBuilding.BuildingEntity =
-                BuildingGridEntityUtilities.CreateBuildingEntity(worldPosition, placedBuilding.MyPlacedBuildingData);
             placedBuilding.SetUpSlots(facingDirection);
             placedBuilding.OnCreate();
             return placedBuilding;

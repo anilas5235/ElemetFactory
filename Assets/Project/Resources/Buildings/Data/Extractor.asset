@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: Extractor
   m_EditorClassIdentifier: 
   nameString: Extractor
+  buildingID: 0
   prefab: {fileID: 8232190868387762745, guid: ff6bea3cc3d78f645b73adeb698fb905, type: 3}
-  size: {x: 1, y: 1}
+  neededTiles:
+  - x: 0
+    y: 0
   InputOffsets: []
   OutputOffsets:
   - x: 0

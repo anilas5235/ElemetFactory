@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.ItemSystem;
 using Unity.Collections;
 using Unity.Entities;
@@ -13,6 +14,15 @@ namespace Project.Scripts.Utilities
     public static class ResourcesUtility
     {
         private static BuildingData[] BuildingsData;
+
+        private static readonly BuildingScriptableData[] BuildingScriptableDataAry = new[]
+        {
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
+            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
+        };
         
         private static readonly ResourceData[] ResourceDataBank = new[]
         {
@@ -27,14 +37,37 @@ namespace Project.Scripts.Utilities
             new ResourceData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
         };
         
-        public static void SetBuildingData(BuildingData[] buildingData)
+        public static void SetUpBuildingData(PrefabsDataComponent ComponentData)
         {
-            BuildingsData = buildingData;
+            Entity[] entities = new[]
+            {
+                ComponentData.Extractor,
+                ComponentData.Conveyor,
+                ComponentData.Combiner,
+                ComponentData.Separator,
+                ComponentData.TrashCan,
+            };
+
+            BuildingsData = new BuildingData[entities.Length];
+            for (int i = 0; i < BuildingsData.Length; i++)
+            {
+                BuildingScriptableData data = BuildingScriptableDataAry[i];
+                BuildingsData[i] = new BuildingData(data.nameString,entities[i],data.InputOffsets,
+                    data.OutputOffsets, data.buildingID,data.neededTiles);
+            }
+            Debug.Log("Setup Comp");
         }
 
-        public static BuildingData GetBuildingData(int buildingID)
+        public static bool GetBuildingData(int buildingID, out BuildingData buildingData)
         {
-            return BuildingsData[buildingID];
+            buildingData = default;
+            foreach (BuildingData data in BuildingsData)
+            {
+                if (data.BuildingID != buildingID) continue;
+                buildingData = data;
+                return true;
+            }
+            return false;
         }
 
         public static Item CreateItemData(NativeArray<uint> resourceIDs)
@@ -76,22 +109,12 @@ namespace Project.Scripts.Utilities
 
         public static int2[] GetGridPositionList(PlacedBuildingData myPlacedBuildingData)
         {
-            BuildingData buildingData = GetBuildingData(myPlacedBuildingData.buildingDataID);
-
+            if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingData data)) return default;
             List<int2> positions = new List<int2>();
-            
-            for (int x = 0; x < buildingData.size.x; x++)
+
+            foreach (PortDirections tileOffset in data.neededTileOffsets)
             {
-                for (int y = 0; y < buildingData.size.y; y++)
-                {
-                    int2 position = new int2(x, y);
-                    for (int i = 0; i < myPlacedBuildingData.directionID; i++)
-                    {
-                        position = PlacedBuildingUtility.GetRotatedVectorClockwise(position);
-                    }
-                    position += myPlacedBuildingData.origin;
-                    positions.Add(position);
-                }
+                positions.Add(tileOffset.GetPortDirection((FacingDirection)myPlacedBuildingData.directionID));
             }
 
             return positions.ToArray();
@@ -113,28 +136,34 @@ namespace Project.Scripts.Utilities
             this.resourceType = resourceType;
         }
     }
-    
-    [Serializable]
     public readonly struct BuildingData
     {
         public readonly FixedString64Bytes Name;
         public readonly Entity Prefab;
         public readonly int BuildingID;
-        public readonly int2 size;
+        public readonly PortDirections[] neededTileOffsets;
         private readonly PortDirections[] _inputPortDirections, _outputPortDirections;
-        
-        public BuildingData(FixedString64Bytes name, Entity prefab, int2[] inputDirections, int2[] outputDirections, int buildingID, int2 size)
+
+        public BuildingData(FixedString64Bytes name, Entity prefab, int2[] inputDirections, int2[] outputDirections,
+            int buildingID, int2[] neededTiles)
         {
             Name = name;
             Prefab = prefab;
             BuildingID = buildingID;
-            this.size = size;
+
+            neededTileOffsets = new PortDirections[neededTiles.Length];
+            for (int i = 0; i < neededTiles.Length; i++)
+            {
+                neededTileOffsets[i] = new PortDirections(neededTiles[i]);
+            }
+            
             _inputPortDirections = new PortDirections[inputDirections.Length];
             for (int i = 0; i < _inputPortDirections.Length; i++)
             {
                 _inputPortDirections[i] = new PortDirections(inputDirections[i]);
             }
-            _outputPortDirections = new PortDirections[outputDirections.Length];
+
+            _outputPortDirections =new PortDirections[ outputDirections.Length];
             for (int i = 0; i < _outputPortDirections.Length; i++)
             {
                 _outputPortDirections[i] = new PortDirections(outputDirections[i]);

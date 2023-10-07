@@ -159,12 +159,11 @@ MonoBehaviour:
   GasResource: {fileID: 7548931456545085481, guid: 279097ca668111d40b20f4f253d2d847, type: 3}
   LiquidResource: {fileID: 7548931456545085481, guid: 8110e382d6a84474489fad13ce4d80ca, type: 3}
   SolidResource: {fileID: 7548931456545085481, guid: f71c1628a30da9946ba160ae48b64522, type: 3}
-  buildingScriptableData:
-  - {fileID: 11400000, guid: f17712f547a3a064488bbf1bc9e1af9b, type: 2}
-  - {fileID: 11400000, guid: 9860de6acd046844589f6a5d30ae1102, type: 2}
-  - {fileID: 11400000, guid: db36dca40e288004793ad04444dee92c, type: 2}
-  - {fileID: 11400000, guid: 5124194c51be2df42a48f5222b21891d, type: 2}
-  - {fileID: 11400000, guid: 1f4588e5da816b449a0092a97136f063, type: 2}
+  Extractor: {fileID: 11400000, guid: f17712f547a3a064488bbf1bc9e1af9b, type: 2}
+  Conveyor: {fileID: 11400000, guid: 9860de6acd046844589f6a5d30ae1102, type: 2}
+  Combiner: {fileID: 11400000, guid: db36dca40e288004793ad04444dee92c, type: 2}
+  Separator: {fileID: 11400000, guid: 5124194c51be2df42a48f5222b21891d, type: 2}
+  TrashCan: {fileID: 11400000, guid: 1f4588e5da816b449a0092a97136f063, type: 2}
 --- !u!4 &1842601375
 Transform:
   m_ObjectHideFlags: 0

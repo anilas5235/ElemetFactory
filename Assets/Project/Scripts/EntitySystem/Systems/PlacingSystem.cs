@@ -1,5 +1,6 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Utilities;
 using Unity.Entities;
@@ -17,7 +18,17 @@ namespace Project.Scripts.EntitySystem.Systems
         public void OnCreate(ref SystemState state)
         {
             Instance = this;
+            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<WorldDataComponent>();
         }
+
+        public void OnUpdate(ref SystemState state)
+        {
+            ResourcesUtility.SetUpBuildingData(
+                GenerationSystem._entityManager.GetComponentData<PrefabsDataComponent>(GenerationSystem.prefabsEntity));
+            state.Enabled = false;
+        }
+
         public bool TryToDeleteBuilding(float3 mousePos)
         {
             if (GenerationSystem.TryGetChunk(GenerationSystem.GetChunkPosition(mousePos),
@@ -59,7 +70,8 @@ namespace Project.Scripts.EntitySystem.Systems
         public Entity PlaceBuilding(ChunkDataAspect chunkDataAspect, CellObject targetCell, int buildingID,
             FacingDirection facingDirection)
         {
-           BuildingData data = ResourcesUtility.GetBuildingData(buildingID);
+            if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingData data)) return default;
+            
            Entity entity = _entityManager.Instantiate(data.Prefab);
             
            quaternion rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(facingDirection)));
@@ -82,6 +94,8 @@ namespace Project.Scripts.EntitySystem.Systems
            {
                chunkDataAspect.GetCell(pos, chunkDataAspect.ChunksPosition).PlaceBuilding(entity);
            }
+           
+           _entityManager.SetName(entity,data.Name);
            
            //TODO: port setup get input get output ...
            

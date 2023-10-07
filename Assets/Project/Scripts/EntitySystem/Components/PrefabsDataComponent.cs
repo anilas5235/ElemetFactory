@@ -18,10 +18,16 @@ namespace Project.Scripts.EntitySystem.Components
             TileVisual,
             GasTile,
             LiquidTile,
-            SolidTile;
+            SolidTile,
+            Extractor,
+            Conveyor,
+            Combiner,
+            Separator,
+            TrashCan;
 
         public PrefabsDataComponent(Entity selfEntity, Entity itemGas, Entity itemLiquid, Entity itemSolid,
-            Entity tileVisual, Entity gasTile, Entity liquidTile, Entity solidTile)
+            Entity tileVisual, Entity gasTile, Entity liquidTile, Entity solidTile, Entity extractor, Entity conveyor,
+            Entity combiner, Entity separator, Entity trashCan)
         {
             ItemGas = itemGas;
             ItemLiquid = itemLiquid;
@@ -30,6 +36,11 @@ namespace Project.Scripts.EntitySystem.Components
             GasTile = gasTile;
             LiquidTile = liquidTile;
             SolidTile = solidTile;
+            Extractor = extractor;
+            Conveyor = conveyor;
+            Combiner = combiner;
+            Separator = separator;
+            TrashCan = trashCan;
             entity = selfEntity;
         }
     }

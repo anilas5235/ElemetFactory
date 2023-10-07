@@ -24,8 +24,6 @@ namespace Project.Scripts.Experimental
             if (Input.GetMouseButtonDown(0))
             {
                 if (_entity != default) _entityManager.DestroyEntity(_entity);
-                _entity = BuildingGridEntityUtilities.CreateBuildingEntity(new Vector3(0, 0, 0),
-                    new PlacedBuildingData() { buildingDataID = (int)building, directionID = (int)direction });
             }
         }
     }
