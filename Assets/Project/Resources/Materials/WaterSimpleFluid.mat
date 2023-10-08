@@ -66,6 +66,8 @@ Material:
     - _FoamDensity: 5
     - _FoamSpeed: 1
     - _FoamThickness: 3
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
     - Color_16a03a51d7a040ccbb5e9007f75b38ac: {r: 0.24056602, g: 0.26848632, b: 1, a: 1}
     - Color_22ecbe6b9a0d4ad4bd1c980c37dab45d: {r: 0, g: 0.1412525, b: 0.4056604, a: 0}

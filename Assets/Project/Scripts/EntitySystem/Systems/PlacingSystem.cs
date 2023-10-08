@@ -10,6 +10,8 @@ using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+    [UpdateAfter(typeof(GenerationSystem))]
     public partial struct PlacingSystem : ISystem
     {
         public static PlacingSystem Instance;
