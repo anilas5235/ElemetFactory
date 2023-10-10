@@ -14,6 +14,7 @@ using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [DisableAutoCreation]
     [StructLayout(LayoutKind.Auto)]
     [BurstCompile]
     public partial struct ExtractorSystem : ISystem

@@ -14,9 +14,8 @@ namespace Project.Scripts.EntitySystem.Baker
             Tile,
             GasResource,
             LiquidResource,
-            SolidResource;
+            SolidResource,
         
-        public BuildingScriptableData
             Extractor,
             Conveyor,
             Combiner,
@@ -40,11 +39,11 @@ namespace Project.Scripts.EntitySystem.Baker
                 GetEntity(authoring.GasResource, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.LiquidResource, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.SolidResource, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Extractor.prefab, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Conveyor.prefab, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Combiner.prefab, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.Separator.prefab, TransformUsageFlags.Dynamic),
-                GetEntity(authoring.TrashCan.prefab, TransformUsageFlags.Dynamic)
+                GetEntity(authoring.Extractor, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Conveyor, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Combiner, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.Separator, TransformUsageFlags.Dynamic),
+                GetEntity(authoring.TrashCan, TransformUsageFlags.Dynamic)
             ));
         }
     }

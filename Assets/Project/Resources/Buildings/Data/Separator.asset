@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameString: Seperator
   buildingID: 3
-  prefab: {fileID: 8232190868387762745, guid: 168436c89c1b2be44ae55b539f4284d6, type: 3}
+  prefab: {fileID: 8099156330893030993, guid: 168436c89c1b2be44ae55b539f4284d6, type: 3}
   neededTiles:
   - x: 0
     y: 0

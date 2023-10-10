@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameString: Combiner
   buildingID: 2
-  prefab: {fileID: 8232190868387762745, guid: e2808ff3c505749459fac3741a44dfa0, type: 3}
+  prefab: {fileID: 8099156330893030993, guid: e2808ff3c505749459fac3741a44dfa0, type: 3}
   neededTiles:
   - x: 0
     y: 0

@@ -91,7 +91,7 @@ namespace Project.Scripts.EntitySystem.Systems
                buildingDataID = (int)facingDirection,
                origin = targetCell.Position,
            };
-
+           
            foreach (int2 pos in ResourcesUtility.GetGridPositionList(placedBuildingData))
            {
                chunkDataAspect.GetCell(pos, chunkDataAspect.ChunksPosition).PlaceBuilding(entity);

@@ -20,7 +20,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
     {
         public string nameString;
         public int buildingID;
-        public Transform prefab;
+        public GameObject prefab;
         public int2[] neededTiles;
         public int2[] InputOffsets, OutputOffsets;
         public override string ToString()

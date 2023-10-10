@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameString: Extractor
   buildingID: 0
-  prefab: {fileID: 8232190868387762745, guid: ff6bea3cc3d78f645b73adeb698fb905, type: 3}
+  prefab: {fileID: 8099156330893030993, guid: ff6bea3cc3d78f645b73adeb698fb905, type: 3}
   neededTiles:
   - x: 0
     y: 0

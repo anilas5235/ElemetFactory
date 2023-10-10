@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameString: Conveyor
   buildingID: 1
-  prefab: {fileID: 8232190868387762745, guid: d5ae1350c43a06448809309f63a61b92, type: 3}
+  prefab: {fileID: 8099156330893030993, guid: d5ae1350c43a06448809309f63a61b92, type: 3}
   neededTiles:
   - x: 0
     y: 0
