@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6473889069711902287}
   - component: {fileID: 2798167410517695104}
   m_Layer: 0
-  m_Name: Combiner
+  m_Name: Comb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e627e12ddcb4ee94abb96a03d6acdc73, type: 2}
+  - {fileID: 2100000, guid: 258ba57d925a86e4f9a2bfb964a398ab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

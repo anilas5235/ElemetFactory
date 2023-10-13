@@ -17,7 +17,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public static readonly int ChunkSize = 16;
         public static int CellSize => GenerationSystem.WorldScale;
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
-        public static float HalfChunkSize => ChunkSize/2f;
+        public static int HalfChunkSize => ChunkSize/2;
         public ChunkDataComponent(int2 chunkPosition, float3 worldPosition,
             PrefabsDataComponent prefabs,ResourcePatch[] resourcePatches, EntityCommandBuffer ecb)
         {
@@ -71,7 +71,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
                     ecb.SetComponent(entity, new LocalTransform()
                     {
-                        Position = cellWorldPosition,
+                        Position = cellWorldPosition+ new float3(0,0,1),
                         Scale = CellSize,
                     });
                     cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition, entity,chunkPosition,item);
@@ -83,7 +83,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
             InView = true;
         }
 
-        public NativeArray<CellObject> CellObjects { get; }
+        public NativeArray<CellObject> CellObjects;
         public NativeList<Entity> Buildings;
         public NativeArray<ResourcePatch> ResourcePatches { get; }
         public int2 ChunkPosition { get; }

@@ -44,33 +44,22 @@ namespace Project.Scripts.EntitySystem.Systems
 
         private bool TryToDeleteBuilding(ChunkDataAspect chunkDataAspect, float3 mousePos)
         {
-            return chunkDataAspect.GetCell(ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos),
+            return chunkDataAspect.GetCell(ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition),
                 chunkDataAspect.ChunksPosition).DeleteBuilding();
         }
 
         public bool TryToPlaceBuilding(float3 mousePos, int buildingID, FacingDirection facingDirection)
         {
-            if (GenerationSystem.TryGetChunk(GenerationSystem.GetChunkPosition(mousePos),
-                    out ChunkDataAspect chunkDataAspect))
+            int2 cellPos = ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition);
+            
+            if (GenerationSystem.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
             {
-               return TryToPlaceBuilding(chunkDataAspect, buildingID, mousePos, facingDirection);
+               return chunkDataAspect.TryToPlaceBuilding(buildingID,cellPos,facingDirection);
             }
             return false;
         }
 
-        public bool TryToPlaceBuilding(ChunkDataAspect chunkDataAspect, int buildingID, float3 mousePos,
-            FacingDirection facingDirection)
-        {
-            CellObject cell = chunkDataAspect.GetCell(ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos),
-                chunkDataAspect.ChunksPosition);
-            if (cell.IsOccupied) return false;
-
-            PlaceBuilding(chunkDataAspect,cell,buildingID,facingDirection);
-            return true;
-        }
-
-        public Entity PlaceBuilding(ChunkDataAspect chunkDataAspect, CellObject targetCell, int buildingID,
-            FacingDirection facingDirection)
+        public static Entity PlaceBuilding( CellObject targetCell, int buildingID, FacingDirection facingDirection)
         {
             if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingData data)) return default;
             
@@ -84,19 +73,6 @@ namespace Project.Scripts.EntitySystem.Systems
                Scale = GenerationSystem.WorldScale,
                Rotation = rotation,
            });
-          
-           PlacedBuildingData placedBuildingData = new PlacedBuildingData() //TODO: Put this on a component on the entity
-           {
-               directionID = buildingID,
-               buildingDataID = (int)facingDirection,
-               origin = targetCell.Position,
-           };
-           
-           foreach (int2 pos in ResourcesUtility.GetGridPositionList(placedBuildingData))
-           {
-               chunkDataAspect.GetCell(pos, chunkDataAspect.ChunksPosition).PlaceBuilding(entity);
-           }
-           
            _entityManager.SetName(entity,data.Name);
            
            //TODO: port setup get input get output ...

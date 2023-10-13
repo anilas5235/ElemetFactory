@@ -56,7 +56,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
         #endregion
 
-        private static int playerViewRadius;
+        private static int playerViewRadius =-1;
         private static int2 chunkPosWithPlayer;
         private static List<int2> LoadedChunks;
 
