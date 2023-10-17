@@ -199,8 +199,8 @@ namespace Project.Scripts.Utilities
             {
                 FacingDirection.Up => _up,
                 FacingDirection.Right => _right,
-                FacingDirection.Down => _left,
-                FacingDirection.Left => _down,
+                FacingDirection.Down => _down,
+                FacingDirection.Left => _left,
                 _ => throw new ArgumentOutOfRangeException(nameof(facingDirectionOfBuilding), facingDirectionOfBuilding,
                     null)
             };

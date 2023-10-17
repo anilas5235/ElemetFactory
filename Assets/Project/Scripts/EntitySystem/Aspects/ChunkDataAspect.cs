@@ -34,37 +34,66 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         private CellObject GetCellFormPseudoPosition(int2 position, int2 chunkPosition)
         {
-            int2 chunkOffset = new int2(Mathf.FloorToInt((float)position.x / ChunkSize),
-                Mathf.FloorToInt((float)position.y / ChunkSize));
-            int2 newPos = position - chunkOffset * ChunkSize;
-            int2 newChunkPos = chunkPosition + chunkOffset;
+            int2 newChunkPos = GetChunkAndCellPositionFromPseudoPosition(position, chunkPosition, out int2 newPos);
             GenerationSystem.TryGetChunk(newChunkPos, out ChunkDataAspect chunkData);
             return chunkData.GetCell(newPos, newChunkPos);
+        }
+
+        public static int2 GetChunkAndCellPositionFromPseudoPosition(int2 position, int2 chunkPosition, out int2 cellPosition)
+        {
+            int2 chunkOffset = new int2(Mathf.FloorToInt((float)position.x / ChunkSize),
+                Mathf.FloorToInt((float)position.y / ChunkSize));
+            cellPosition = position - chunkOffset * ChunkSize;
+            return chunkPosition + chunkOffset;
         }
         
         public bool TryToPlaceBuilding( int buildingID, int2 cellPosition, FacingDirection facingDirection)
         {
-            CellObject cell = _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)];
-            if (cell.IsOccupied) return false;
-
-            Entity entity = PlacingSystem.PlaceBuilding(cell,buildingID,facingDirection);
-            
             PlacedBuildingData placedBuildingData = new PlacedBuildingData() //TODO: Put this on a component on the entity
             {
-                directionID = buildingID,
-                buildingDataID = (int)facingDirection,
-                origin = cell.Position,
+                directionID = (int)facingDirection,
+                buildingDataID = buildingID,
+                origin = cellPosition,
             };
+            
+            var offsets = ResourcesUtility.GetGridPositionList(placedBuildingData);
 
-            var cellObjs = _chunkData.ValueRW.CellObjects;
-            foreach (int2 pos in ResourcesUtility.GetGridPositionList(placedBuildingData))
-            { 
-                int index = GetAryIndex(pos);
-               var ob = cellObjs[index];
-               ob.PlaceBuilding(entity);
-               cellObjs[index] = ob;
+            foreach (int2 offset in offsets)
+            {
+                int2 position = offset + cellPosition;
+
+                if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
-            _chunkData.ValueRW.CellObjects = cellObjs;
+
+            Entity entity = PlacingSystem.CreateBuildingEntity(_chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)].WorldPosition,buildingID,facingDirection,placedBuildingData);
+            
+            
+            //TODO: port setup get input get output ...
+
+            
+            foreach (int2 posOffset in offsets)
+            {
+                int2 position = posOffset + cellPosition;
+                if (IsValidPositionInChunk(position)) BlockCell(position, entity);
+                else
+                {
+                    if (GenerationSystem.TryGetChunk(
+                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
+                            , out ChunkDataAspect chunk));
+                    chunk.BlockCell(cellPos, entity);
+                }
+            }
+            return true;
+        }
+
+        public bool BlockCell(int2 cellPosition, Entity entity)
+        {
+            if (!IsValidPositionInChunk(cellPosition)) return false;
+            ref var cellObjs = ref _chunkData.ValueRW.CellObjects;
+            int index = GetAryIndex(cellPosition);
+            var ob = cellObjs[index];
+            ob.PlaceBuilding(entity);
+            cellObjs[index] = ob;
             return true;
         }
 

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6473889069711902287}
   - component: {fileID: 2798167410517695104}
   - component: {fileID: 414799740942785794}
+  - component: {fileID: -7769656652123624398}
   m_Layer: 0
   m_Name: TrashCan
   m_TagString: Untagged
@@ -41,7 +42,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8099156330893030993}
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 4300000, guid: 26769c7ae57c3954ba590a795ad92161, type: 2}
 --- !u!23 &2798167410517695104
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -94,5 +95,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 72afd1aa741956e49a4397d5c9b905a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-7769656652123624398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8099156330893030993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ef0e9515af84a8db52c2de0688e7c49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

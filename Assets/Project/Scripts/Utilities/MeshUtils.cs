@@ -9,6 +9,8 @@
                unitycodemonkey.com
     --------------------------------------------------
  */
+
+using System;
 using UnityEngine;
 
 namespace Project.Scripts.Utilities
@@ -47,9 +49,9 @@ namespace Project.Scripts.Utilities
 		public static Mesh CreateEmptyMesh()
 		{
 			Mesh mesh = new Mesh();
-			mesh.vertices = new Vector3[0];
-			mesh.uv = new Vector2[0];
-			mesh.triangles = new int[0];
+			mesh.vertices = Array.Empty<Vector3>();
+			mesh.uv = Array.Empty<Vector2>();
+			mesh.triangles = Array.Empty<int>();
 			return mesh;
 		}
 
@@ -191,13 +193,14 @@ namespace Project.Scripts.Utilities
 			Mesh mesh = new Mesh();
 
 			Vector2 offsetCenter = new Vector2(.5f, .5f) - center;
+			Vector2 scale = new Vector2(width,height);
 
 			Vector3[] vertices = new Vector3[4]
 			{
-				offsetCenter + new Vector2(-.5f*width,-.5f*height),
-				offsetCenter + new Vector2(-.5f*width,.5f*height),
-				offsetCenter+ new Vector2(.5f*width,.5f*height),
-				offsetCenter+ new Vector2(.5f*width,-.5f*height),
+				(offsetCenter + new Vector2(-.5f,-.5f)) * scale,
+				(offsetCenter + new Vector2(-.5f,.5f))*scale,
+				(offsetCenter + new Vector2(.5f,.5f))*scale,
+				(offsetCenter + new Vector2(.5f,-.5f))*scale,
 			};
 			mesh.vertices = vertices;
 

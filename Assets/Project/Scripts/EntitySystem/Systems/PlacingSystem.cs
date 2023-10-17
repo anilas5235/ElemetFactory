@@ -1,6 +1,7 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Utilities;
 using Unity.Entities;
@@ -59,7 +60,7 @@ namespace Project.Scripts.EntitySystem.Systems
             return false;
         }
 
-        public static Entity PlaceBuilding( CellObject targetCell, int buildingID, FacingDirection facingDirection)
+        public static Entity CreateBuildingEntity(float3 worldPosition, int buildingID, FacingDirection facingDirection, PlacedBuildingData buildingData)
         {
             if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingData data)) return default;
             
@@ -69,14 +70,16 @@ namespace Project.Scripts.EntitySystem.Systems
          
            _entityManager.SetComponentData(entity, new LocalTransform()
            {
-               Position = targetCell.WorldPosition,
+               Position = worldPosition,
                Scale = GenerationSystem.WorldScale,
                Rotation = rotation,
            });
+
+           _entityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
+           
            _entityManager.SetName(entity,data.Name);
-           
-           //TODO: port setup get input get output ...
-           
+
+
            return entity;
         }
     }
