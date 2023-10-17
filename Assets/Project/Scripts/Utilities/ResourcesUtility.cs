@@ -13,7 +13,7 @@ namespace Project.Scripts.Utilities
 {
     public static class ResourcesUtility
     {
-        private static BuildingData[] BuildingsData;
+        private static BuildingLookUpData[] BuildingsData;
 
         private static readonly BuildingScriptableData[] BuildingScriptableDataAry = new[]
         {
@@ -24,17 +24,17 @@ namespace Project.Scripts.Utilities
             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
         };
         
-        private static readonly ResourceData[] ResourceDataBank = new[]
+        private static readonly ResourceLookUpData[] ResourceDataBank = new[]
         {
-            new ResourceData(ResourceType.None,new Color(.7f,.7f,.7f),ItemForm.Solid),
-            new ResourceData(ResourceType.H,new Color(.1f,.8f,1f), ItemForm.Gas),
-            new ResourceData(ResourceType.C,new Color(.1f,.1f,.1f), ItemForm.Solid),
-            new ResourceData(ResourceType.O,new Color(0f,1f,0f), ItemForm.Gas),
-            new ResourceData(ResourceType.N,new Color(1f,0f,0f), ItemForm.Gas),
-            new ResourceData(ResourceType.S,new Color(1f,1f,0f), ItemForm.Solid),
-            new ResourceData(ResourceType.Al,new Color(1f,.5f,0f), ItemForm.Solid),
-            new ResourceData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
-            new ResourceData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
+            new ResourceLookUpData(ResourceType.None,new Color(.7f,.7f,.7f),ItemForm.Solid),
+            new ResourceLookUpData(ResourceType.H,new Color(.1f,.8f,1f), ItemForm.Gas),
+            new ResourceLookUpData(ResourceType.C,new Color(.1f,.1f,.1f), ItemForm.Solid),
+            new ResourceLookUpData(ResourceType.O,new Color(0f,1f,0f), ItemForm.Gas),
+            new ResourceLookUpData(ResourceType.N,new Color(1f,0f,0f), ItemForm.Gas),
+            new ResourceLookUpData(ResourceType.S,new Color(1f,1f,0f), ItemForm.Solid),
+            new ResourceLookUpData(ResourceType.Al,new Color(1f,.5f,0f), ItemForm.Solid),
+            new ResourceLookUpData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
+            new ResourceLookUpData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
         };
         
         public static void SetUpBuildingData(PrefabsDataComponent ComponentData)
@@ -48,23 +48,23 @@ namespace Project.Scripts.Utilities
                 ComponentData.TrashCan,
             };
 
-            BuildingsData = new BuildingData[entities.Length];
+            BuildingsData = new BuildingLookUpData[entities.Length];
             for (int i = 0; i < BuildingsData.Length; i++)
             {
                 BuildingScriptableData data = BuildingScriptableDataAry[i];
-                BuildingsData[i] = new BuildingData(data.nameString,entities[i],data.InputOffsets,
+                BuildingsData[i] = new BuildingLookUpData(data.nameString,entities[i],data.InputOffsets,
                     data.OutputOffsets, data.buildingID,data.neededTiles);
             }
             Debug.Log("Setup Comp");
         }
 
-        public static bool GetBuildingData(int buildingID, out BuildingData buildingData)
+        public static bool GetBuildingData(int buildingID, out BuildingLookUpData buildingLookUpData)
         {
-            buildingData = default;
-            foreach (BuildingData data in BuildingsData)
+            buildingLookUpData = default;
+            foreach (BuildingLookUpData data in BuildingsData)
             {
                 if (data.BuildingID != buildingID) continue;
-                buildingData = data;
+                buildingLookUpData = data;
                 return true;
             }
             return false;
@@ -76,9 +76,9 @@ namespace Project.Scripts.Utilities
             float form =0;
             foreach (var id in resourceIDs)
             {
-                ResourceData data = GetResourceData(id);
-                color += new float4(data.color.r, data.color.g, data.color.b,0);
-                form += (int)data.form;
+                ResourceLookUpData lookUpData = GetResourceData(id);
+                color += new float4(lookUpData.color.r, lookUpData.color.g, lookUpData.color.b,0);
+                form += (int)lookUpData.form;
             }
             
             color *= 1f / resourceIDs.Length;
@@ -97,19 +97,19 @@ namespace Project.Scripts.Utilities
             return item;
         }
         
-        public static ResourceData GetResourceData(ResourceType resourceType)
+        public static ResourceLookUpData GetResourceData(ResourceType resourceType)
         {
             return GetResourceData((uint)resourceType);
         }
         
-        public static ResourceData GetResourceData(uint resourceID)
+        public static ResourceLookUpData GetResourceData(uint resourceID)
         {
             return ResourceDataBank[resourceID];
         }
 
         public static int2[] GetGridPositionList(PlacedBuildingData myPlacedBuildingData)
         {
-            if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingData data)) return default;
+            if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingLookUpData data)) return default;
             List<int2> positions = new List<int2>();
 
             foreach (PortDirections tileOffset in data.neededTileOffsets)
@@ -122,21 +122,21 @@ namespace Project.Scripts.Utilities
     }
 
     [Serializable]
-    public readonly struct ResourceData
+    public readonly struct ResourceLookUpData
     {
         public string Name => resourceType.ToString();
         public readonly ResourceType resourceType;
         public readonly Color color;
         public readonly ItemForm form;
 
-        public ResourceData(ResourceType resourceType, Color color, ItemForm form)
+        public ResourceLookUpData(ResourceType resourceType, Color color, ItemForm form)
         {
             this.color = color;
             this.form = form;
             this.resourceType = resourceType;
         }
     }
-    public readonly struct BuildingData
+    public readonly struct BuildingLookUpData
     {
         public readonly FixedString64Bytes Name;
         public readonly Entity Prefab;
@@ -144,7 +144,7 @@ namespace Project.Scripts.Utilities
         public readonly PortDirections[] neededTileOffsets;
         private readonly PortDirections[] _inputPortDirections, _outputPortDirections;
 
-        public BuildingData(FixedString64Bytes name, Entity prefab, int2[] inputDirections, int2[] outputDirections,
+        public BuildingLookUpData(FixedString64Bytes name, Entity prefab, int2[] inputDirections, int2[] outputDirections,
             int buildingID, int2[] neededTiles)
         {
             Name = name;

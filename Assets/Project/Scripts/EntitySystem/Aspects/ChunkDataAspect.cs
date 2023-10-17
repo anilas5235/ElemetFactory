@@ -130,5 +130,19 @@ namespace Project.Scripts.EntitySystem.Aspects
             return position.x >= 0 && position.x < ChunkSize &&
                    position.y >= 0 && position.y < ChunkSize;
         }
+
+        public bool TryToDeleteBuilding(int2 cellPos)
+        {
+            if (IsValidPositionInChunk(cellPos))
+            {
+                Entity entity = GetCell(cellPos, ChunksPosition).Building;
+                if (entity == default) return false;
+                var end = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem>(); //????
+                var ecb = end.CreateCommandBuffer();
+                ecb.DestroyEntity(entity);
+                return true;
+            }
+            return false;
+        }
     }
 }

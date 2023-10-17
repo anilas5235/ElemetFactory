@@ -7,7 +7,7 @@ using Project.Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
+
 
 namespace Project.Scripts.EntitySystem.Systems
 {
@@ -16,7 +16,7 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct PlacingSystem : ISystem
     {
         public static PlacingSystem Instance;
-        private static EntityManager _entityManager => GenerationSystem._entityManager;
+        private static EntityManager TheEntityManager => GenerationSystem._entityManager;
 
         public void OnCreate(ref SystemState state)
         {
@@ -24,7 +24,7 @@ namespace Project.Scripts.EntitySystem.Systems
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
         }
-
+        
         public void OnUpdate(ref SystemState state)
         {
             ResourcesUtility.SetUpBuildingData(
@@ -34,19 +34,13 @@ namespace Project.Scripts.EntitySystem.Systems
 
         public bool TryToDeleteBuilding(float3 mousePos)
         {
-            if (GenerationSystem.TryGetChunk(GenerationSystem.GetChunkPosition(mousePos),
-                    out ChunkDataAspect chunkDataAspect))
+            int2 cellPos = ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition);
+            
+            if (GenerationSystem.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
             {
-               return TryToDeleteBuilding(chunkDataAspect, mousePos);
+               return chunkDataAspect.TryToDeleteBuilding(cellPos);
             }
-
             return false;
-        }
-
-        private bool TryToDeleteBuilding(ChunkDataAspect chunkDataAspect, float3 mousePos)
-        {
-            return chunkDataAspect.GetCell(ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition),
-                chunkDataAspect.ChunksPosition).DeleteBuilding();
         }
 
         public bool TryToPlaceBuilding(float3 mousePos, int buildingID, FacingDirection facingDirection)
@@ -62,22 +56,22 @@ namespace Project.Scripts.EntitySystem.Systems
 
         public static Entity CreateBuildingEntity(float3 worldPosition, int buildingID, FacingDirection facingDirection, PlacedBuildingData buildingData)
         {
-            if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingData data)) return default;
+            if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data)) return default;
             
-           Entity entity = _entityManager.Instantiate(data.Prefab);
+           Entity entity = TheEntityManager.Instantiate(data.Prefab);
             
            quaternion rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(facingDirection)));
          
-           _entityManager.SetComponentData(entity, new LocalTransform()
+           TheEntityManager.SetComponentData(entity, new LocalTransform()
            {
                Position = worldPosition,
                Scale = GenerationSystem.WorldScale,
                Rotation = rotation,
            });
 
-           _entityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
+           TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
            
-           _entityManager.SetName(entity,data.Name);
+           TheEntityManager.SetName(entity,data.Name);
 
 
            return entity;
