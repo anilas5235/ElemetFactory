@@ -11,25 +11,28 @@ using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-    [UpdateAfter(typeof(GenerationSystem))]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial struct PlacingSystem : ISystem
     {
         public static PlacingSystem Instance;
         private static EntityManager TheEntityManager => GenerationSystem._entityManager;
-
+        
+        public static BeginSimulationEntityCommandBufferSystem.Singleton beginSimulationEntityCommandBuffer; 
         public void OnCreate(ref SystemState state)
         {
-            Instance = this;
+            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); Instance = this;
+           
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
         }
         
         public void OnUpdate(ref SystemState state)
         {
+            state.Enabled = false;
             ResourcesUtility.SetUpBuildingData(
                 GenerationSystem._entityManager.GetComponentData<PrefabsDataComponent>(GenerationSystem.prefabsEntity));
-            state.Enabled = false;
+            
+            beginSimulationEntityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         public bool TryToDeleteBuilding(float3 mousePos)
@@ -72,7 +75,6 @@ namespace Project.Scripts.EntitySystem.Systems
            TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
            
            TheEntityManager.SetName(entity,data.Name);
-
 
            return entity;
         }

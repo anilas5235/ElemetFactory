@@ -31,7 +31,6 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public bool DeleteBuilding()
         {
             if (Building == default) return false;
-            GenerationSystem._entityManager.DestroyEntity(Building);
             Building = default;
             return true;
         }

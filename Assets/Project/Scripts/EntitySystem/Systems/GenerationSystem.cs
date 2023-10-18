@@ -17,7 +17,8 @@ using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
-    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [StructLayout(LayoutKind.Auto)]
     public partial struct GenerationSystem : ISystem
     {
@@ -57,7 +58,7 @@ namespace Project.Scripts.EntitySystem.Systems
         #endregion
 
         private static int playerViewRadius =-1;
-        private static int2 chunkPosWithPlayer;
+        private static int2 chunkPosWithPlayer = new int2(-1000,-1000);
         private static List<int2> LoadedChunks;
 
         public void OnCreate(ref SystemState state)
@@ -78,6 +79,8 @@ namespace Project.Scripts.EntitySystem.Systems
                 prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
             }
             worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
+            
+            worldDataLookup.Update(ref state);
             
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
             int2 currentPos = GetChunkPosition(playerCam.transform.position);

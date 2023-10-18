@@ -1,4 +1,5 @@
 using Project.Scripts.Buildings.BuildingFoundation;
+using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.Utilities;
@@ -69,7 +70,6 @@ namespace Project.Scripts.EntitySystem.Aspects
             
             
             //TODO: port setup get input get output ...
-
             
             foreach (int2 posOffset in offsets)
             {
@@ -93,6 +93,17 @@ namespace Project.Scripts.EntitySystem.Aspects
             int index = GetAryIndex(cellPosition);
             var ob = cellObjs[index];
             ob.PlaceBuilding(entity);
+            cellObjs[index] = ob;
+            return true;
+        }
+        
+        public bool FreeCell(int2 cellPosition)
+        {
+            if (!IsValidPositionInChunk(cellPosition)) return false;
+            ref var cellObjs = ref _chunkData.ValueRW.CellObjects;
+            int index = GetAryIndex(cellPosition);
+            CellObject ob = cellObjs[index];
+            ob.DeleteBuilding();
             cellObjs[index] = ob;
             return true;
         }
@@ -131,18 +142,33 @@ namespace Project.Scripts.EntitySystem.Aspects
                    position.y >= 0 && position.y < ChunkSize;
         }
 
-        public bool TryToDeleteBuilding(int2 cellPos)
+        public bool TryToDeleteBuilding(int2 cellPosition)
         {
-            if (IsValidPositionInChunk(cellPos))
+            if (!IsValidPositionInChunk(cellPosition)) return false;
+
+            Entity entity = GetCell(cellPosition, ChunksPosition).Building;
+            if (entity == default) return false;
+
+            var offsets = ResourcesUtility.GetGridPositionList(
+                GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(entity).BuildingData);
+
+            foreach (int2 posOffset in offsets)
             {
-                Entity entity = GetCell(cellPos, ChunksPosition).Building;
-                if (entity == default) return false;
-                var end = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem>(); //????
-                var ecb = end.CreateCommandBuffer();
-                ecb.DestroyEntity(entity);
-                return true;
+                int2 position = posOffset + cellPosition;
+                if (IsValidPositionInChunk(position)) FreeCell(cellPosition);
+                else
+                {
+                    if (GenerationSystem.TryGetChunk(
+                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
+                            , out ChunkDataAspect chunk))
+                        chunk.FreeCell(cellPos);
+                }
             }
-            return false;
+
+            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
+                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            ecb.DestroyEntity(entity);
+            return true;
         }
     }
 }
