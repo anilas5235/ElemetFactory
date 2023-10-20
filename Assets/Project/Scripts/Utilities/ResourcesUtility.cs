@@ -4,6 +4,7 @@ using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.ItemSystem;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -37,6 +38,7 @@ namespace Project.Scripts.Utilities
             new ResourceLookUpData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
         };
         
+        [BurstDiscard]
         public static void SetUpBuildingData(PrefabsDataComponent ComponentData)
         {
             Entity[] entities = new[]

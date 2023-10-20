@@ -45,8 +45,8 @@ namespace Project.Scripts.Buildings
             if (!mySlotValidationHandler.ValidateInputSlotRequest(this, caller, out inputIndex)) return false;
             InputSlot input = inputIndex switch
             {
-                0 => combinerDataComponent.input1,
-                1 => combinerDataComponent.input2,
+                0 => combinerDataComponent.InputSlots[0],
+                1 => combinerDataComponent.InputSlots[1],
                 _ => throw new ArgumentOutOfRangeException(nameof(inputIndex), inputIndex, null)
             };
             if (input.EntityToPullFrom != default) return false;

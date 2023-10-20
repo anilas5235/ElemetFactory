@@ -47,16 +47,16 @@ namespace Project.Scripts.EntitySystem.Aspects
             cellPosition = position - chunkOffset * ChunkSize;
             return chunkPosition + chunkOffset;
         }
-        
-        public bool TryToPlaceBuilding( int buildingID, int2 cellPosition, FacingDirection facingDirection)
+
+        public bool TryToPlaceBuilding(int buildingID, int2 cellPosition, FacingDirection facingDirection)
         {
-            PlacedBuildingData placedBuildingData = new PlacedBuildingData() //TODO: Put this on a component on the entity
+            PlacedBuildingData placedBuildingData = new PlacedBuildingData()
             {
                 directionID = (int)facingDirection,
                 buildingDataID = buildingID,
                 origin = cellPosition,
             };
-            
+
             var offsets = ResourcesUtility.GetGridPositionList(placedBuildingData);
 
             foreach (int2 offset in offsets)
@@ -66,10 +66,9 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
 
-            Entity entity = PlacingSystem.CreateBuildingEntity(_chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)].WorldPosition,buildingID,facingDirection,placedBuildingData);
-            
-            
-            //TODO: port setup get input get output ...
+            Entity entity = PlacingSystem.CreateBuildingEntity(
+                _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)].WorldPosition,
+                buildingID, facingDirection, placedBuildingData);
             
             foreach (int2 posOffset in offsets)
             {
@@ -79,10 +78,24 @@ namespace Project.Scripts.EntitySystem.Aspects
                 {
                     if (GenerationSystem.TryGetChunk(
                             GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
-                            , out ChunkDataAspect chunk));
+                            , out ChunkDataAspect chunk)) ;
                     chunk.BlockCell(cellPos, entity);
                 }
             }
+
+            if (ResourcesUtility.GetBuildingData(buildingID,out BuildingLookUpData data))
+            {
+              foreach (int2 inputDirection in data.GetInputPortDirections(facingDirection))
+              {
+                 CellObject cell = GetCell(cellPosition, ChunksPosition);
+                 if(!cell.IsOccupied) continue;
+                 BuildingDataComponent cellBuildingDataComp = 
+                     GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(cell.Building);
+                 //???
+                 
+              }  
+            }
+
             return true;
         }
 
