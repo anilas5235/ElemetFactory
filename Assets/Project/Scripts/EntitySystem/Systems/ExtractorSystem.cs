@@ -29,6 +29,7 @@ namespace Project.Scripts.EntitySystem.Systems
             Rate = 1;
             state.RequireForUpdate<PrefabsDataComponent>();
         }
+        /*
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
@@ -62,5 +63,6 @@ namespace Project.Scripts.EntitySystem.Systems
             separatorQuery.Dispose();
             entities.Dispose();
         }
+        */
     }
 }

@@ -7,7 +7,5 @@ namespace Project.Scripts.EntitySystem.Components.Buildings
     [Serializable]
     public struct ConveyorDataComponent : IComponentData
     {
-        public InputSlot input;
-        public OutputSlot output;
     }
 }

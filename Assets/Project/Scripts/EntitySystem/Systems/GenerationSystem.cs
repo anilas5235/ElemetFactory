@@ -79,8 +79,15 @@ namespace Project.Scripts.EntitySystem.Systems
                 prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
             }
             worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
-            
-            worldDataLookup.Update(ref state);
+
+            try
+            {
+                worldDataLookup.GetRefRO(worldDataEntity);
+            }
+            catch (Exception e)
+            {
+                worldDataLookup.Update(ref state);
+            }
             
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
             int2 currentPos = GetChunkPosition(playerCam.transform.position);

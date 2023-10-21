@@ -177,9 +177,19 @@ namespace Project.Scripts.Utilities
             return _inputPortDirections.Select(inputPort => inputPort.GetPortDirection(facingDirectionOfBuilding)).ToArray();
         }
         
+        public int2[] GetInputPortDirections(byte directionID)
+        {
+            return GetInputPortDirections((FacingDirection)directionID);
+        }
+        
         public int2[] GetOutputPortDirections(FacingDirection facingDirectionOfBuilding)
         {
             return _outputPortDirections.Select(outputPort => outputPort.GetPortDirection(facingDirectionOfBuilding)).ToArray();
+        }
+
+        public int2[] GetOutputPortDirections(byte directionID)
+        {
+            return GetOutputPortDirections((FacingDirection)directionID);
         }
     }
 

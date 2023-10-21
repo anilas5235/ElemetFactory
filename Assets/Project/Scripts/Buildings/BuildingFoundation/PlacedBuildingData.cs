@@ -9,6 +9,6 @@ namespace Project.Scripts.Buildings.BuildingFoundation
     {
         public int buildingDataID;
         public int2 origin;
-        public int directionID;
+        public byte directionID;
     }
 }

@@ -5,14 +5,7 @@ using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Components.Buildings
 {
-    public struct CombinerDataComponent : IComponentData, IHaveInput
+    public struct CombinerDataComponent : IComponentData
     {
-        public NativeArray<InputSlot> InputSlots;
-        public OutputSlot output;
-
-        public bool TrySetInput(int index, Entity entityToPullFrom)
-        {
-            return true;
-        }
     }
 }

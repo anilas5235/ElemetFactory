@@ -6,7 +6,5 @@ namespace Project.Scripts.EntitySystem.Components.Buildings
 {
     public struct SeparatorDataComponent : IComponentData
     {
-        public InputSlot input;
-        public NativeArray<OutputSlot> outputs;
     }
 }

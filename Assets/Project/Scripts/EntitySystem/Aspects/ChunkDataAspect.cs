@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
@@ -52,7 +54,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         {
             PlacedBuildingData placedBuildingData = new PlacedBuildingData()
             {
-                directionID = (int)facingDirection,
+                directionID = (byte)facingDirection,
                 buildingDataID = buildingID,
                 origin = cellPosition,
             };
@@ -70,6 +72,8 @@ namespace Project.Scripts.EntitySystem.Aspects
                 _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)].WorldPosition,
                 buildingID, facingDirection, placedBuildingData);
             
+            BuildingAspect myBuildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
+            
             foreach (int2 posOffset in offsets)
             {
                 int2 position = posOffset + cellPosition;
@@ -83,17 +87,24 @@ namespace Project.Scripts.EntitySystem.Aspects
                 }
             }
 
-            if (ResourcesUtility.GetBuildingData(buildingID,out BuildingLookUpData data))
+
+
+            if (ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data))
             {
-              foreach (int2 inputDirection in data.GetInputPortDirections(facingDirection))
-              {
-                 CellObject cell = GetCell(cellPosition, ChunksPosition);
-                 if(!cell.IsOccupied) continue;
-                 BuildingDataComponent cellBuildingDataComp = 
-                     GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(cell.Building);
-                 //???
-                 
-              }  
+                List<BuildingAspect> aspects = new List<BuildingAspect>();
+                IEnumerable<int2> offsetsData = data.GetInputPortDirections(facingDirection).Union(data.GetOutputPortDirections(facingDirection));
+                foreach (int2 inputDirection in offsetsData)
+                {
+                    CellObject cell = GetCell(cellPosition + inputDirection, ChunksPosition);
+                    if (!cell.IsOccupied) continue;
+
+                    BuildingAspect otherBuildingAspect =
+                        GenerationSystem._entityManager.GetAspect<BuildingAspect>(cell.Building);
+
+                    if (aspects.Contains(otherBuildingAspect)) continue;
+                    myBuildingAspect.TryToConnect(otherBuildingAspect);
+                    aspects.Add(otherBuildingAspect);
+                }
             }
 
             return true;
@@ -139,14 +150,19 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public static int2 GetCellPositionFormWorldPosition(float3 worldPosition, out int2 chunkPosition)
         {
-            chunkPosition = new int2(Mathf.RoundToInt(worldPosition.x / ChunkUnitSize),
-                Mathf.RoundToInt(worldPosition.y / ChunkUnitSize));
+            chunkPosition = GetChunkPositionFromWorldPosition(worldPosition);
 
             float2 cellFloatPos = worldPosition.xy - chunkPosition * ChunkUnitSize;
             
             int2 cellPos =new int2(Mathf.FloorToInt(cellFloatPos.x/CellSize) + HalfChunkSize,
                                          Mathf.FloorToInt(cellFloatPos.y/CellSize)+HalfChunkSize);
             return cellPos;
+        }
+
+        public static int2 GetChunkPositionFromWorldPosition(float3 worldPosition)
+        {
+            return new int2(Mathf.RoundToInt(worldPosition.x / ChunkUnitSize),
+                Mathf.RoundToInt(worldPosition.y / ChunkUnitSize));
         }
 
         public static bool IsValidPositionInChunk(int2 position)

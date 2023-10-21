@@ -27,6 +27,7 @@ namespace Project.Scripts.EntitySystem.Systems
             Rate = 1;
         }
 
+        /*
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
@@ -87,5 +88,6 @@ namespace Project.Scripts.EntitySystem.Systems
             entities.Dispose();
             separatorQuery.Dispose();
         }
+        */
     }
 }
