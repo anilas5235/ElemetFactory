@@ -245,6 +245,7 @@ namespace Project.Scripts.Utilities
             _right = PlacedBuildingUtility.GetNextDirectionClockwise(_up);
             _down = PlacedBuildingUtility.GetNextDirectionClockwise(_right);
             _left = PlacedBuildingUtility.GetNextDirectionClockwise(_down);
+            _bodyPartID = portData.bodyPartID;
         }
 
         public PortInstantData GetPortInstantData(FacingDirection facingDirection)

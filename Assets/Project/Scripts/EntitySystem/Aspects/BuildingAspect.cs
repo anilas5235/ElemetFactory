@@ -78,10 +78,10 @@ namespace Project.Scripts.EntitySystem.Aspects
                     otherLookUpData.GetInputPortInfo(otherBuilding.MyBuildingData.directionID);
                 int2[]otherGridPositionList =ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
                 
-                for (int i = 0; i < myOutputPortInfoList.Length; i++)
+                for (int myOutputIndex = 0; myOutputIndex < myOutputPortInfoList.Length; myOutputIndex++)
                 {
-                    if (inputSlots[i].IsConnected) continue;
-                    int2 point = MyBuildingData.origin + PlacedBuildingUtility.FacingDirectionToVector(myOutputPortInfoList[i].direction);
+                    if (inputSlots[myOutputIndex].IsConnected) continue;
+                    int2 point = MyBuildingData.origin + PlacedBuildingUtility.FacingDirectionToVector(myOutputPortInfoList[myOutputIndex].direction);
                     int bodyID =-1;
 
                     for (int j = 0; j < otherGridPositionList.Length; j++)
@@ -94,19 +94,19 @@ namespace Project.Scripts.EntitySystem.Aspects
                     
                     if(bodyID<0) continue;
 
-                    for (int j = 0; j < otherInputPortInfoList.Length; j++)
+                    for (int otherInputIndex = 0; otherInputIndex < otherInputPortInfoList.Length; otherInputIndex++)
                     {
-                        if (otherBuilding.outputSlots.ElementAt(j).IsConnected ||
-                            otherInputPortInfoList[j].bodyPartID != bodyID) continue;
+                        if (otherBuilding.inputSlots.ElementAt(otherInputIndex).IsConnected ||
+                            otherInputPortInfoList[otherInputIndex].bodyPartID != bodyID) continue;
 
-                        if (myOutputPortInfoList[i].direction !=
-                            PlacedBuildingUtility.GetOppositeDirection(otherInputPortInfoList[i].direction)) continue;
+                        if (myOutputPortInfoList[myOutputIndex].direction !=
+                            PlacedBuildingUtility.GetOppositeDirection(otherInputPortInfoList[myOutputIndex].direction)) continue;
 
-                        inputSlots.ElementAt(i).EntityToPullFrom = otherBuilding.entity;
-                        inputSlots.ElementAt(i).outputIndex = j;
+                        outputSlots.ElementAt(myOutputIndex).EntityToPushTo= otherBuilding.entity;
+                        outputSlots.ElementAt(myOutputIndex).InputIndex= otherInputIndex;
 
-                        otherBuilding.outputSlots.ElementAt(j).EntityToPushTo = entity;
-                        otherBuilding.outputSlots.ElementAt(j).InputIndex = i;
+                        otherBuilding.inputSlots.ElementAt(otherInputIndex).EntityToPullFrom = entity;
+                        otherBuilding.inputSlots.ElementAt(otherInputIndex).outputIndex= myOutputIndex;
                         break;
                     }
                 }
