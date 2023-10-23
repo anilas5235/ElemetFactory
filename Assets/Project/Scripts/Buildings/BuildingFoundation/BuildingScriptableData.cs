@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -22,10 +23,17 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         public int buildingID;
         public GameObject prefab;
         public int2[] neededTiles;
-        public int2[] InputOffsets, OutputOffsets;
+        public PortData[] InputOffsets, OutputOffsets;
         public override string ToString()
         {
             return nameString;
         }
+    }
+
+    [Serializable]
+    public struct PortData
+    {
+        public byte bodyPartID;
+        public FacingDirection direction;
     }
 }

@@ -28,57 +28,87 @@ namespace Project.Scripts.EntitySystem.Aspects
             int2 chunkDiff = ChunkDataAspect.GetChunkPositionFromWorldPosition(Transform.Position)
                              - ChunkDataAspect.GetChunkPositionFromWorldPosition(otherBuilding.Transform.Position);
             chunkDiff *= ChunkDataComponent.ChunkSize;
-
-            int2[] inputsDirections = myLookUpData.GetInputPortDirections(MyBuildingData.directionID);
-            for (int i = 0; i < inputsDirections.Length; i++)
+            
+            
+            //Try To connect the Input
             {
-                if (inputSlots[i].IsConnected) continue;
-                int2 point = MyBuildingData.origin + inputsDirections[i];
+                var myInputPortInfoList = myLookUpData.GetInputPortInfo(MyBuildingData.directionID);
+                var otherOutputPortInfoList =
+                    otherLookUpData.GetOutputPortInfo(otherBuilding.MyBuildingData.directionID);
+                int2[]otherGridPositionList =ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
 
-                int2[] otherOutputOffsets =
-                    otherLookUpData.GetOutputPortDirections(otherBuilding.MyBuildingData.directionID);
-
-                for (int j = 0; j < otherOutputOffsets.Length; j++)
+                for (int i = 0; i < myInputPortInfoList.Length; i++)
                 {
-                    int2 transformedPoint =
-                        otherOutputOffsets[i] +
-                        PlacedBuildingUtility.FacingDirectionToVector(
-                            PlacedBuildingUtility.GetOppositeDirection(otherBuilding.MyBuildingData.directionID))
-                        + otherBuilding.MyBuildingData.origin + chunkDiff;
-                    var isSame = point == transformedPoint;
-                    if (isSame is not { x: true, y: true }) continue;
-                    inputSlots.ElementAt(i).EntityToPullFrom = otherBuilding.entity;
-                    inputSlots.ElementAt(i).outputIndex = j;
+                    if (inputSlots[i].IsConnected) continue;
+                    int2 point = MyBuildingData.origin + PlacedBuildingUtility.FacingDirectionToVector(myInputPortInfoList[i].direction);
+                    int bodyID =-1;
 
-                    otherBuilding.outputSlots.ElementAt(j).EntityToPushTo = entity;
-                    otherBuilding.outputSlots.ElementAt(j).InputIndex = i;
-                    break;
+                    for (int j = 0; j < otherGridPositionList.Length; j++)
+                    {
+                       var isSame = point == otherGridPositionList[j] + otherBuilding.MyBuildingData.origin + chunkDiff;
+                       if (isSame is not { x: true, y: true }) continue;
+                       bodyID = j;
+                       break;
+                    }
+                    
+                    if(bodyID<0) continue;
+
+                    for (int j = 0; j < otherOutputPortInfoList.Length; j++)
+                    {
+                        if (otherBuilding.outputSlots.ElementAt(j).IsConnected ||
+                            otherOutputPortInfoList[j].bodyPartID != bodyID) continue;
+
+                        if (myInputPortInfoList[i].direction !=
+                            PlacedBuildingUtility.GetOppositeDirection(otherOutputPortInfoList[i].direction)) continue;
+
+                        inputSlots.ElementAt(i).EntityToPullFrom = otherBuilding.entity;
+                        inputSlots.ElementAt(i).outputIndex = j;
+
+                        otherBuilding.outputSlots.ElementAt(j).EntityToPushTo = entity;
+                        otherBuilding.outputSlots.ElementAt(j).InputIndex = i;
+                        break;
+                    }
                 }
             }
-
-            var outputDirections = myLookUpData.GetOutputPortDirections(MyBuildingData.directionID);
-            for (int i = 0; i < outputDirections.Length; i++)
+            
+            //Try to connect Output
             {
-                if (outputSlots[i].IsOccupied) continue;
-                int2 point = MyBuildingData.origin + outputDirections[i];
-
-                int2[] otherInputOffsets =
-                    otherLookUpData.GetInputPortDirections(otherBuilding.MyBuildingData.directionID);
-
-                for (int j = 0; j < otherInputOffsets.Length; j++)
+                PortInstantData[] myOutputPortInfoList = myLookUpData.GetOutputPortInfo(MyBuildingData.directionID);
+                PortInstantData[] otherInputPortInfoList =
+                    otherLookUpData.GetInputPortInfo(otherBuilding.MyBuildingData.directionID);
+                int2[]otherGridPositionList =ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
+                
+                for (int i = 0; i < myOutputPortInfoList.Length; i++)
                 {
-                    int2 transformedPoint = otherInputOffsets[i] +
-                                            PlacedBuildingUtility.FacingDirectionToVector(otherBuilding.MyBuildingData
-                                                .directionID) + otherBuilding.MyBuildingData.origin + chunkDiff;
-                    var isSame = point == transformedPoint;
-                    if (isSame is not { x: true, y: true }) continue;
+                    if (inputSlots[i].IsConnected) continue;
+                    int2 point = MyBuildingData.origin + PlacedBuildingUtility.FacingDirectionToVector(myOutputPortInfoList[i].direction);
+                    int bodyID =-1;
 
-                    outputSlots.ElementAt(i).EntityToPushTo = otherBuilding.entity;
-                    outputSlots.ElementAt(i).InputIndex = j;
+                    for (int j = 0; j < otherGridPositionList.Length; j++)
+                    {
+                        var isSame = point == otherGridPositionList[j] + otherBuilding.MyBuildingData.origin + chunkDiff;
+                        if (isSame is not { x: true, y: true }) continue;
+                        bodyID = j;
+                        break;
+                    }
+                    
+                    if(bodyID<0) continue;
 
-                    otherBuilding.inputSlots.ElementAt(j).EntityToPullFrom = entity;
-                    otherBuilding.inputSlots.ElementAt(j).outputIndex = i;
-                    break;
+                    for (int j = 0; j < otherInputPortInfoList.Length; j++)
+                    {
+                        if (otherBuilding.outputSlots.ElementAt(j).IsConnected ||
+                            otherInputPortInfoList[j].bodyPartID != bodyID) continue;
+
+                        if (myOutputPortInfoList[i].direction !=
+                            PlacedBuildingUtility.GetOppositeDirection(otherInputPortInfoList[i].direction)) continue;
+
+                        inputSlots.ElementAt(i).EntityToPullFrom = otherBuilding.entity;
+                        inputSlots.ElementAt(i).outputIndex = j;
+
+                        otherBuilding.outputSlots.ElementAt(j).EntityToPushTo = entity;
+                        otherBuilding.outputSlots.ElementAt(j).InputIndex = i;
+                        break;
+                    }
                 }
             }
         }

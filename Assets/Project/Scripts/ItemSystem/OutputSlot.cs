@@ -12,6 +12,8 @@ namespace Project.Scripts.ItemSystem
         
         public Entity SlotContent;
         public bool IsOccupied => SlotContent != default;
+
+        public bool IsConnected => EntityToPushTo != default;
         
         public Entity EntityToPushTo;
         public int InputIndex;

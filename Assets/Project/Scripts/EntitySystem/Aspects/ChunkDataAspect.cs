@@ -92,7 +92,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data))
             {
                 List<BuildingAspect> aspects = new List<BuildingAspect>();
-                IEnumerable<int2> offsetsData = data.GetInputPortDirections(facingDirection).Union(data.GetOutputPortDirections(facingDirection));
+                IEnumerable<int2> offsetsData = data.GetInputOffsets(facingDirection).Union(data.GetOutputOffsets(facingDirection));
                 foreach (int2 inputDirection in offsetsData)
                 {
                     CellObject cell = GetCell(cellPosition + inputDirection, ChunksPosition);
