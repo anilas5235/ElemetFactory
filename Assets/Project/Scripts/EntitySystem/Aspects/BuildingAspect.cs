@@ -26,24 +26,30 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (!ResourcesUtility.GetBuildingData(otherBuilding.MyBuildingData.buildingDataID,
                     out BuildingLookUpData otherLookUpData)) return;
             int2 chunkDiff = ChunkDataAspect.GetChunkPositionFromWorldPosition(Transform.Position)
-            - ChunkDataAspect.GetChunkPositionFromWorldPosition(otherBuilding.Transform.Position);
+                             - ChunkDataAspect.GetChunkPositionFromWorldPosition(otherBuilding.Transform.Position);
             chunkDiff *= ChunkDataComponent.ChunkSize;
 
             int2[] inputsDirections = myLookUpData.GetInputPortDirections(MyBuildingData.directionID);
             for (int i = 0; i < inputsDirections.Length; i++)
             {
-                if(inputSlots[i].IsConnected) continue;
+                if (inputSlots[i].IsConnected) continue;
                 int2 point = MyBuildingData.origin + inputsDirections[i];
 
-                int2[] otherOutputOffsets = otherLookUpData.GetOutputPortDirections(otherBuilding.MyBuildingData.directionID);
+                int2[] otherOutputOffsets =
+                    otherLookUpData.GetOutputPortDirections(otherBuilding.MyBuildingData.directionID);
 
-                for (int j = 0; j < otherOutputOffsets.Length ; j++)
+                for (int j = 0; j < otherOutputOffsets.Length; j++)
                 {
-                    int2 transformedPoint = otherOutputOffsets[i] + otherBuilding.MyBuildingData.origin + chunkDiff;
-                    if (math.distance(point,transformedPoint)>1.1f) continue; //TODO: make better condition
+                    int2 transformedPoint =
+                        otherOutputOffsets[i] +
+                        PlacedBuildingUtility.FacingDirectionToVector(
+                            PlacedBuildingUtility.GetOppositeDirection(otherBuilding.MyBuildingData.directionID))
+                        + otherBuilding.MyBuildingData.origin + chunkDiff;
+                    var isSame = point == transformedPoint;
+                    if (isSame is not { x: true, y: true }) continue;
                     inputSlots.ElementAt(i).EntityToPullFrom = otherBuilding.entity;
                     inputSlots.ElementAt(i).outputIndex = j;
-                    
+
                     otherBuilding.outputSlots.ElementAt(j).EntityToPushTo = entity;
                     otherBuilding.outputSlots.ElementAt(j).InputIndex = i;
                     break;
@@ -56,16 +62,20 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (outputSlots[i].IsOccupied) continue;
                 int2 point = MyBuildingData.origin + outputDirections[i];
 
-                int2[] otherInputOffsets = otherLookUpData.GetInputPortDirections(otherBuilding.MyBuildingData.directionID);
+                int2[] otherInputOffsets =
+                    otherLookUpData.GetInputPortDirections(otherBuilding.MyBuildingData.directionID);
 
-                for (int j = 0; j < otherInputOffsets.Length ; j++)
+                for (int j = 0; j < otherInputOffsets.Length; j++)
                 {
-                    int2 transformedPoint = otherInputOffsets[i] + otherBuilding.MyBuildingData.origin + chunkDiff;
-                    if (math.distance(point,transformedPoint)>1.1f) continue;
-                    
+                    int2 transformedPoint = otherInputOffsets[i] +
+                                            PlacedBuildingUtility.FacingDirectionToVector(otherBuilding.MyBuildingData
+                                                .directionID) + otherBuilding.MyBuildingData.origin + chunkDiff;
+                    var isSame = point == transformedPoint;
+                    if (isSame is not { x: true, y: true }) continue;
+
                     outputSlots.ElementAt(i).EntityToPushTo = otherBuilding.entity;
                     outputSlots.ElementAt(i).InputIndex = j;
-                    
+
                     otherBuilding.inputSlots.ElementAt(j).EntityToPullFrom = entity;
                     otherBuilding.inputSlots.ElementAt(j).outputIndex = i;
                     break;
