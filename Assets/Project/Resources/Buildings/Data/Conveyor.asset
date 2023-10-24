@@ -21,6 +21,14 @@ MonoBehaviour:
   InputOffsets:
   - bodyPartID: 0
     direction: 2
+    portID: 0
+  - bodyPartID: 0
+    direction: 1
+    portID: 0
+  - bodyPartID: 0
+    direction: 3
+    portID: 0
   OutputOffsets:
   - bodyPartID: 0
     direction: 0
+    portID: 0

@@ -87,8 +87,6 @@ namespace Project.Scripts.EntitySystem.Aspects
                 }
             }
 
-
-
             if (ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data))
             {
                 List<BuildingAspect> aspects = new List<BuildingAspect>();
@@ -102,7 +100,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                         GenerationSystem._entityManager.GetAspect<BuildingAspect>(cell.Building);
 
                     if (aspects.Contains(otherBuildingAspect)) continue;
-                    myBuildingAspect.TryToConnect(otherBuildingAspect);
+                    myBuildingAspect.TryToConnectBuildings(otherBuildingAspect);
                     aspects.Add(otherBuildingAspect);
                 }
             }
@@ -180,7 +178,8 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             var offsets = ResourcesUtility.GetGridPositionList(
                 GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(entity).BuildingData);
-
+            
+            //free previously blocked cells
             foreach (int2 posOffset in offsets)
             {
                 int2 position = posOffset + cellPosition;
@@ -194,9 +193,43 @@ namespace Project.Scripts.EntitySystem.Aspects
                 }
             }
 
+            //disconnect Building
+            var buildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
+
+            for (int i = 0; i < buildingAspect.inputSlots.Length; i++)
+            {
+                if(!buildingAspect.inputSlots[i].IsConnected)continue;
+
+                var otherBuildingAspect =
+                    GenerationSystem._entityManager.GetAspect<BuildingAspect>(buildingAspect.inputSlots[i]
+                        .EntityToPullFrom);
+                int index = buildingAspect.inputSlots[i].outputIndex;
+                otherBuildingAspect.outputSlots.ElementAt(index).EntityToPushTo = default;
+                otherBuildingAspect.outputSlots.ElementAt(index).InputIndex = 0;
+
+                buildingAspect.inputSlots.ElementAt(i).EntityToPullFrom = default;
+                buildingAspect.inputSlots.ElementAt(i).outputIndex =0;
+            }
+
+            for (int i = 0; i < buildingAspect.outputSlots.Length; i++)
+            {
+                if(!buildingAspect.outputSlots[i].IsConnected)continue;
+                var otherBuildingAspect =
+                    GenerationSystem._entityManager.GetAspect<BuildingAspect>(buildingAspect.outputSlots[i]
+                        .EntityToPushTo);
+                int index = buildingAspect.outputSlots[i].InputIndex;
+                otherBuildingAspect.inputSlots.ElementAt(index).EntityToPullFrom = default;
+                otherBuildingAspect.inputSlots.ElementAt(index).outputIndex = default;
+
+                buildingAspect.outputSlots.ElementAt(i).EntityToPushTo = default;
+                buildingAspect.outputSlots.ElementAt(i).InputIndex = default;
+            }
+
+            //destroy Building entity
             var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
                 World.DefaultGameObjectInjectionWorld.Unmanaged);
             ecb.DestroyEntity(entity);
+            
             return true;
         }
     }

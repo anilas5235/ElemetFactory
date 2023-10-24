@@ -114,7 +114,7 @@ namespace Project.Scripts.Utilities
             if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingLookUpData data)) return default;
             List<int2> positions = new List<int2>();
 
-            foreach (PortDirections tileOffset in data.neededTileOffsets)
+            foreach (CellOffsetHandler tileOffset in data.neededTileOffsets)
             {
                 positions.Add(tileOffset.GetPortDirection((FacingDirection)myPlacedBuildingData.directionID));
             }
@@ -144,9 +144,9 @@ namespace Project.Scripts.Utilities
         public readonly FixedString64Bytes Name;
         public readonly Entity Prefab;
         public readonly int BuildingID;
-        public readonly PortDirections[] neededTileOffsets;
+        public readonly CellOffsetHandler[] neededTileOffsets;
         private readonly PortDataHandler[] _inputPortInfos, _outputPortInfos;
-        private readonly PortDirections[] _inputDirections, _outputDirection;
+        private readonly CellOffsetHandler[] _inputDirections, _outputDirection;
 
         public BuildingLookUpData(FixedString64Bytes name, Entity prefab, PortData[] inputPortData,
             PortData[] outputPortData, int buildingID, int2[] neededTiles)
@@ -155,10 +155,10 @@ namespace Project.Scripts.Utilities
             Prefab = prefab;
             BuildingID = buildingID;
 
-            neededTileOffsets = new PortDirections[neededTiles.Length];
+            neededTileOffsets = new CellOffsetHandler[neededTiles.Length];
             for (int i = 0; i < neededTiles.Length; i++)
             {
-                neededTileOffsets[i] = new PortDirections(neededTiles[i]);
+                neededTileOffsets[i] = new CellOffsetHandler(neededTiles[i]);
             }
 
             _inputPortInfos = new PortDataHandler[inputPortData.Length];
@@ -173,23 +173,24 @@ namespace Project.Scripts.Utilities
                 _outputPortInfos[i] = new PortDataHandler(outputPortData[i]);
             }
 
-            _inputDirections = new PortDirections[inputPortData.Length];
+            _inputDirections = new CellOffsetHandler[inputPortData.Length];
             for (int i = 0; i < _inputDirections.Length; i++)
             {
                 _inputDirections[i] =
-                    new PortDirections(PlacedBuildingUtility.FacingDirectionToVector(inputPortData[i].direction) +
+                    new CellOffsetHandler(PlacedBuildingUtility.FacingDirectionToVector(inputPortData[i].direction) +
                                        neededTiles[inputPortData[i].bodyPartID]);
             }
 
-            _outputDirection = new PortDirections[outputPortData.Length];
+            _outputDirection = new CellOffsetHandler[outputPortData.Length];
             for (int i = 0; i < outputPortData.Length; i++)
             {
-                _outputDirection[i] = new PortDirections(
+                _outputDirection[i] = new CellOffsetHandler(
                     PlacedBuildingUtility.FacingDirectionToVector(outputPortData[i].direction) +
                     neededTiles[outputPortData[i].bodyPartID]);
             }
         }
 
+        #region InputInfos
         public PortInstantData[] GetInputPortInfo(FacingDirection facingDirectionOfBuilding)
         {
             return _inputPortInfos.Select(inputPort => inputPort.GetPortInstantData(facingDirectionOfBuilding))
@@ -211,7 +212,10 @@ namespace Project.Scripts.Utilities
         {
            return  GetInputOffsets((FacingDirection)directionID);
         }
+        
+        #endregion
 
+        #region OutputInfos
         public PortInstantData[] GetOutputPortInfo( FacingDirection facingDirectionOfBuilding)
         {
             return _outputPortInfos.Select(outputPort =>
@@ -232,12 +236,14 @@ namespace Project.Scripts.Utilities
         {
            return GetOutputOffsets((FacingDirection)directionID);
         }
+        
+        #endregion
     }
 
     [Serializable]
     public readonly struct PortDataHandler
     {
-        private readonly byte _bodyPartID;
+        private readonly byte _bodyPartID,_portID;
         private readonly FacingDirection _up, _right, _down, _left;
         public PortDataHandler(PortData portData) : this()
         {
@@ -246,6 +252,7 @@ namespace Project.Scripts.Utilities
             _down = PlacedBuildingUtility.GetNextDirectionClockwise(_right);
             _left = PlacedBuildingUtility.GetNextDirectionClockwise(_down);
             _bodyPartID = portData.bodyPartID;
+            _portID = portData.portID;
         }
 
         public PortInstantData GetPortInstantData(FacingDirection facingDirection)
@@ -257,28 +264,29 @@ namespace Project.Scripts.Utilities
                 FacingDirection.Down => _down,
                 FacingDirection.Left => _left,
                 _ => throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null)
-            });
+            },_portID);
         }
     }
 
     [Serializable]
     public readonly struct PortInstantData
     {
-        public readonly byte bodyPartID;
+        public readonly byte bodyPartID,portID;
         public readonly FacingDirection direction;
-        public PortInstantData(byte bodyPartID, FacingDirection direction)
+        public PortInstantData(byte bodyPartID, FacingDirection direction, byte portID)
         {
             this.bodyPartID = bodyPartID;
             this.direction = direction;
+            this.portID = portID;
         }
     }
 
     [Serializable]
-    public readonly struct PortDirections
+    public readonly struct CellOffsetHandler
     {
         private readonly int2 _up, _right, _down, _left;
         
-        public PortDirections(int2 directionOffsetFacingUp) : this()
+        public CellOffsetHandler(int2 directionOffsetFacingUp) : this()
         {
             _up = directionOffsetFacingUp;
             _right = PlacedBuildingUtility.GetRotatedVectorClockwise(_up);

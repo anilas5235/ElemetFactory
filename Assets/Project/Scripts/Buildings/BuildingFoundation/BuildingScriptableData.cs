@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -35,5 +34,6 @@ namespace Project.Scripts.Buildings.BuildingFoundation
     {
         public byte bodyPartID;
         public FacingDirection direction;
+        public byte portID;
     }
 }
