@@ -2,7 +2,6 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
-using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;

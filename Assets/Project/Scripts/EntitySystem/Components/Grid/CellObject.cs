@@ -1,7 +1,4 @@
-﻿using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.EntitySystem.Systems;
-using Project.Scripts.ItemSystem;
-using Unity.Collections;
+﻿using Project.Scripts.ItemSystem;
 using Unity.Entities;
 using Unity.Mathematics;
 

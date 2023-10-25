@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2798167410517695104}
   - component: {fileID: 3721059581545937109}
   - component: {fileID: 4037108600723740221}
+  - component: {fileID: 2655153798734590166}
   m_Layer: 0
   m_Name: Extractor
   m_TagString: Untagged
@@ -111,3 +112,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Inputs: 0
   Outputs: 1
+--- !u!114 &2655153798734590166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8099156330893030993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a802d6277800416ea3b1857f113148ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

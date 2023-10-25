@@ -12,10 +12,10 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             float deltaTime = SystemAPI.Time.DeltaTime;
             
-            var separatorQuery = SystemAPI.QueryBuilder().WithAll<ItemDataComponent>().Build();
+            var separatorQuery = SystemAPI.QueryBuilder().WithAll<ItemEntityStateDataComponent>().Build();
             if (separatorQuery.IsEmpty) return;
 
-            Entities.ForEach((ref ItemDataComponent itemDataComponent, ref LocalTransform transform) => {
+            Entities.ForEach((ref ItemEntityStateDataComponent itemDataComponent, ref LocalTransform transform) => {
                 
                 if(itemDataComponent.Arrived) return;
                 itemDataComponent.Progress += deltaTime;

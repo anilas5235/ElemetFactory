@@ -21,7 +21,8 @@ namespace Project.Scripts.EntitySystem.Systems
         public static BeginSimulationEntityCommandBufferSystem.Singleton beginSimulationEntityCommandBuffer; 
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); Instance = this;
+            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); 
+            Instance = this;
            
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
@@ -58,20 +59,41 @@ namespace Project.Scripts.EntitySystem.Systems
             return false;
         }
 
-        public static Entity CreateBuildingEntity(float3 worldPosition, int buildingID, FacingDirection facingDirection, PlacedBuildingData buildingData)
+        public static Entity CreateBuildingEntity(CellObject cell, PlacedBuildingData buildingData)
         {
-            if (!ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data)) return default;
+            if (!ResourcesUtility.GetBuildingData(buildingData.buildingDataID, out BuildingLookUpData data)) return default;
             
            Entity entity = TheEntityManager.Instantiate(data.Prefab);
             
-           quaternion rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(facingDirection)));
+           quaternion rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(buildingData.directionID)));
          
            TheEntityManager.SetComponentData(entity, new LocalTransform()
            {
-               Position = worldPosition,
+               Position = cell.WorldPosition,
                Scale = GenerationSystem.WorldScale,
                Rotation = rotation,
            });
+
+           switch (buildingData.buildingDataID)
+           {
+               case 0:
+                   TheEntityManager.SetComponentData(entity, new ItemDataComponent()
+                   {
+                       itemForm = cell.Resource.ItemForm,
+                       itemColor = cell.Resource.Color,
+                   });
+                   var buffer = TheEntityManager.GetBuffer<ResourceDataPoint>(entity);
+
+                   foreach (uint resourceID in cell.Resource.ResourceIDs)
+                   {
+                       buffer.Add(new ResourceDataPoint()
+                       {
+                           id = resourceID
+                       });
+                   }
+                   break;
+
+           }
 
            TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
            

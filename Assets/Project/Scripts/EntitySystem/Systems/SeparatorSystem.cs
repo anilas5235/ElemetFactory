@@ -1,19 +1,11 @@
-using System.Runtime.InteropServices;
-using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.EntitySystem.Components.Buildings;
-using Project.Scripts.Grid;
-using Project.Scripts.ItemSystem;
-using Project.Scripts.Utilities;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
+
 
 namespace Project.Scripts.EntitySystem.Systems
 {
     [DisableAutoCreation]
-    [StructLayout(LayoutKind.Auto)]
     public partial struct SeparatorSystem : ISystem
     {
         private float timeSinceLastTick;
@@ -57,7 +49,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 OutputSlot outputSlot1 = separatorData.OutputSlot1;
                 if (!separatorData.Input.IsOccupied || outputSlot0.IsOccupied || outputSlot1.IsOccupied) return;
 
-                Item itemA = SystemAPI.GetAspect<ItemAspect>(separatorData.ItemEntityInInput).Item;
+                Item itemA = SystemAPI.GetAspect<ItemEntityAspect>(separatorData.ItemEntityInInput).Item;
                 
                 int itemLength = itemA.ResourceIDs.Length;
                 int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
@@ -72,11 +64,11 @@ namespace Project.Scripts.EntitySystem.Systems
                 ecb.DestroyEntity(separatorData.ItemEntityInInput);
                 separatorData.ItemEntityInInput = default;
 
-                outputSlot0.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefabs);
+                outputSlot0.SlotContent = ItemEntityAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefabs);
                 separatorData.OutputSlot0 = outputSlot0;
 
                 
-                outputSlot1.SlotContent = ItemAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefabs);
+                outputSlot1.SlotContent = ItemEntityAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefabs);
                 separatorData.OutputSlot1 = outputSlot1;
 
                 contentItem1.Dispose();

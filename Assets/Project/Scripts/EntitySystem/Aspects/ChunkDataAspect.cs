@@ -68,9 +68,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
 
-            Entity entity = PlacingSystem.CreateBuildingEntity(
-                _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)].WorldPosition,
-                buildingID, facingDirection, placedBuildingData);
+            Entity entity = PlacingSystem.CreateBuildingEntity(_chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)], placedBuildingData);
             
             BuildingAspect myBuildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
             

@@ -8,17 +8,15 @@ using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Aspects
 {
-    public readonly partial struct ItemAspect : IAspect
+    public readonly partial struct ItemEntityAspect : IAspect
     {
         public readonly Entity entity;
 
         public readonly RefRW<LocalTransform> transform;
 
-        public readonly RefRW<ItemDataComponent> dataComponent;
+        public readonly RefRW<ItemEntityStateDataComponent> dataComponent;
 
         public readonly RefRW<ItemColor> color;
-
-        public Item Item => dataComponent.ValueRO.item;
 
         public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,PrefabsDataComponent prefabs)
         {
@@ -31,7 +29,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             };
                     
             ecb.SetComponent(itemEntity,new ItemColor(){Value = item.Color});
-            ecb.SetComponent(itemEntity, new ItemDataComponent()
+            ecb.SetComponent(itemEntity, new ItemEntityStateDataComponent()
             {
                 Arrived = true,
                 DestinationPos = location,
