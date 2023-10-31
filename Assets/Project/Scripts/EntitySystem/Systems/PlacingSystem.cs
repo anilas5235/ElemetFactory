@@ -61,45 +61,52 @@ namespace Project.Scripts.EntitySystem.Systems
 
         public static Entity CreateBuildingEntity(CellObject cell, PlacedBuildingData buildingData)
         {
-            if (!ResourcesUtility.GetBuildingData(buildingData.buildingDataID, out BuildingLookUpData data)) return default;
-            
-           Entity entity = TheEntityManager.Instantiate(data.Prefab);
-            
-           quaternion rotation = quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(buildingData.directionID)));
-         
-           TheEntityManager.SetComponentData(entity, new LocalTransform()
-           {
-               Position = cell.WorldPosition,
-               Scale = GenerationSystem.WorldScale,
-               Rotation = rotation,
-           });
+            if (!ResourcesUtility.GetBuildingData(buildingData.buildingDataID, out BuildingLookUpData data))
+                return default;
 
-           switch (buildingData.buildingDataID)
-           {
-               case 0:
-                   TheEntityManager.SetComponentData(entity, new ItemDataComponent()
-                   {
-                       itemForm = cell.Resource.ItemForm,
-                       itemColor = cell.Resource.Color,
-                   });
-                   var buffer = TheEntityManager.GetBuffer<ResourceDataPoint>(entity);
+            Entity entity = TheEntityManager.Instantiate(data.Prefab);
 
-                   foreach (uint resourceID in cell.Resource.ResourceIDs)
-                   {
-                       buffer.Add(new ResourceDataPoint()
-                       {
-                           id = resourceID
-                       });
-                   }
-                   break;
+            quaternion rotation =
+                quaternion.RotateZ(math.radians(PlacedBuildingUtility.GetRotation(buildingData.directionID)));
 
-           }
+            TheEntityManager.SetComponentData(entity, new LocalTransform()
+            {
+                Position = cell.WorldPosition,
+                Scale = GenerationSystem.WorldScale,
+                Rotation = rotation,
+            });
 
-           TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
-           
-           TheEntityManager.SetName(entity,data.Name);
+            switch (buildingData.buildingDataID)
+            {
+                case 0:
+                    TheEntityManager.SetComponentData(entity, new ItemDataComponent()
+                    {
+                        itemForm = cell.Resource.ItemForm,
+                        itemColor = cell.Resource.Color,
+                    });
+                    var buffer = TheEntityManager.GetBuffer<ResourceDataPoint>(entity);
 
-           return entity;
+                    foreach (uint resourceID in cell.Resource.ResourceIDs)
+                    {
+                        buffer.Add(new ResourceDataPoint()
+                        {
+                            id = resourceID
+                        });
+                    }
+
+                    break;
+            }
+
+            TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
+
+            TheEntityManager.SetName(entity, data.Name);
+
+
+            EntityCommandBuffer ecb = beginSimulationEntityCommandBuffer.CreateCommandBuffer(
+                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            ecb.AddComponent(entity, new ChainPullStartPointTag());
+
+            return entity;
         }
     }
 }

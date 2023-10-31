@@ -16,8 +16,7 @@ using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     [StructLayout(LayoutKind.Auto)]
     public partial struct GenerationSystem : ISystem
     {

@@ -2,9 +2,8 @@ using System;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
-using Project.Scripts.EntitySystem.Components.Grid;
+using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.ItemSystem;
-using Project.Scripts.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -12,6 +11,8 @@ using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
+    [UpdateInGroup(typeof(VariableRateSimulationSystemGroup))]
+    [UpdateAfter(typeof(ChainConveyorSystem))]
     [BurstCompile]
     public partial struct ExtractorSystem : ISystem
     {
@@ -69,8 +70,12 @@ namespace Project.Scripts.EntitySystem.Systems
             if(extractorAspect.outputSlots[0].IsOccupied) return;
 
             using NativeArray<ResourceDataPoint> itemResources = extractorAspect.ItemDataAspect.ResourceDataPoints.AsNativeArray();
-            
-            if(itemResources.Length < 1) return;
+
+            if (itemResources.Length < 1)
+            {
+                ECB.RemoveComponent<ExtractorDataComponent>(extractorAspect.entity);
+                return;
+            }
 
             var itemEntity = extractorAspect.ItemDataAspect.itemDataComponent.ValueRO.itemForm switch
             {
@@ -86,6 +91,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 DestinationPos = extractorAspect.outputSlots[0].Position,
             });
 
+           
             DynamicBuffer<ResourceDataPoint> bufferResource = ECB.SetBuffer<ResourceDataPoint>(itemEntity);
 
             foreach (ResourceDataPoint itemResource in itemResources)
@@ -96,8 +102,23 @@ namespace Project.Scripts.EntitySystem.Systems
             ECB.SetComponent(itemEntity, new LocalTransform()
             {
                 Position = extractorAspect.outputSlots[0].Position,
-                Scale = WorldScale,
+                Scale = WorldScale*.7f,
             });
+            
+            ECB.SetComponent(itemEntity, new ItemColor()
+            {
+                Value = extractorAspect.ItemDataAspect.itemDataComponent.ValueRO.itemColor,
+            });
+            
+            ECB.SetComponent(itemEntity, new ItemDataComponent()
+            {
+                itemForm = extractorAspect.ItemDataAspect.itemDataComponent.ValueRO.itemForm,
+                itemColor = extractorAspect.ItemDataAspect.itemDataComponent.ValueRO.itemColor,
+            });
+            
+            ECB.SetName(itemEntity,"Item");
+
+            extractorAspect.outputSlots.ElementAt(0).SlotContent = itemEntity;
         }
     }
 }

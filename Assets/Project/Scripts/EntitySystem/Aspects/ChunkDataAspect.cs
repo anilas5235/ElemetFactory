@@ -68,7 +68,8 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
 
-            Entity entity = PlacingSystem.CreateBuildingEntity(_chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)], placedBuildingData);
+            var originCell = _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)];
+            Entity entity = PlacingSystem.CreateBuildingEntity(originCell, placedBuildingData);
             
             BuildingAspect myBuildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
             
@@ -87,11 +88,29 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             if (ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data))
             {
-                List<BuildingAspect> aspects = new List<BuildingAspect>();
-                IEnumerable<int2> offsetsData = data.GetInputOffsets(facingDirection).Union(data.GetOutputOffsets(facingDirection));
-                foreach (int2 inputDirection in offsetsData)
+                //set port Positions
+                int2[] inputOffsets = data.GetInputOffsets(facingDirection);
+                float relativeOffset = (buildingID == 1 ? .25f : .5f);
+                float zOffset = 0;
+                for (int i = 0; i < myBuildingAspect.inputSlots.Length; i++)
                 {
-                    CellObject cell = GetCell(cellPosition + inputDirection, ChunksPosition);
+                    float2 portOffset = (float2)inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    myBuildingAspect.inputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
+                }
+
+                int2[] outputOffsets = data.GetOutputOffsets(facingDirection);
+                for (int i = 0; i < myBuildingAspect.outputSlots.Length; i++)
+                {
+                    float2 portOffset = (float2)outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    myBuildingAspect.outputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
+                }
+                
+                //connect with neighbours 
+                List<BuildingAspect> aspects = new List<BuildingAspect>();
+                IEnumerable<int2> offsetsData = inputOffsets.Union(outputOffsets);
+                foreach (int2 direction in offsetsData)
+                {
+                    CellObject cell = GetCell(cellPosition + direction, ChunksPosition);
                     if (!cell.IsOccupied) continue;
 
                     BuildingAspect otherBuildingAspect =
