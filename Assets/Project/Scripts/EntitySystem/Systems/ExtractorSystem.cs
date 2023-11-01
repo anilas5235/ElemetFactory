@@ -89,6 +89,7 @@ namespace Project.Scripts.EntitySystem.Systems
             {
                 Arrived = true,
                 DestinationPos = extractorAspect.outputSlots[0].Position,
+                PreviousPos = extractorAspect.outputSlots[0].Position,
             });
 
            
