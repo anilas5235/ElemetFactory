@@ -80,11 +80,11 @@ namespace Project.Scripts.EntitySystem.Systems
                 BackGround = state.EntityManager.Instantiate(state.EntityManager
                     .GetComponentData<PrefabsDataComponent>(prefabsEntity).TileVisual);
                 state.EntityManager.SetName(BackGround, "BackGroundTile");
-                
-                worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
 
                 FirstUpdate = false;
             }
+            
+            worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
 
             try { worldDataLookup.GetRefRO(worldDataEntity); }
             catch (Exception e) { worldDataLookup.Update(ref state); }
@@ -106,8 +106,6 @@ namespace Project.Scripts.EntitySystem.Systems
                     Position = backgroundPos,
                     Scale = viewSize, });
             
-            
-            Debug.Log($"Chunk {currentPos}, Position {backgroundPos}");
 
             playerViewRadius = radius;
 
