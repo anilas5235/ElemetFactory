@@ -27,54 +27,44 @@ namespace Project.Scripts.EntitySystem.Components.Grid
             Buildings = new NativeList<Entity>(0, Allocator.Persistent);
 
             var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.TempJob);
+            
             for (int y = 0; y < ChunkSize; y++)
             {
                 for (int x = 0; x < ChunkSize; x++)
                 {
                     int2 pos = new int2(x, y);
-                    Item item = Item.EmptyItem;
-
-                    bool itemEmpty = true;
-                    foreach (ResourcePatch resourcePatch in ResourcePatches)
-                    {
-                        foreach (int2 position in resourcePatch.Positions)
-                        {
-                            if (position.x != pos.x || position.y != pos.y) continue;
-                            item = resourcePatch.Resource;
-                            itemEmpty = false;
-                        }
-                    }
-
                     float3 cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(pos, WorldPosition);
-                    Entity entity;
+                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition,  chunkPosition,Item.EmptyItem);
+                }
+            }
+            
+            foreach (ResourcePatch resourcePatch in ResourcePatches)
+            {
+                Item item = resourcePatch.Resource;
+                foreach (int2 position in resourcePatch.Positions)
+                {
+                    float3 cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(position, WorldPosition);
+                    
+                    var entity = item.ItemForm switch
+                    {
+                        ItemForm.Gas => ecb.Instantiate(prefabs.GasTile),
+                        ItemForm.Fluid => ecb.Instantiate(prefabs.LiquidTile),
+                        ItemForm.Solid => ecb.Instantiate(prefabs.SolidTile),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    ecb.AddComponent(entity, new TileColor()
+                    {
+                        Value = item.Color,
+                    });
+                    ecb.SetName(entity, $"Resource");
 
-                    if (itemEmpty)
-                    {
-                       entity= ecb.Instantiate(prefabs.TileVisual);
-                       ecb.SetName(entity,$"Tile");
-                    }
-                    else
-                    {
-                        entity = item.ItemForm switch
-                        {
-                            ItemForm.Gas => ecb.Instantiate(prefabs.GasTile),
-                            ItemForm.Fluid => ecb.Instantiate(prefabs.LiquidTile),
-                            ItemForm.Solid => ecb.Instantiate(prefabs.SolidTile),
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-                        ecb.AddComponent(entity, new TileColor()
-                        {
-                            Value = item.Color,
-                        });
-                        ecb.SetName(entity,$"Resource");
-                    }
 
                     ecb.SetComponent(entity, new LocalTransform()
                     {
-                        Position = cellWorldPosition+ new float3(0,0,1),
+                        Position = cellWorldPosition + new float3(0, 0, 1),
                         Scale = CellSize,
                     });
-                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition, entity,chunkPosition,item);
+                    cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,item);
                 }
             }
             

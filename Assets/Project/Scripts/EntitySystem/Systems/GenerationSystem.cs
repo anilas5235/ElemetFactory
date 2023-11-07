@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Grid;
@@ -17,7 +16,6 @@ using UnityEngine;
 namespace Project.Scripts.EntitySystem.Systems
 {
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
-    [StructLayout(LayoutKind.Auto)]
     public partial struct GenerationSystem : ISystem
     {
         public static readonly int WorldScale = 10;
@@ -26,6 +24,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public static EntityManager _entityManager;
         public static Entity worldDataEntity, prefabsEntity;
         public static ComponentLookup<WorldDataComponent> worldDataLookup;
+        public static Entity BackGround;
 
         private static System.Random _random = new System.Random();
 
@@ -55,9 +54,11 @@ namespace Project.Scripts.EntitySystem.Systems
 
         #endregion
 
-        private static int playerViewRadius = -1;
+        private static int playerViewRadius = 1, viewSize = WorldScale * ChunkDataComponent.ChunkSize * 9;
         private static int2 chunkPosWithPlayer = new int2(-1000, -1000);
         private static List<int2> LoadedChunks;
+
+        private static bool FirstUpdate = true;
 
         public void OnCreate(ref SystemState state)
         {
@@ -67,34 +68,47 @@ namespace Project.Scripts.EntitySystem.Systems
             state.RequireForUpdate<WorldDataComponent>();
             LoadedChunks = new List<int2>();
         }
-
+      
         public void OnUpdate(ref SystemState state)
         {
-            GridBuildingSystem.Work = true;
-            if (worldDataEntity == default) worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
-            if (prefabsEntity == default)
+            if (FirstUpdate)
             {
+                GridBuildingSystem.Work = true;
+                worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
                 prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
+
+                BackGround = state.EntityManager.Instantiate(state.EntityManager
+                    .GetComponentData<PrefabsDataComponent>(prefabsEntity).TileVisual);
+                state.EntityManager.SetName(BackGround, "BackGroundTile");
+                
+                worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
+
+                FirstUpdate = false;
             }
 
-            worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
-
-            try
-            {
-                worldDataLookup.GetRefRO(worldDataEntity);
-            }
-            catch (Exception e)
-            {
-                worldDataLookup.Update(ref state);
-            }
+            try { worldDataLookup.GetRefRO(worldDataEntity); }
+            catch (Exception e) { worldDataLookup.Update(ref state); }
 
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
             int2 currentPos = GetChunkPosition(playerCam.transform.position);
             int radius =
-                Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect / ChunkDataComponent.ChunkUnitSize);
+                Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect / (ChunkDataComponent.ChunkSize * WorldScale));
             if (chunkPosWithPlayer.x == currentPos.x && chunkPosWithPlayer.y == currentPos.y &&
                 playerViewRadius == radius) return;
-            chunkPosWithPlayer = new int2(currentPos.x, currentPos.y);
+            
+            chunkPosWithPlayer = currentPos.xy;
+
+            float3 backgroundPos = new float3(GetChunkWorldPosition(currentPos).xy, 2);
+
+            
+                state.EntityManager.SetComponentData(BackGround, new LocalTransform
+                {
+                    Position = backgroundPos,
+                    Scale = viewSize, });
+            
+            
+            Debug.Log($"Chunk {currentPos}, Position {backgroundPos}");
+
             playerViewRadius = radius;
 
             List<int2> chunksToLoad = new List<int2>();
@@ -116,7 +130,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
             foreach (int2 pos in chunksToUnLoad)
             {
-                ChunkDataAspect chunk = GetChunk(pos, out bool gen, ref state);
+                ChunkDataAspect chunk = TryGenerateChunk(pos, out bool gen, ref state);
                 LoadedChunks.Remove(pos);
                 if (gen) continue;
                 chunk.InView = false;
@@ -124,7 +138,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
             foreach (int2 pos in chunksToLoad)
             {
-                ChunkDataAspect chunk = GetChunk(pos, out bool gen, ref state);
+                ChunkDataAspect chunk = TryGenerateChunk(pos, out bool gen, ref state);
                 LoadedChunks.Add(pos);
                 if (gen) continue;
                 chunk.InView = true;
@@ -338,7 +352,7 @@ namespace Project.Scripts.EntitySystem.Systems
             }
         }
 
-        public static ChunkDataAspect GetChunk(int2 chunkPosition, out bool newGenerated, ref SystemState systemState)
+        public static ChunkDataAspect TryGenerateChunk(int2 chunkPosition, out bool newGenerated, ref SystemState systemState)
         {
             newGenerated = false;
             if (TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
@@ -375,8 +389,8 @@ namespace Project.Scripts.EntitySystem.Systems
         public static int2 GetChunkPosition(float3 transformPosition)
         {
             return new int2(
-                Mathf.RoundToInt(transformPosition.x / ChunkDataComponent.ChunkUnitSize),
-                Mathf.RoundToInt(transformPosition.y / ChunkDataComponent.ChunkUnitSize));
+                Mathf.RoundToInt(transformPosition.x / (ChunkDataComponent.ChunkSize * WorldScale)),
+                Mathf.RoundToInt(transformPosition.y / (ChunkDataComponent.ChunkSize * WorldScale)));
         }
     }
 }

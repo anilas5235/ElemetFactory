@@ -85,7 +85,7 @@ namespace Project.Scripts.Grid
         {
             Vector2Int chunkOffset = new Vector2Int( Mathf.FloorToInt((float)position.x / ChunkSize.x), Mathf.FloorToInt((float)position.y / ChunkSize.y));
             Vector2Int newPos = new Vector2Int(position.x - chunkOffset.x * ChunkSize.x, position.y - chunkOffset.y * ChunkSize.y);
-            return GetChunk(originChunk.ChunkPosition + chunkOffset).ChunkBuildingGrid.GetCellData(newPos);
+            return TryGenerateChunk(originChunk.ChunkPosition + chunkOffset).ChunkBuildingGrid.GetCellData(newPos);
         }
         
         public static Vector2Int GetPseudoPosition(GridChunk chunk, GridChunk myChunk, Vector2Int position)
