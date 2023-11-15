@@ -1,4 +1,5 @@
 using System;
+using Project.Scripts.EntitySystem.Aspects;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -17,7 +18,8 @@ namespace Project.Scripts.ItemSystem
         
         public Entity EntityToPushTo;
         public int InputIndex;
-        public OutputSlot( float3 position ,  Entity entityToPushTo = default, Entity slotContent = default)
+
+        public OutputSlot(float3 position, Entity entityToPushTo = default, Entity slotContent = default)
         {
             Position = position;
             EntityToPushTo = entityToPushTo;

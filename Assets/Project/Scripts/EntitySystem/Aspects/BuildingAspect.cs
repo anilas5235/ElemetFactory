@@ -2,6 +2,7 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;
@@ -28,8 +29,8 @@ namespace Project.Scripts.EntitySystem.Aspects
                 return;
             if (!ResourcesUtility.GetBuildingData(otherBuilding.MyBuildingData.buildingDataID,
                     out BuildingLookUpData otherLookUpData)) return;
-            int2 chunkDiff = ChunkDataAspect.GetChunkPositionFromWorldPosition(Transform.Position)
-                             - ChunkDataAspect.GetChunkPositionFromWorldPosition(otherBuilding.Transform.Position);
+            int2 chunkDiff = GenerationSystem.GetChunkPosition(Transform.Position)
+                             - GenerationSystem.GetChunkPosition(otherBuilding.Transform.Position);
             chunkDiff *= ChunkDataComponent.ChunkSize;
 
             TryConnectInputs(myLookUpData, otherLookUpData, otherBuilding, chunkDiff);
@@ -73,6 +74,24 @@ namespace Project.Scripts.EntitySystem.Aspects
                     otherBuilding.outputSlots.ElementAt(currentPortId).EntityToPushTo = entity;
                     otherBuilding.outputSlots.ElementAt(currentPortId).InputIndex = currentPortId;
                     break;
+                }
+            }
+
+            
+            if (MyBuildingData.buildingDataID ==1) //if conveyor
+            {
+                var sourceBuilding = GenerationSystem._entityManager.GetAspect<BuildingAspect>(inputSlots[0].EntityToPullFrom);
+                if (sourceBuilding.MyBuildingData.buildingDataID != 1)//if head of chain
+                {
+                    EntityCommandBuffer ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
+                        World.DefaultGameObjectInjectionWorld.Unmanaged);
+                    var start = new ChainPushStartPoint();
+                    ecb.AddComponent(entity, start);
+                    
+                    ecb.SetComponent(entity, new ConveyorDataComponent()
+                    {
+                        head = entity,
+                    });
                 }
             }
         }

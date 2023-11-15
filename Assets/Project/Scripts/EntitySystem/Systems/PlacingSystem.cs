@@ -101,11 +101,6 @@ namespace Project.Scripts.EntitySystem.Systems
 
             TheEntityManager.SetName(entity, data.Name);
 
-
-            EntityCommandBuffer ecb = beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
-            ecb.AddComponent(entity, new ChainPullStartPointTag());
-
             return entity;
         }
     }

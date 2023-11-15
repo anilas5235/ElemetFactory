@@ -17,7 +17,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            state.RequireForUpdate<ChainPullStartPointTag>();
+            state.RequireForUpdate<ChainPushStartPoint>();
             state.EntityManager.AddComponentData(state.SystemHandle, new TimeRateDataComponent()
             {
                 timeSinceLastTick = 0,
@@ -37,49 +37,17 @@ namespace Project.Scripts.EntitySystem.Systems
                 using var chainJobs = new NativeList<ChainJob>(Allocator.Temp);
                 EntityCommandBuffer ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-                foreach (ChainStartAspect chainStartAspect in SystemAPI.Query<ChainStartAspect>())
+
+
+                foreach (ConveyorChainHeadAspect chainStart in SystemAPI.Query<ConveyorChainHeadAspect>())
                 {
-                    if (chainStartAspect.buildingAspect.inputSlots.Length < 1 ||
-                        (chainStartAspect.buildingAspect.MyBuildingData.buildingDataID == 1 &&
-                         chainStartAspect.buildingAspect.outputSlots[0].IsConnected))
+                    new ChainJob()
                     {
-                        ecb.RemoveComponent<ChainPullStartPointTag>(chainStartAspect.entity);
-                        continue;
-                    }
-
-                    for (var index = 0; index < chainStartAspect.buildingAspect.inputSlots.Length; index++)
-                    {
-                        var inputSlot = chainStartAspect.buildingAspect.inputSlots[index];
-                        if (!inputSlot.IsConnected) continue;
-                        using NativeList<BuildingAspect> buildingChain =
-                            new NativeList<BuildingAspect>(Allocator.TempJob);
-
-                        buildingChain.Add(chainStartAspect.buildingAspect);
-                        BuildingAspect currentBuilding =
-                            SystemAPI.GetAspect<BuildingAspect>(inputSlot.EntityToPullFrom);
-                        do
-                        {
-                            buildingChain.Add(currentBuilding);
-                            if (currentBuilding.buildingDataComponent.ValueRO.BuildingData.buildingDataID != 1) break;
-                            if (!currentBuilding.inputSlots[0].IsConnected) break;
-                            currentBuilding =
-                                SystemAPI.GetAspect<BuildingAspect>(currentBuilding.inputSlots[0].EntityToPullFrom);
-                        } while (true);
-
-                        chainJobs.Add(new ChainJob()
-                        {
-                            buildingAspects = new NativeArray<BuildingAspect>(buildingChain.AsArray(),Allocator.TempJob),
-                            inputIndex = index,
-                            outputIndex = inputSlot.outputIndex,
-                        });
-                    }
+                        ECB = ecb,
+                        Chain = chainStart.chainPushStart.ValueRO.Chain,
+                        entity = chainStart.entity,
+                    }.Schedule();
                 }
-
-                foreach (ChainJob chainJob in chainJobs)
-                {
-                    chainJob.Schedule();
-                }
-                
                 rateHandel.timeSinceLastTick = 0;
             }
 
@@ -90,38 +58,46 @@ namespace Project.Scripts.EntitySystem.Systems
     [BurstCompile]
     public partial struct ChainJob : IJobEntity
     {
-        [NativeDisableContainerSafetyRestriction]
-        public NativeArray<BuildingAspect> buildingAspects;
-        public int inputIndex, outputIndex;
+        public EntityCommandBuffer ECB;
+        public Entity entity;
+        [NativeDisableContainerSafetyRestriction] public NativeArray<BuildingAspect> Chain;
 
         private void Execute()
         {
-            for (int i = 0; i < buildingAspects.Length - 1; i++)
+            if (!Chain[0].inputSlots[0].IsConnected)
             {
-                var currentBuilding = buildingAspects[i];
-                var nextBuilding = buildingAspects[i + 1];
+                ECB.RemoveComponent<ChainPushStartPoint>(entity);
+                return;
+            }
 
-                if (currentBuilding.buildingDataComponent.ValueRO.BuildingData.buildingDataID == 1)
+            for (var index = 0; index < Chain.Length; index++)
+            {
+                var currentBuilding = Chain[index];
+
+                if (index + 1 < Chain.Length)
                 {
-                    if (!currentBuilding.outputSlots[0].IsOccupied && currentBuilding.inputSlots[0].IsOccupied)
+                    var nextBuilding = Chain[index + 1];
+
+                    //push out to next Building
+                    if (currentBuilding.outputSlots[0].IsOccupied &&
+                        !nextBuilding.inputSlots[0].IsOccupied)
                     {
-                        currentBuilding.outputSlots.ElementAt(0).SlotContent = currentBuilding.inputSlots[0].SlotContent;
-                        currentBuilding.inputSlots.ElementAt(0).SlotContent = Entity.Null;
+                        nextBuilding.inputSlots.ElementAt(0).SlotContent =
+                            currentBuilding.outputSlots[0].SlotContent;
+                        currentBuilding.outputSlots.ElementAt(0).SlotContent = Entity.Null;
                     }
                 }
-                
-                if (!currentBuilding.inputSlots[inputIndex].IsOccupied &&
-                    nextBuilding.outputSlots[outputIndex].IsOccupied)
+                else
                 {
-                    currentBuilding.inputSlots.ElementAt(inputIndex).SlotContent =
-                        nextBuilding.outputSlots[outputIndex].SlotContent;
-                    nextBuilding.outputSlots.ElementAt(outputIndex).SlotContent = Entity.Null;
+                    //TODO:solve for last
                 }
 
-                if (i < buildingAspects.Length - 2)
+                //push input to output
+                if (!currentBuilding.outputSlots[0].IsOccupied && currentBuilding.inputSlots[0].IsOccupied)
                 {
-                    inputIndex = 0;
-                    outputIndex = nextBuilding.inputSlots[inputIndex].outputIndex;
+                    currentBuilding.outputSlots.ElementAt(0).SlotContent =
+                        currentBuilding.inputSlots[0].SlotContent;
+                    currentBuilding.inputSlots.ElementAt(0).SlotContent = Entity.Null;
                 }
             }
         }

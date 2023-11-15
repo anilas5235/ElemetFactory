@@ -1,9 +1,4 @@
-using System;
-using System.Linq;
-using Project.Scripts.Buildings.BuildingFoundation;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Components
 {

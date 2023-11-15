@@ -165,7 +165,7 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public static int2 GetCellPositionFormWorldPosition(float3 worldPosition, out int2 chunkPosition)
         {
-            chunkPosition = GetChunkPositionFromWorldPosition(worldPosition);
+            chunkPosition = GenerationSystem.GetChunkPosition(worldPosition);
 
             float2 cellFloatPos = worldPosition.xy - chunkPosition * ChunkUnitSize;
             
@@ -173,13 +173,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                                          Mathf.FloorToInt(cellFloatPos.y/CellSize)+HalfChunkSize);
             return cellPos;
         }
-
-        public static int2 GetChunkPositionFromWorldPosition(float3 worldPosition)
-        {
-            return new int2(Mathf.RoundToInt(worldPosition.x / ChunkUnitSize),
-                Mathf.RoundToInt(worldPosition.y / ChunkUnitSize));
-        }
-
+       
         public static bool IsValidPositionInChunk(int2 position)
         {
             return position.x >= 0 && position.x < ChunkSize &&
