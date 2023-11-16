@@ -8,15 +8,10 @@ namespace Project.Scripts.EntitySystem.Systems
     [DisableAutoCreation]
     public partial struct SeparatorSystem : ISystem
     {
-        private float timeSinceLastTick;
-        public float Rate;
-
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PrefabsDataComponent>();
-            timeSinceLastTick = 0;
-            Rate = 1;
         }
 
         /*
