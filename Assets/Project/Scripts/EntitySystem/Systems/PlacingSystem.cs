@@ -3,7 +3,6 @@ using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.Grid;
-using Project.Scripts.EntitySystem.Components.Tags;
 using Project.Scripts.Utilities;
 using Unity.Burst;
 using Unity.Entities;
@@ -97,8 +96,6 @@ namespace Project.Scripts.EntitySystem.Systems
 
                     break;
             }
-
-            if (buildingData.buildingDataID != 1)TheEntityManager.AddComponent<BuildingWithPushPullTag>(entity);
 
             TheEntityManager.SetComponentData(entity, new BuildingDataComponent(buildingData));
 

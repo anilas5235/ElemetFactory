@@ -1,11 +1,6 @@
-using System;
 using System.Linq;
-using Project.Scripts.Grid;
 using Unity.Collections;
-using Unity.Entities;
 using Unity.Mathematics;
-using UnityEditor;
-using UnityEngine;
 
 namespace Project.Scripts.ItemSystem
 {

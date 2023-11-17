@@ -5,6 +5,6 @@ namespace Project.Scripts.EntitySystem.Buffer
 {
     public struct ConveyorChainDataPoint : IBufferElementData
     {
-        public ConveyorAspect ConveyorAspect;
+        public Entity ConveyorEntity;
     }
 }

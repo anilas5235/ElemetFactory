@@ -13,15 +13,21 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct ItemMoveSystem : ISystem
     {
         private SystemHandle chainSystemHandle;
+        private static bool firstUpdate = true;
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<ItemDataComponent>();
-            chainSystemHandle = state.World.GetExistingSystem<ChainConveyorSystem>();
+            state.RequireForUpdate<ChainConveyorSystem>();
         }
-        
-        [BurstCompile]
+      
         public void OnUpdate(ref SystemState state)
         {
+            if (firstUpdate)
+            {
+                chainSystemHandle = state.World.GetExistingSystem<ChainConveyorSystem>();
+                firstUpdate = false;
+            }
+
             new ItemMoveJob()
             {
                 deltaTime = SystemAPI.Time.DeltaTime,
@@ -30,6 +36,7 @@ namespace Project.Scripts.EntitySystem.Systems
         }
     }
     
+    [BurstCompile]
     public partial struct ItemMoveJob : IJobEntity
     {
         public float deltaTime;
@@ -41,7 +48,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
             itemEntityAspect.dataComponent.ValueRW.Progress += deltaTime * conveyorSpeed;
 
-            if (itemEntityAspect.dataComponent.ValueRO.Progress > .95f)
+            if (itemEntityAspect.dataComponent.ValueRO.Progress > .98f)
             {
                 itemEntityAspect.dataComponent.ValueRW.Arrived = true;
                 itemEntityAspect.transform.ValueRW.Position = itemEntityAspect.dataComponent.ValueRO.DestinationPos;

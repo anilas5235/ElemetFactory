@@ -1,53 +1,65 @@
-using System.Collections.Generic;
-using System.Linq;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
-using Project.Scripts.EntitySystem.Components.Tags;
 using Project.Scripts.ItemSystem;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
     [UpdateInGroup(typeof(VariableRateSimulationSystemGroup),OrderFirst = true)]
     public partial struct ChainConveyorSystem : ISystem
     {
+        private EntityQuery otherBuildingsQuery;
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            state.RequireForUpdate<DynamicBuffer<ConveyorChainDataPoint>>();
+            state.RequireForUpdate<BuildingDataComponent>();
             state.EntityManager.AddComponentData(state.SystemHandle, new TimeRateDataComponent()
             {
                 timeSinceLastTick = 0,
                 Rate = 1f
             });
+            
+            otherBuildingsQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<BuildingDataComponent>()
+                .WithAbsent<ConveyorDataComponent>()
+                .Build(ref state);
         }
-
-        [BurstCompile]
+        
         public void OnUpdate(ref SystemState state)
         {
             var rateHandel = SystemAPI.GetComponent<TimeRateDataComponent>(state.SystemHandle);
             rateHandel.timeSinceLastTick += SystemAPI.Time.DeltaTime;
             if (rateHandel.timeSinceLastTick >= 1f / rateHandel.Rate)
             {
-                var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+                var ecbs = state.World.GetExistingSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
+                var ecb = ecbs.CreateCommandBuffer().AsParallelWriter();
 
-                using var chainJobs = new NativeList<ChainJob>(Allocator.Temp);
-                EntityCommandBuffer ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
-                
-                var dependency = new ChainJob().ScheduleParallel(new JobHandle());
-
-                var dependency2 = new PushPullJob()
+                new ChainJob()
                 {
-                    entityManager = state.EntityManager,
-                }.ScheduleParallel(dependency);
-                
+                    inputsLookup = SystemAPI.GetBufferLookup<InputSlot>(),
+                    outputsLookup = SystemAPI.GetBufferLookup<OutputSlot>(),
+                    itemStates = SystemAPI.GetComponentLookup<ItemEntityStateDataComponent>(),
+                    ECB = ecb,
+                }.ScheduleParallel(new JobHandle()).Complete();
+
+                var dep = new PushPullJob()
+                {
+                    inputsLookup = SystemAPI.GetBufferLookup<InputSlot>(),
+                    outputsLookup = SystemAPI.GetBufferLookup<OutputSlot>(),
+                    itemStates = SystemAPI.GetComponentLookup<ItemEntityStateDataComponent>(),
+                    ECB = ecb,
+                }.ScheduleParallel(otherBuildingsQuery, new JobHandle());
+
+                ecbs.AddJobHandleForProducer(dep);
+
                 rateHandel.timeSinceLastTick = 0;
             }
 
@@ -58,37 +70,52 @@ namespace Project.Scripts.EntitySystem.Systems
     [BurstCompile]
     public partial struct ChainJob : IJobEntity
     {
-        //[NativeDisableContainerSafetyRestriction]
-        private void Execute(ConveyorChainDataAspect conveyorChainDataAspect)
+        [NativeDisableContainerSafetyRestriction] public BufferLookup<InputSlot> inputsLookup;
+        [NativeDisableContainerSafetyRestriction] public BufferLookup<OutputSlot> outputsLookup;
+        [NativeDisableContainerSafetyRestriction] public ComponentLookup<ItemEntityStateDataComponent> itemStates;
+        public EntityCommandBuffer.ParallelWriter ECB;
+        
+        private void Execute([ChunkIndexInQuery]int index,DynamicBuffer<ConveyorChainDataPoint> chain)
         {
-            var chain = conveyorChainDataAspect.ConveyorChainData;
-
-            for (var index = 0; index < chain.Length; index++)
+            for (var linkIndex = chain.Length - 1; linkIndex >= 0; linkIndex--)
             {
-                var currentBuilding = chain[index].ConveyorAspect;
-
-                if (index + 1 < chain.Length)
-                {
-                    var nextBuilding = chain[index + 1].ConveyorAspect;
-
-                    //push out to next Building
-                    if (currentBuilding.outputSlots[0].IsOccupied &&
-                        !nextBuilding.inputSlots[0].IsOccupied)
-                    {
-                        nextBuilding.inputSlots.ElementAt(0).SlotContent =
-                            currentBuilding.outputSlots[0].SlotContent;
-                        currentBuilding.outputSlots.ElementAt(0).SlotContent = Entity.Null;
-                    }
-                }
+                Entity currentBuilding = chain[linkIndex].ConveyorEntity;
+                DynamicBuffer<InputSlot> currentInput = inputsLookup[currentBuilding];
+                DynamicBuffer<OutputSlot> currentOutput = outputsLookup[currentBuilding];
 
                 //push input to output
-                if (!currentBuilding.outputSlots[0].IsOccupied && currentBuilding.inputSlots[0].IsOccupied)
+                if (!currentOutput[0].IsOccupied && currentInput[0].IsOccupied)
                 {
-                    currentBuilding.outputSlots.ElementAt(0).SlotContent =
-                        currentBuilding.inputSlots[0].SlotContent;
-                    currentBuilding.inputSlots.ElementAt(0).SlotContent = Entity.Null;
+                    currentOutput.ElementAt(0).SlotContent = currentInput[0].SlotContent;
+                    currentInput.ElementAt(0).SlotContent = Entity.Null;
+                    UpdateItemState(index,currentOutput[0].SlotContent,currentOutput[0].Position,itemStates,ECB);
+                }
+                
+                if (linkIndex >0)
+                {
+                    Entity nextBuilding = chain[linkIndex - 1].ConveyorEntity;
+                    DynamicBuffer<OutputSlot> nextOutput = outputsLookup[nextBuilding];
+
+                    //pull form next link
+                    if (!currentInput[0].IsOccupied && nextOutput[0].IsOccupied)
+                    {
+                        currentInput.ElementAt(0).SlotContent = nextOutput[0].SlotContent;
+                        nextOutput.ElementAt(0).SlotContent = Entity.Null;
+                        UpdateItemState(index,currentInput[0].SlotContent,currentInput[0].Position,itemStates,ECB);
+                    }
                 }
             }
+        }
+        
+        public static void UpdateItemState(int index,Entity itemEntity, float3 destination,
+            ComponentLookup<ItemEntityStateDataComponent> itemStates, EntityCommandBuffer.ParallelWriter ECB)
+        {
+            var itemState = itemStates[itemEntity];
+            itemState.PreviousPos = itemState.DestinationPos;
+            itemState.DestinationPos = destination;
+            itemState.Progress = 0;
+            itemState.Arrived = false;
+            ECB.SetComponent(index, itemEntity, itemState);
         }
     }
 
@@ -96,40 +123,51 @@ namespace Project.Scripts.EntitySystem.Systems
     [BurstCompile]
     public partial struct PushPullJob: IJobEntity
     {
-        public EntityManager entityManager;
-        private void Execute(BuildingAspect buildingAspect,BuildingWithPushPullTag tag)
+        [NativeDisableContainerSafetyRestriction] public BufferLookup<InputSlot> inputsLookup;
+        [NativeDisableContainerSafetyRestriction] public BufferLookup<OutputSlot> outputsLookup;
+        [NativeDisableContainerSafetyRestriction] public ComponentLookup<ItemEntityStateDataComponent> itemStates;
+        public EntityCommandBuffer.ParallelWriter ECB;
+
+        private void Execute([ChunkIndexInQuery] int index, Entity entity)
         {
-            for (var inputIndex = 0; inputIndex < buildingAspect.inputSlots.Length; inputIndex++)
+            DynamicBuffer<InputSlot> currentBuildingInputs = inputsLookup[entity];
+            DynamicBuffer<OutputSlot> currentBuildingOutputs = outputsLookup[entity];
+
+            for (var inputIndex = 0; inputIndex < currentBuildingInputs.Length; inputIndex++)
             {
-                var inputSlot = buildingAspect.inputSlots[inputIndex];
-                var currentBuilding = buildingAspect;
+                var inputSlot = currentBuildingInputs[inputIndex];
+
                 if (!inputSlot.IsConnected || inputSlot.IsOccupied) continue;
 
-                var nextBuilding = entityManager.GetAspect<BuildingAspect>(inputSlot.EntityToPullFrom);
+                var nextOutBuffer = outputsLookup[inputSlot.EntityToPullFrom];
 
                 //push out to next Building
-                if (!nextBuilding.outputSlots[inputSlot.outputIndex].IsOccupied)
+                if (!nextOutBuffer[inputSlot.outputIndex].IsOccupied)
                 {
-                    currentBuilding.inputSlots.ElementAt(inputIndex).SlotContent =
-                        nextBuilding.outputSlots[inputSlot.outputIndex].SlotContent;
-                    nextBuilding.outputSlots.ElementAt(inputSlot.outputIndex).SlotContent = Entity.Null;
+                    currentBuildingInputs.ElementAt(inputIndex).SlotContent =
+                        nextOutBuffer[inputSlot.outputIndex].SlotContent;
+                    nextOutBuffer.ElementAt(inputSlot.outputIndex).SlotContent = Entity.Null;
+                    ChainJob.UpdateItemState(index, currentBuildingInputs[inputIndex].SlotContent,
+                        currentBuildingInputs[inputIndex].Position, itemStates, ECB);
                 }
             }
 
-            for (int outputIndex = 0; outputIndex < buildingAspect.outputSlots.Length; outputIndex++)
+            for (int outputIndex = 0; outputIndex < currentBuildingOutputs.Length; outputIndex++)
             {
-                var outputSlot = buildingAspect.outputSlots[outputIndex];
-                var currentBuilding = buildingAspect;
+                var outputSlot = currentBuildingOutputs[outputIndex];
+
                 if (!outputSlot.IsConnected || !outputSlot.IsOccupied) continue;
 
-                var nextBuilding = entityManager.GetAspect<BuildingAspect>(outputSlot.EntityToPushTo);
+                var nextInBuffer = inputsLookup[outputSlot.EntityToPushTo];
 
                 //push out to next Building
-                if (!nextBuilding.inputSlots[outputSlot.InputIndex].IsOccupied)
+                if (!nextInBuffer[outputSlot.InputIndex].IsOccupied)
                 {
-                    nextBuilding.inputSlots.ElementAt(outputSlot.InputIndex).SlotContent =
-                        currentBuilding.outputSlots[outputIndex].SlotContent;
-                    currentBuilding.outputSlots.ElementAt(outputIndex).SlotContent = Entity.Null;
+                    nextInBuffer.ElementAt(outputSlot.InputIndex).SlotContent =
+                        currentBuildingOutputs[outputIndex].SlotContent;
+                    currentBuildingOutputs.ElementAt(outputIndex).SlotContent = Entity.Null;
+                    ChainJob.UpdateItemState(index, nextInBuffer[outputSlot.InputIndex].SlotContent,
+                        nextInBuffer[outputSlot.InputIndex].Position, itemStates, ECB);
                 }
             }
         }

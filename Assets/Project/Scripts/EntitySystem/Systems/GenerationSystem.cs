@@ -18,7 +18,8 @@ namespace Project.Scripts.EntitySystem.Systems
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public partial struct GenerationSystem : ISystem
     {
-        public static readonly int WorldScale = 10;
+        public const int WorldScale = 10;
+        public const int ChunkSize = 16;
 
         public static GenerationSystem Instance;
         public static EntityManager _entityManager;
@@ -54,7 +55,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
         #endregion
 
-        private static int playerViewRadius = 1, viewSize = WorldScale * ChunkDataComponent.ChunkSize * 9;
+        private static int playerViewRadius = 1, viewSize = WorldScale * ChunkSize * 9;
         private static int2 chunkPosWithPlayer = new int2(-1000, -1000);
         private static List<int2> LoadedChunks;
 

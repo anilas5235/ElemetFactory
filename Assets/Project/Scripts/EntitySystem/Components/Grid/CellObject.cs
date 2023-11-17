@@ -6,7 +6,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 {
     public struct CellObject
     {
-        public CellObject(int2 position,float3 worldPosition, int2 chunkPosition, Item resource)
+        public CellObject(int2 position,float3 worldPosition, int2 chunkPosition, ItemSystem.Item resource)
         {
             Position = position;
             ChunkPosition = chunkPosition;
@@ -21,7 +21,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         
         public Entity Building;
         public bool IsOccupied => Building != default;
-        public Item Resource;
+        public ItemSystem.Item Resource;
 
         public bool DeleteBuilding()
         {

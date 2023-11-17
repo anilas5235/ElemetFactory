@@ -14,7 +14,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 {
     public struct ChunkDataComponent : IComponentData
     {
-        public static readonly int ChunkSize = 16;
+        public static int ChunkSize => GenerationSystem.ChunkSize;
         public static int CellSize => GenerationSystem.WorldScale;
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
         public static int HalfChunkSize => ChunkSize/2;
