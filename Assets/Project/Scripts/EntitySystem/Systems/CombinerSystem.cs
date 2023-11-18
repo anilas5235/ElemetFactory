@@ -1,3 +1,4 @@
+using System.Linq;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
@@ -106,6 +107,8 @@ namespace Project.Scripts.EntitySystem.Systems
                
                ECB.DestroyEntity(index,buildingAspect.inputSlots[0].SlotContent);
                ECB.DestroyEntity(index,buildingAspect.inputSlots[1].SlotContent);
+               buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
+               buildingAspect.inputSlots.ElementAt(1).SlotContent = default;
                
                ECB.AddComponent(index, buildingAspect.entity, new NewItemRefHandelDataComponent()
                {

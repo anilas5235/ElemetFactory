@@ -71,13 +71,13 @@ namespace Project.Scripts.EntitySystem.Systems
         private int changes;
         private bool firstConnected, lastConnected;
         
-        private void Execute([ChunkIndexInQuery]int index,Entity entity,DynamicBuffer<ConveyorChainDataPoint> chain, ConveyorChainDataComponent chainDataComponent)
+        private void Execute([ChunkIndexInQuery]int index,Entity entity,DynamicBuffer<EntityRefBufferElement> chain, ConveyorChainDataComponent chainDataComponent)
         {
             if(chainDataComponent.Sleep) return;
             
             for (var linkIndex = chain.Length - 1; linkIndex >= 0; linkIndex--)
             {
-                Entity currentBuilding = chain[linkIndex].ConveyorEntity;
+                Entity currentBuilding = chain[linkIndex].Entity;
                 DynamicBuffer<InputSlot> currentInput = inputsLookup[currentBuilding];
                 DynamicBuffer<OutputSlot> currentOutput = outputsLookup[currentBuilding];
 
@@ -112,7 +112,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
                 if (linkIndex > 0)
                 {
-                    Entity nextBuilding = chain[linkIndex - 1].ConveyorEntity;
+                    Entity nextBuilding = chain[linkIndex - 1].Entity;
                     DynamicBuffer<OutputSlot> nextOutput = outputsLookup[nextBuilding];
                     //pull form next link
                     if (!currentInput[0].IsOccupied && nextOutput[0].IsOccupied)

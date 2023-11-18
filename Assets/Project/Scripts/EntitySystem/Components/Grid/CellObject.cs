@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Components.Grid
 {
-    public struct CellObject
+    public struct CellObject : IBufferElementData
     {
         public CellObject(int2 position,float3 worldPosition, int2 chunkPosition, ItemSystem.Item resource)
         {

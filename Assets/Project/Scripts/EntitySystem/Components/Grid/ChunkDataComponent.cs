@@ -1,5 +1,6 @@
 using System;
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
@@ -18,13 +19,12 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public static int CellSize => GenerationSystem.WorldScale;
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
         public static int HalfChunkSize => ChunkSize/2;
-        public ChunkDataComponent(int2 chunkPosition, float3 worldPosition,
+        public ChunkDataComponent(Entity entity,int2 chunkPosition, float3 worldPosition,
             PrefabsDataComponent prefabs,ResourcePatch[] resourcePatches, EntityCommandBuffer ecb)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
             ResourcePatches = new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent);
-            Buildings = new NativeList<Entity>(0, Allocator.Persistent);
 
             var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.TempJob);
             
@@ -45,21 +45,21 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                 {
                     float3 cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(position, WorldPosition);
                     
-                    var entity = item.ItemForm switch
+                    var itemEntity = item.ItemForm switch
                     {
                         ItemForm.Gas => ecb.Instantiate(prefabs.GasTile),
                         ItemForm.Fluid => ecb.Instantiate(prefabs.LiquidTile),
                         ItemForm.Solid => ecb.Instantiate(prefabs.SolidTile),
                         _ => throw new ArgumentOutOfRangeException()
                     };
-                    ecb.AddComponent(entity, new TileColor()
+                    ecb.AddComponent(itemEntity, new TileColor()
                     {
                         Value = item.Color,
                     });
-                    ecb.SetName(entity, $"Resource");
+                    ecb.SetName(itemEntity, $"Resource");
 
 
-                    ecb.SetComponent(entity, new LocalTransform()
+                    ecb.SetComponent(itemEntity, new LocalTransform()
                     {
                         Position = cellWorldPosition + new float3(0, 0, 1),
                         Scale = CellSize,
@@ -67,14 +67,13 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                     cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,item);
                 }
             }
-            
-            CellObjects = new NativeArray<CellObject>(cellObjects, Allocator.Persistent);
+
+            var buffer = ecb.AddBuffer<CellObject>(entity);
+            buffer.AddRange(cellObjects);
             cellObjects.Dispose();
+            ecb.AddBuffer<EntityRefBufferElement>(entity);
             InView = true;
         }
-
-        public NativeArray<CellObject> CellObjects;
-        public NativeList<Entity> Buildings;
         public NativeArray<ResourcePatch> ResourcePatches { get; }
         public int2 ChunkPosition { get; }
         public float3 WorldPosition { get; }

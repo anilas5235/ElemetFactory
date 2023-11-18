@@ -156,7 +156,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 Scale = WorldScale,
             });
             ResourcePatch[] patches = GenerateResources();
-            _entityManager.AddComponentData(entity, new ChunkDataComponent(chunkPosition, worldPos,
+            _entityManager.AddComponentData(entity, new ChunkDataComponent(entity,chunkPosition, worldPos,
                 SystemAPI.GetSingleton<PrefabsDataComponent>(), patches, ecb));
             ecb.Playback(_entityManager);
             ecb.Dispose();

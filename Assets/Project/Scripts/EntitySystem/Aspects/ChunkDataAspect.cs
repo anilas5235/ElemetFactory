@@ -16,6 +16,10 @@ namespace Project.Scripts.EntitySystem.Aspects
     public readonly partial struct ChunkDataAspect : IAspect
     {
         private readonly RefRW<ChunkDataComponent> _chunkData;
+
+        private readonly DynamicBuffer<CellObject> _cellObjects;
+
+        private readonly DynamicBuffer<EntityRefBufferElement> _buildings;
         private static int ChunkSize => ChunkDataComponent.ChunkSize;
         private static int HalfChunkSize => ChunkDataComponent.HalfChunkSize;
         private static int CellSize => GenerationSystem.WorldScale;
@@ -33,7 +37,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         public CellObject GetCell(int2 position,int2 chunkPosition)
         {
            return IsValidPositionInChunk(position) ?
-               _chunkData.ValueRO.CellObjects[GetAryIndex(position)]:
+               _cellObjects[GetAryIndex(position)]:
                GetCellFormPseudoPosition(position,chunkPosition);
         }
 
@@ -70,7 +74,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
 
-            var originCell = _chunkData.ValueRO.CellObjects[GetAryIndex(cellPosition)];
+            var originCell =  _cellObjects[GetAryIndex(cellPosition)];
             Entity entity = PlacingSystem.CreateBuildingEntity(originCell, placedBuildingData);
             
             BuildingAspect myBuildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
@@ -92,18 +96,18 @@ namespace Project.Scripts.EntitySystem.Aspects
             {
                 //set port Positions
                 int2[] inputOffsets = data.GetInputOffsets(facingDirection);
-                float relativeOffset = (buildingID == 1 ? .25f : .5f);
+                float2 relativeOffset = new float2(1,buildingID == 1 ? .25f : .5f);
                 float zOffset = 0;
                 for (int i = 0; i < myBuildingAspect.inputSlots.Length; i++)
                 {
-                    float2 portOffset = (float2)inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    float2 portOffset = inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
                     myBuildingAspect.inputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
                 }
 
                 int2[] outputOffsets = data.GetOutputOffsets(facingDirection);
                 for (int i = 0; i < myBuildingAspect.outputSlots.Length; i++)
                 {
-                    float2 portOffset = (float2)outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    float2 portOffset = outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
                     myBuildingAspect.outputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
                 }
                 
@@ -119,13 +123,18 @@ namespace Project.Scripts.EntitySystem.Aspects
                         GenerationSystem._entityManager.GetAspect<BuildingAspect>(cell.Building);
 
                     if (aspects.Contains(otherBuildingAspect)) continue;
-                    myBuildingAspect.TryToConnectBuildings(otherBuildingAspect, myBuildingAspect.MyBuildingData.origin+direction);
+                    myBuildingAspect.TryToConnectBuildings(otherBuildingAspect, direction);
                     aspects.Add(otherBuildingAspect);
                 }
                 
                 if(buildingID ==1) HandelConveyors(GenerationSystem._entityManager.GetAspect<ConveyorAspect>(entity));
             }
 
+            _buildings.Add(new EntityRefBufferElement()
+            {
+                Entity = entity,
+            });
+            
             return true;
         }
         
@@ -147,10 +156,10 @@ namespace Project.Scripts.EntitySystem.Aspects
                     GenerationSystem._entityManager.GetAspect<ConveyorAspect>(inputSlots[0].EntityToPullFrom);
                 head = sourceBuilding.conveyorDataComponent.ValueRO.head;
 
-                var buffer = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
-                buffer.Add(new ConveyorChainDataPoint()
+                var buffer = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
+                buffer.Add(new EntityRefBufferElement()
                 {
-                    ConveyorEntity = entity,
+                    Entity = entity,
                 });
 
                 ecb.SetComponent(entity, new ConveyorDataComponent()
@@ -169,19 +178,19 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (head != default)
                 {
                     //Connect two chains
-                    var bufferA = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
+                    var bufferA = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
                     Entity head2 = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var bufferB = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head2);
+                    var bufferB = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head2);
                     head = CreateChainHead(ecb, bufferA, bufferB,
-                        out DynamicBuffer<ConveyorChainDataPoint> newChain);
+                        out DynamicBuffer<EntityRefBufferElement> newChain);
 
                     ecb.DestroyEntity(head);
                     ecb.DestroyEntity(head2);
 
-                    foreach (ConveyorChainDataPoint chainLink in newChain)
+                    foreach (EntityRefBufferElement chainLink in newChain)
                     {
 
-                        ecb.SetComponent(chainLink.ConveyorEntity,
+                        ecb.SetComponent(chainLink.Entity,
                             new ConveyorDataComponent()
                             {
                                 head = head,
@@ -191,10 +200,10 @@ namespace Project.Scripts.EntitySystem.Aspects
                 else
                 {
                     head = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var buffer = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
-                    buffer.Insert(0, new ConveyorChainDataPoint()
+                    var buffer = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
+                    buffer.Insert(0, new EntityRefBufferElement()
                     {
-                        ConveyorEntity = entity,
+                        Entity = entity,
                     });
                     ecb.SetComponent(entity, new ConveyorDataComponent()
                     {
@@ -206,9 +215,9 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (head == default)
             {
                 head = CreateChainHead(ecb, out var buffer);
-                buffer.Add(new ConveyorChainDataPoint()
+                buffer.Add(new EntityRefBufferElement()
                 {
-                    ConveyorEntity = entity,
+                    Entity = entity,
                 });
                 ecb.SetComponent(entity, new ConveyorDataComponent()
                 {
@@ -217,8 +226,8 @@ namespace Project.Scripts.EntitySystem.Aspects
             }
         }
         public static Entity CreateChainHead(EntityCommandBuffer ecb,
-            DynamicBuffer<ConveyorChainDataPoint>chainA,DynamicBuffer<ConveyorChainDataPoint> chainB,
-            out DynamicBuffer<ConveyorChainDataPoint> buffer)
+            DynamicBuffer<EntityRefBufferElement>chainA,DynamicBuffer<EntityRefBufferElement> chainB,
+            out DynamicBuffer<EntityRefBufferElement> buffer)
         {
             var entity = CreateChainHead(ecb, out buffer);
             buffer.AddRange(chainA.AsNativeArray());
@@ -226,10 +235,10 @@ namespace Project.Scripts.EntitySystem.Aspects
             return entity;
         }
         public static Entity CreateChainHead(EntityCommandBuffer ecb,
-            out DynamicBuffer<ConveyorChainDataPoint> buffer)
+            out DynamicBuffer<EntityRefBufferElement> buffer)
         {
             var entity = ecb.CreateEntity();
-            buffer = ecb.AddBuffer<ConveyorChainDataPoint>(entity);
+            buffer = ecb.AddBuffer<EntityRefBufferElement>(entity);
             ecb.AddComponent(entity,new ConveyorChainDataComponent());
             ecb.SetName(entity,"ChainHead");
             return entity;
@@ -238,29 +247,17 @@ namespace Project.Scripts.EntitySystem.Aspects
         public bool BlockCell(int2 cellPosition, Entity entity)
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
-            ref var cellObjs = ref _chunkData.ValueRW.CellObjects;
             int index = GetAryIndex(cellPosition);
-            var ob = cellObjs[index];
-            ob.PlaceBuilding(entity);
-            cellObjs[index] = ob;
+            _cellObjects.ElementAt(index).PlaceBuilding(entity);
             return true;
         }
         
         public bool FreeCell(int2 cellPosition)
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
-            ref var cellObjs = ref _chunkData.ValueRW.CellObjects;
             int index = GetAryIndex(cellPosition);
-            CellObject ob = cellObjs[index];
-            ob.DeleteBuilding();
-            cellObjs[index] = ob;
+            _cellObjects.ElementAt(index).DeleteBuilding();
             return true;
-        }
-
-        public static int2 GetPseudoPosition(int2 myChunkPosition, int2 otherChunkPosition, int2 position)
-        {
-            int2 chunkOffset = otherChunkPosition - myChunkPosition;
-            return position + chunkOffset * ChunkSize;
         }
 
         public static int GetAryIndex(int2 position)
@@ -298,7 +295,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 World.DefaultGameObjectInjectionWorld.Unmanaged);
 
             Entity entity = GetCell(cellPosition, ChunksPosition).Building;
-            if (entity == default) return false;
+            if (entity == default|| entity == Entity.Null) return false;
 
             var offsets = ResourcesUtility.GetGridPositionList(
                 GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(entity).BuildingData);
@@ -307,7 +304,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             foreach (int2 posOffset in offsets)
             {
                 int2 position = posOffset + cellPosition;
-                if (IsValidPositionInChunk(position)) FreeCell(cellPosition);
+                if (IsValidPositionInChunk(position)) FreeCell(position);
                 else
                 {
                     if (GenerationSystem.TryGetChunk(
@@ -366,8 +363,14 @@ namespace Project.Scripts.EntitySystem.Aspects
                     .GetComponentData<ConveyorDataComponent>(buildingAspect.entity).head);
                 headAspect.RemoveConveyor(buildingAspect.entity);
             }
-            
-            
+
+            for (var index = 0; index < _buildings.Length; index++)
+            {
+                if (_buildings[index].Entity != entity) continue;
+                _buildings.RemoveAt(index);
+                break;
+            }
+
             ecb.DestroyEntity(entity);
             return true;
         }

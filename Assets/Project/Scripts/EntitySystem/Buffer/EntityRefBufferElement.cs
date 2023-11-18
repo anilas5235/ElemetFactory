@@ -3,8 +3,8 @@ using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Buffer
 {
-    public struct ConveyorChainDataPoint : IBufferElementData
+    public struct EntityRefBufferElement : IBufferElementData
     {
-        public Entity ConveyorEntity;
+        public Entity Entity;
     }
 }

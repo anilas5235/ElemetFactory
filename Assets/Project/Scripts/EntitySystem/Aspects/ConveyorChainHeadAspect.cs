@@ -10,29 +10,29 @@ namespace Project.Scripts.EntitySystem.Aspects
     public readonly partial struct ConveyorChainHeadAspect : IAspect
     {
         public readonly Entity Entity;
-        public readonly DynamicBuffer<ConveyorChainDataPoint> ChainBuffer;
+        public readonly DynamicBuffer<EntityRefBufferElement> ChainBuffer;
         public readonly RefRW<ConveyorChainDataComponent> chainDataComponent;
 
         public void RemoveConveyor(Entity conveyorEntity)
         {
-            using var firstChain = new NativeList<ConveyorChainDataPoint>(Allocator.Temp);
-            using var secondChain = new NativeList<ConveyorChainDataPoint>(Allocator.Temp);
+            using var firstChain = new NativeList<EntityRefBufferElement>(Allocator.Temp);
+            using var secondChain = new NativeList<EntityRefBufferElement>(Allocator.Temp);
             bool forFirst = true;
             for (int i = 0; i < ChainBuffer.Length; i++)
             {
-                var entity = ChainBuffer[i].ConveyorEntity;
+                var entity = ChainBuffer[i].Entity;
                 if (entity == conveyorEntity)
                 {
                     forFirst = false;
                     continue;
                 }
-                if(forFirst) firstChain.Add(new ConveyorChainDataPoint()
+                if(forFirst) firstChain.Add(new EntityRefBufferElement()
                 {
-                    ConveyorEntity = entity
+                    Entity = entity
                 });
-                else secondChain.Add(new ConveyorChainDataPoint()
+                else secondChain.Add(new EntityRefBufferElement()
                 {
-                    ConveyorEntity = entity
+                    Entity = entity
                 });
             }
             
@@ -43,9 +43,9 @@ namespace Project.Scripts.EntitySystem.Aspects
             {
                 var headEntity = ChunkDataAspect.CreateChainHead(ecb, out var buffer);
                 buffer.AddRange(firstChain);
-                foreach (ConveyorChainDataPoint conveyor in buffer)
+                foreach (EntityRefBufferElement conveyor in buffer)
                 {
-                    ecb.SetComponent(conveyor.ConveyorEntity, new ConveyorDataComponent()
+                    ecb.SetComponent(conveyor.Entity, new ConveyorDataComponent()
                     {
                         head = headEntity,
                     });
@@ -56,9 +56,9 @@ namespace Project.Scripts.EntitySystem.Aspects
             {
                 var headEntity = ChunkDataAspect.CreateChainHead(ecb, out var buffer);
                 buffer.AddRange(secondChain);
-                foreach (ConveyorChainDataPoint conveyor in buffer)
+                foreach (EntityRefBufferElement conveyor in buffer)
                 {
-                    ecb.SetComponent(conveyor.ConveyorEntity, new ConveyorDataComponent()
+                    ecb.SetComponent(conveyor.Entity, new ConveyorDataComponent()
                     {
                         head = headEntity,
                     });
