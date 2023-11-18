@@ -94,41 +94,22 @@ namespace Project.Scripts.Buildings.BuildingFoundation
             return -90 * directionID;
         }
 
-        public static bool DoYouPointAtMe(FacingDirection facingDirectionOfTarget, Vector2Int realtivPositionOfTarget)
+        public static bool DoYouPointAtMe(FacingDirection facingDirectionOfTarget, Vector2Int relativePositionOfTarget)
         {
-            if (realtivPositionOfTarget is { x: 0, y: > 0 } && facingDirectionOfTarget == FacingDirection.Down) return true;
-            if (realtivPositionOfTarget is { x: 0, y: < 0 } && facingDirectionOfTarget == FacingDirection.Up) return true;
-            if (realtivPositionOfTarget is { x: > 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Left) return true;
-            if (realtivPositionOfTarget is { x: < 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Right) return true;
+            if (relativePositionOfTarget is { x: 0, y: > 0 } && facingDirectionOfTarget == FacingDirection.Down) return true;
+            if (relativePositionOfTarget is { x: 0, y: < 0 } && facingDirectionOfTarget == FacingDirection.Up) return true;
+            if (relativePositionOfTarget is { x: > 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Left) return true;
+            if (relativePositionOfTarget is { x: < 0, y: 0 } && facingDirectionOfTarget == FacingDirection.Right) return true;
             return false;
         }
-
-        public static bool VectorToFacingDirection(Vector2 vector2, out FacingDirection facingDirection)
+        
+        public static bool DoYouPointAtMe(int facingDirectionOfTargetID, Vector2Int relativePositionOfTarget)
         {
-            facingDirection = FacingDirection.Up;
-            if (vector2 == Vector2.up)
-            {
-                return true;
-            }
-            if (vector2 == Vector2.right)
-            {
-                facingDirection = FacingDirection.Right;
-                return true;
-            }
-            if (vector2 == Vector2.down)
-            {
-                facingDirection = FacingDirection.Down;
-                return true;
-            }
-
-            if (vector2 != Vector2.left) return false;
-            
-            facingDirection = FacingDirection.Left;
-            return true;
+            return DoYouPointAtMe((FacingDirection)facingDirectionOfTargetID, relativePositionOfTarget);
         }
-        public static bool DoYouPointAtMe(int facingDirectionOfTargetID, Vector2Int realtivPositionOfTarget)
+        public static bool DoYouPointAtMe(int facingDirectionOfTargetID, int2 relativePositionOfTarget)
         {
-            return DoYouPointAtMe((FacingDirection)facingDirectionOfTargetID, realtivPositionOfTarget);
+            return DoYouPointAtMe((FacingDirection)facingDirectionOfTargetID, new Vector2Int(relativePositionOfTarget.x,relativePositionOfTarget.y));
         }
     }
 }

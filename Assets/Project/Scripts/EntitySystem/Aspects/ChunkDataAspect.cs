@@ -119,7 +119,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                         GenerationSystem._entityManager.GetAspect<BuildingAspect>(cell.Building);
 
                     if (aspects.Contains(otherBuildingAspect)) continue;
-                    myBuildingAspect.TryToConnectBuildings(otherBuildingAspect);
+                    myBuildingAspect.TryToConnectBuildings(otherBuildingAspect, myBuildingAspect.MyBuildingData.origin+direction);
                     aspects.Add(otherBuildingAspect);
                 }
                 
@@ -293,6 +293,9 @@ namespace Project.Scripts.EntitySystem.Aspects
         public bool TryToDeleteBuilding(int2 cellPosition)
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
+            
+            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
+                World.DefaultGameObjectInjectionWorld.Unmanaged);
 
             Entity entity = GetCell(cellPosition, ChunksPosition).Building;
             if (entity == default) return false;
@@ -319,6 +322,10 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             for (int i = 0; i < buildingAspect.inputSlots.Length; i++)
             {
+                if (buildingAspect.inputSlots[i].IsOccupied)
+                {
+                    ecb.DestroyEntity(buildingAspect.inputSlots[i].SlotContent);
+                }
                 if(!buildingAspect.inputSlots[i].IsConnected)continue;
 
                 var otherBuildingAspect =
@@ -334,6 +341,10 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             for (int i = 0; i < buildingAspect.outputSlots.Length; i++)
             {
+                if (buildingAspect.outputSlots[i].IsOccupied)
+                {
+                    ecb.DestroyEntity(buildingAspect.outputSlots[i].SlotContent);
+                }
                 if(!buildingAspect.outputSlots[i].IsConnected)continue;
                 var otherBuildingAspect =
                     GenerationSystem._entityManager.GetAspect<BuildingAspect>(buildingAspect.outputSlots[i]
@@ -347,8 +358,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             }
 
             //destroy Building entity
-            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            
 
             if (buildingAspect.MyBuildingData.buildingDataID == 1)
             {

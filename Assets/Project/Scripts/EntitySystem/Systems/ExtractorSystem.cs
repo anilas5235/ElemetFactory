@@ -4,12 +4,15 @@ using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.ItemSystem;
+using Project.Scripts.Utilities;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
@@ -18,8 +21,8 @@ namespace Project.Scripts.EntitySystem.Systems
     [BurstCompile]
     public partial struct ExtractorSystem : ISystem
     {
-        public NativeArray<Entity> prefabsEntities;
-
+        private NativeArray<Entity> prefabsEntities;
+        
         private static bool firstUpdate = true;
         
         [BurstCompile]
@@ -54,12 +57,14 @@ namespace Project.Scripts.EntitySystem.Systems
                 var ecbSingleton =state.World.GetExistingSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
                 
                 var ecb = ecbSingleton.CreateCommandBuffer().AsParallelWriter();
+
+                using var prefabs = new NativeArray<Entity>(prefabsEntities,Allocator.TempJob);
                 
                 var dep = new ExtractorWork()
                 {
                     ECB = ecb,
                     WorldScale = GenerationSystem.WorldScale,
-                    prefabsEntities = prefabsEntities,
+                    prefabsEntities = prefabs,
                 }.ScheduleParallel(new JobHandle());
                 
                 ecbSingleton.AddJobHandleForProducer(dep);
@@ -75,7 +80,7 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct ExtractorWork : IJobEntity
     {
         public EntityCommandBuffer.ParallelWriter ECB;
-        public NativeArray<Entity> prefabsEntities;
+        [NativeDisableContainerSafetyRestriction] public NativeArray<Entity> prefabsEntities;
         public int WorldScale;
 
         private void Execute([ChunkIndexInQuery] int index, ExtractorAspect extractorAspect)
@@ -92,7 +97,7 @@ namespace Project.Scripts.EntitySystem.Systems
             }
 
             var itemEntity = CreateItemEntity(index, extractorAspect.outputSlots[0],
-                extractorAspect.ItemDataAspect.ResourceDataPoints, extractorAspect.ItemDataAspect.ItemForm,
+                itemResources, extractorAspect.ItemDataAspect.ItemForm,
                 extractorAspect.ItemDataAspect.ItemColor, ECB, prefabsEntities, WorldScale);
 
             ECB.AddComponent(index, extractorAspect.entity, new NewItemRefHandelDataComponent()
@@ -102,7 +107,36 @@ namespace Project.Scripts.EntitySystem.Systems
             });
         }
 
-        public static Entity CreateItemEntity(int index, OutputSlot outputSlot, DynamicBuffer<ResourceDataPoint> resourceDataPoints,
+        public static Entity CreateItemEntity(int index, OutputSlot outputSlot,
+            NativeArray<ResourceDataPoint> resourceDataPointsA, NativeArray<ResourceDataPoint> resourceDataPointsB
+            , EntityCommandBuffer.ParallelWriter ECB, NativeArray<Entity> prefabs,
+            int worldScale, NativeArray<ResourceLookUpData> resourceLookUpData)
+        {
+            using var itemBuffer = new NativeList<ResourceDataPoint>(Allocator.TempJob);
+            itemBuffer.AddRange(resourceDataPointsA);
+            itemBuffer.AddRange(resourceDataPointsB);
+
+
+            float4 color = float4.zero;
+            float form = 0;
+            foreach (var id in itemBuffer)
+            {
+                ResourceLookUpData lookUpData = resourceLookUpData[(int)id.id];
+                color += new float4(lookUpData.color.r, lookUpData.color.g, lookUpData.color.b, 0);
+                form += (int)lookUpData.form;
+            }
+
+            color *= 1f / itemBuffer.Length;
+            color.w = 1f;
+            form *= 1f / itemBuffer.Length;
+            form = Mathf.RoundToInt(form);
+
+            return CreateItemEntity(index, outputSlot, itemBuffer, (ItemForm)form,
+                color, ECB, prefabs, worldScale);
+        }
+
+
+        public static Entity CreateItemEntity(int index, OutputSlot outputSlot, NativeArray<ResourceDataPoint> resourceDataPoints,
           ItemForm itemForm, float4 itemColor  ,EntityCommandBuffer.ParallelWriter ECB, NativeArray<Entity> prefabs, int worldScale)
         {
 
@@ -123,8 +157,8 @@ namespace Project.Scripts.EntitySystem.Systems
 
 
             DynamicBuffer<ResourceDataPoint> bufferResource = ECB.SetBuffer<ResourceDataPoint>(index, itemEntity);
-
-            bufferResource.AddRange(resourceDataPoints.AsNativeArray());
+          
+            bufferResource.AddRange(resourceDataPoints);
 
             ECB.SetComponent(index, itemEntity, new LocalTransform()
             {

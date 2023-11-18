@@ -10,6 +10,7 @@ using Project.Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Aspects
 {
@@ -25,7 +26,7 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         #region Connect
 
-        public void TryToConnectBuildings(BuildingAspect otherBuilding)
+        public void TryToConnectBuildings(BuildingAspect otherBuilding, int2 otherBuildingRelativePosition)
         {
             if (!ResourcesUtility.GetBuildingData(MyBuildingData.buildingDataID, out BuildingLookUpData myLookUpData))
                 return;
@@ -60,6 +61,11 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             foreach (PortInstantData myInputPortInstantData in myInputPortInfoList)
             {
+                if (otherBuilding.MyBuildingData.buildingDataID == 1)
+                {
+                    if(PlacedBuildingUtility.DoYouPointAtMe(otherBuilding.MyBuildingData.directionID,
+                   myLookUpData.GetBodyOffset(myInputPortInstantData.bodyPartID,MyBuildingData.directionID) ))continue;
+                }
                 byte currentInputPortID = myInputPortInstantData.portID;
                 if (inputSlots[currentInputPortID].IsConnected) continue;
 
@@ -79,7 +85,7 @@ namespace Project.Scripts.EntitySystem.Aspects
 
                     if (myInputPortInfoList[currentInputPortID].direction !=
                         PlacedBuildingUtility.GetOppositeDirection(otherOutputPortInstantData.direction)) continue;
-
+                    
                     inputSlots.ElementAt(currentInputPortID).EntityToPullFrom = otherBuilding.entity;
                     inputSlots.ElementAt(currentInputPortID).outputIndex = currentPortId;
 

@@ -25,7 +25,7 @@ namespace Project.Scripts.Utilities
             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
         };
         
-        private static readonly ResourceLookUpData[] ResourceDataBank = new[]
+        public static readonly ResourceLookUpData[] ResourceDataBank = new[]
         {
             new ResourceLookUpData(ResourceType.None,new Color(.7f,.7f,.7f),ItemForm.Solid),
             new ResourceLookUpData(ResourceType.H,new Color(.1f,.8f,1f), ItemForm.Gas),
@@ -37,8 +37,6 @@ namespace Project.Scripts.Utilities
             new ResourceLookUpData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
             new ResourceLookUpData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
         };
-        
-        [BurstDiscard]
         public static void SetUpBuildingData(PrefabsDataComponent ComponentData)
         {
             Entity[] entities = new[]
@@ -188,6 +186,11 @@ namespace Project.Scripts.Utilities
                     PlacedBuildingUtility.FacingDirectionToVector(outputPortData[i].direction) +
                     neededTiles[outputPortData[i].bodyPartID]);
             }
+        }
+
+        public int2 GetBodyOffset(byte bodyID,byte directionID)
+        {
+            return neededTileOffsets[bodyID].GetPortDirection(directionID);
         }
 
         #region InputInfos
