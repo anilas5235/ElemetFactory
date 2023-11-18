@@ -2,6 +2,7 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
@@ -37,8 +38,16 @@ namespace Project.Scripts.EntitySystem.Aspects
             TryConnectInputs(myLookUpData, otherLookUpData, otherBuilding, chunkDiff);
 
             TryConnectOutputs(myLookUpData, otherLookUpData, otherBuilding, chunkDiff);
-            
-            if (MyBuildingData.buildingDataID == 1)HandelConveyors();
+
+            if (otherBuilding.MyBuildingData.buildingDataID == 1)
+            {
+                var conv = GenerationSystem._entityManager.GetAspect<ConveyorAspect>(otherBuilding.entity);
+                GenerationSystem._entityManager.SetComponentData(conv.conveyorDataComponent.ValueRO.head,
+                    new ConveyorChainDataComponent()
+                    {
+                        Sleep = false,
+                    });
+            }
         }
 
         private void TryConnectInputs(BuildingLookUpData myLookUpData, BuildingLookUpData otherLookUpData,
@@ -78,87 +87,6 @@ namespace Project.Scripts.EntitySystem.Aspects
                     otherBuilding.outputSlots.ElementAt(currentPortId).InputIndex = currentPortId;
                     break;
                 }
-            }
-        }
-
-        private void HandelConveyors()
-        {
-            EntityCommandBuffer ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
-
-            Entity head = default;
-
-            if (inputSlots[0].IsConnected && GenerationSystem._entityManager
-                    .GetComponentData<BuildingDataComponent>(inputSlots[0].EntityToPullFrom)
-                    .BuildingData.buildingDataID == 1)
-            {
-                var sourceBuilding =
-                    GenerationSystem._entityManager.GetAspect<ConveyorAspect>(inputSlots[0].EntityToPullFrom);
-                head = sourceBuilding.conveyorDataComponent.ValueRO.head;
-
-                var buffer = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
-                buffer.Add(new ConveyorChainDataPoint()
-                {
-                    ConveyorEntity = entity,
-                });
-
-                ecb.SetComponent(entity, new ConveyorDataComponent()
-                {
-                    head = head,
-                });
-            }
-
-            if (outputSlots[0].IsConnected && GenerationSystem._entityManager
-                    .GetComponentData<BuildingDataComponent>(outputSlots[0].EntityToPushTo)
-                    .BuildingData.buildingDataID == 1)
-            {
-                var destinationBuilding =
-                    GenerationSystem._entityManager.GetAspect<ConveyorAspect>(outputSlots[0].EntityToPushTo);
-
-                if (head != default)
-                {
-                    //Connect two chains
-                    var bufferA = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
-                    Entity head2 = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var bufferB = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head2);
-                    head = CreateChainHead(ecb, bufferA, bufferB,
-                        out DynamicBuffer<ConveyorChainDataPoint> newChain);
-
-                    ecb.DestroyEntity(head);
-                    ecb.DestroyEntity(head2);
-
-                    foreach (ConveyorChainDataPoint chainLink in newChain)
-                    {
-
-                        GenerationSystem._entityManager.SetComponentData(chainLink.ConveyorEntity,
-                            new ConveyorDataComponent()
-                            {
-                                head = head,
-                            });
-                    }
-                }
-                else
-                {
-                    head = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var buffer = GenerationSystem._entityManager.GetBuffer<ConveyorChainDataPoint>(head);
-                    buffer.Insert(0, new ConveyorChainDataPoint()
-                    {
-                        ConveyorEntity = entity,
-                    });
-                    ecb.SetComponent(entity, new ConveyorDataComponent()
-                    {
-                        head = head,
-                    });
-                }
-            }
-
-            if (head == default)
-            {
-                CreateChainHead(ecb, out var buffer);
-                buffer.Add(new ConveyorChainDataPoint()
-                {
-                    ConveyorEntity = entity,
-                });
             }
         }
 
@@ -219,25 +147,5 @@ namespace Project.Scripts.EntitySystem.Aspects
         }
 
         #endregion
-
-        private static Entity CreateChainHead(EntityCommandBuffer ecb,
-            DynamicBuffer<ConveyorChainDataPoint>chainA,DynamicBuffer<ConveyorChainDataPoint> chainB,
-            out DynamicBuffer<ConveyorChainDataPoint> buffer)
-        {
-           var entity = ecb.CreateEntity();
-           buffer = ecb.AddBuffer<ConveyorChainDataPoint>(entity);
-           buffer.AddRange(chainA.AsNativeArray());
-           buffer.AddRange(chainB.AsNativeArray());
-           ecb.SetName(entity,"ChainHead");
-           return entity;
-        }
-        private static Entity CreateChainHead(EntityCommandBuffer ecb,
-            out DynamicBuffer<ConveyorChainDataPoint> buffer)
-        {
-            var entity = ecb.CreateEntity();
-            buffer = ecb.AddBuffer<ConveyorChainDataPoint>(entity);
-            ecb.SetName(entity,"ChainHead");
-            return entity;
-        }
     }
 }

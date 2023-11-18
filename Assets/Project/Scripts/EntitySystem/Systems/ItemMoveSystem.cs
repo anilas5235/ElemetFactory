@@ -16,8 +16,7 @@ namespace Project.Scripts.EntitySystem.Systems
         private static bool firstUpdate = true;
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<ItemDataComponent>();
-            state.RequireForUpdate<ChainConveyorSystem>();
+            state.RequireForUpdate<ItemEntityStateDataComponent>();
         }
       
         public void OnUpdate(ref SystemState state)
