@@ -19,19 +19,21 @@ namespace Project.Scripts.EntitySystem.Systems
         private NativeArray<Entity> prefabsEntities;
         
         private static bool firstUpdate = true;
+        private static EndVariableRateSimulationEntityCommandBufferSystem _endVariableECBSys;
         
-        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<CombinerDataComponent>();
+            _endVariableECBSys =
+                state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
             state.EntityManager.AddComponentData(state.SystemHandle, new TimeRateDataComponent()
             {
                 timeSinceLastTick = 0,
                 Rate = .25f
             });
         }
-      
+        
         public void OnUpdate(ref SystemState state)
         {
             if (firstUpdate)
@@ -50,9 +52,7 @@ namespace Project.Scripts.EntitySystem.Systems
             rateHandel.timeSinceLastTick += SystemAPI.Time.DeltaTime;
             if (rateHandel.timeSinceLastTick >= 1f / rateHandel.Rate)
             {
-                var ecbSingleton =state.World.GetExistingSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
-                
-                var ecb = ecbSingleton.CreateCommandBuffer().AsParallelWriter();
+                var ecb = _endVariableECBSys.CreateCommandBuffer().AsParallelWriter();
                 
                 using var prefabs = new NativeArray<Entity>(prefabsEntities,Allocator.TempJob);
 
@@ -68,7 +68,7 @@ namespace Project.Scripts.EntitySystem.Systems
                     resourceBufferLookup = SystemAPI.GetBufferLookup<ResourceDataPoint>(),
                 }.ScheduleParallel(new JobHandle());
                 
-                ecbSingleton.AddJobHandleForProducer(dep);
+                _endVariableECBSys.AddJobHandleForProducer(dep);
                 
                 rateHandel.timeSinceLastTick = 0;
             }
@@ -98,24 +98,17 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             if (buildingAspect.outputSlots[0].IsOccupied) return;
 
-            if (buildingAspect.inputSlots[0].IsOccupied && buildingAspect.inputSlots[1].IsOccupied)
-            {
-               var itemEntity =  ExtractorWork.CreateItemEntity(index, buildingAspect.outputSlots[0],
-                    resourceBufferLookup[buildingAspect.inputSlots[0].SlotContent].AsNativeArray(),
-                    resourceBufferLookup[buildingAspect.inputSlots[1].SlotContent].AsNativeArray(),
-                    ECB,prefabsEntities,WorldScale,resourceLookUpData);
+            if (!buildingAspect.inputSlots[0].IsOccupied || !buildingAspect.inputSlots[1].IsOccupied) return;
+            
+            ItemEntityUtility.CombineItemEntities(index,buildingAspect.entity ,buildingAspect.outputSlots[0],
+                resourceBufferLookup[buildingAspect.inputSlots[0].SlotContent].AsNativeArray(),
+                resourceBufferLookup[buildingAspect.inputSlots[1].SlotContent].AsNativeArray(),
+                ECB,prefabsEntities,WorldScale,resourceLookUpData);
                
-               ECB.DestroyEntity(index,buildingAspect.inputSlots[0].SlotContent);
-               ECB.DestroyEntity(index,buildingAspect.inputSlots[1].SlotContent);
-               buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
-               buildingAspect.inputSlots.ElementAt(1).SlotContent = default;
-               
-               ECB.AddComponent(index, buildingAspect.entity, new NewItemRefHandelDataComponent()
-               {
-                   entity = itemEntity,
-                   SlotNumber = 0,
-               });
-            }
+            ECB.DestroyEntity(index,buildingAspect.inputSlots[0].SlotContent);
+            ECB.DestroyEntity(index,buildingAspect.inputSlots[1].SlotContent);
+            buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
+            buildingAspect.inputSlots.ElementAt(1).SlotContent = default;
         }
     }
 }

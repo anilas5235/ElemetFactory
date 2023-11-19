@@ -18,13 +18,6 @@ namespace Project.Scripts.ItemSystem
         
         public Entity EntityToPushTo;
         public int InputIndex;
-
-        public OutputSlot(float3 position, Entity entityToPushTo = default, Entity slotContent = default)
-        {
-            Position = position;
-            EntityToPushTo = entityToPushTo;
-            SlotContent = slotContent;
-            InputIndex = 0;
-        }
+        public int OwnIndex;
     }
 }

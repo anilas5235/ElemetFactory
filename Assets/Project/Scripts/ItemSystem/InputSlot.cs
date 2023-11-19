@@ -17,13 +17,6 @@ namespace Project.Scripts.ItemSystem
         
         public Entity EntityToPullFrom;
         public int outputIndex;
-
-        public InputSlot(float3 position, Entity entityToPullFrom = default, Entity slotContent = default)
-        {
-            Position = position;
-            EntityToPullFrom = entityToPullFrom;
-            SlotContent = slotContent;
-            outputIndex = 0;
-        }
+        public int ownIndex;
     }
 }

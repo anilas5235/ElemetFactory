@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
@@ -96,12 +97,27 @@ namespace Project.Scripts.EntitySystem.Aspects
             {
                 //set port Positions
                 int2[] inputOffsets = data.GetInputOffsets(facingDirection);
-                float2 relativeOffset = new float2(1,buildingID == 1 ? .25f : .5f);
+                float2 relativeOffset;
+                switch (facingDirection)
+                {
+                    case FacingDirection.Up:
+                    case FacingDirection.Down:
+                        relativeOffset = new float2(1f,buildingID == 1 ? .25f : .5f);
+                        break;
+                    case FacingDirection.Right:
+                    case FacingDirection.Left:
+                        relativeOffset = new float2(buildingID == 1 ? .25f : .5f,1f);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null);
+                }
+                
                 float zOffset = 0;
                 for (int i = 0; i < myBuildingAspect.inputSlots.Length; i++)
                 {
                     float2 portOffset = inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
                     myBuildingAspect.inputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
+                    myBuildingAspect.inputSlots.ElementAt(i).ownIndex = i;
                 }
 
                 int2[] outputOffsets = data.GetOutputOffsets(facingDirection);
@@ -109,6 +125,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 {
                     float2 portOffset = outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
                     myBuildingAspect.outputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
+                    myBuildingAspect.outputSlots.ElementAt(i).OwnIndex = i;
                 }
                 
                 //connect with neighbours 

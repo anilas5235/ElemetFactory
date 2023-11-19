@@ -1,80 +1,112 @@
+using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.Utilities;
 using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Jobs;
 
 
 namespace Project.Scripts.EntitySystem.Systems
 {
-    [DisableAutoCreation]
+    [UpdateInGroup(typeof(VariableRateSimulationSystemGroup))]
+    [UpdateAfter(typeof(ChainConveyorSystem))]
+    [BurstCompile]
     public partial struct SeparatorSystem : ISystem
     {
-        [BurstCompile]
+        private NativeArray<Entity> prefabsEntities;
+        
+        private static bool firstUpdate = true;
+        private static EndVariableRateSimulationEntityCommandBufferSystem _endVariableECBSys;
+        
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<SeparatorDataComponent>();
+            _endVariableECBSys =
+                state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
+            state.EntityManager.AddComponentData(state.SystemHandle, new TimeRateDataComponent()
+            {
+                timeSinceLastTick = 0,
+                Rate = .25f
+            });
         }
-
-        /*
-        [BurstCompile]
+        
         public void OnUpdate(ref SystemState state)
         {
-            timeSinceLastTick += Time.deltaTime;
-            if (timeSinceLastTick < 1f / Rate) return;
-            timeSinceLastTick = 0;
-            
-            EntityQuery separatorQuery = SystemAPI.QueryBuilder().WithAll<SeparatorDataComponent>().Build();
-            if (separatorQuery.IsEmpty)
+            if (firstUpdate)
             {
-                separatorQuery.Dispose();
-                return;
-            }
-            
-            PrefabsDataComponent prefabs = SystemAPI.GetSingleton<PrefabsDataComponent>();
-            
-            EntityCommandBuffer ecb = new EntityCommandBuffer( Allocator.Temp);
-
-            NativeArray<Entity> entities = separatorQuery.ToEntityArray(Allocator.Temp);
-
-            foreach (Entity entity in entities)
-            {
-                SeparatorAspect separatorData = SystemAPI.GetAspect<SeparatorAspect>(entity);
-
-
-                OutputSlot outputSlot0 = separatorData.OutputSlot0;
-                OutputSlot outputSlot1 = separatorData.OutputSlot1;
-                if (!separatorData.Input.IsOccupied || outputSlot0.IsOccupied || outputSlot1.IsOccupied) return;
-
-                Item itemA = SystemAPI.GetAspect<ItemEntityAspect>(separatorData.ItemEntityInInput).Item;
-                
-                int itemLength = itemA.ResourceIDs.Length;
-                int item1Length = Mathf.CeilToInt(itemLength / 2f), item2Length = itemLength - item1Length;
-
-                NativeArray<uint> contentItem1 = new (item1Length,Allocator.TempJob), contentItem2 = new (item2Length,Allocator.TempJob);
-                for (int i = 0; i < itemLength; i++)
+                var prefabs = SystemAPI.GetSingleton<PrefabsDataComponent>();
+                prefabsEntities = new NativeArray<Entity>(new[]
                 {
-                    if (i < item1Length) contentItem1[i] = itemA.ResourceIDs[i];
-                    else contentItem2[i - item1Length] = itemA.ResourceIDs[i];
-                }
-                
-                ecb.DestroyEntity(separatorData.ItemEntityInInput);
-                separatorData.ItemEntityInInput = default;
-
-                outputSlot0.SlotContent = ItemEntityAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem1), ecb, outputSlot0.Position, prefabs);
-                separatorData.OutputSlot0 = outputSlot0;
-
-                
-                outputSlot1.SlotContent = ItemEntityAspect.CreateItemEntity(ResourcesUtility.CreateItemData(contentItem2), ecb, outputSlot1.Position, prefabs);
-                separatorData.OutputSlot1 = outputSlot1;
-
-                contentItem1.Dispose();
-                contentItem2.Dispose();
+                    prefabs.ItemGas,
+                    prefabs.ItemLiquid,
+                    prefabs.ItemSolid
+                }, Allocator.Persistent);
+                firstUpdate = false;
             }
             
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
-            entities.Dispose();
-            separatorQuery.Dispose();
+            var rateHandel = SystemAPI.GetComponent<TimeRateDataComponent>(state.SystemHandle);
+            rateHandel.timeSinceLastTick += SystemAPI.Time.DeltaTime;
+            if (rateHandel.timeSinceLastTick >= 1f / rateHandel.Rate)
+            {
+                var ecb = _endVariableECBSys.CreateCommandBuffer().AsParallelWriter();
+                
+                using var prefabs = new NativeArray<Entity>(prefabsEntities,Allocator.TempJob);
+
+                using var resourceLookUp =
+                    new NativeArray<ResourceLookUpData>(ResourcesUtility.ResourceDataBank, Allocator.TempJob);
+                
+                var dep = new SeparatorWork()
+                {
+                    ECB = ecb,
+                    WorldScale = GenerationSystem.WorldScale,
+                    prefabsEntities = prefabs,
+                    resourceLookUpData = resourceLookUp,
+                    resourceBufferLookup = SystemAPI.GetBufferLookup<ResourceDataPoint>(),
+                }.ScheduleParallel(new JobHandle());
+                
+                _endVariableECBSys.AddJobHandleForProducer(dep);
+                
+                rateHandel.timeSinceLastTick = 0;
+            }
+            
+            SystemAPI.SetComponent(state.SystemHandle,rateHandel);
         }
-        */
+    }
+    
+    [BurstCompile]
+    public partial struct SeparatorWork : IJobEntity
+    {
+        public EntityCommandBuffer.ParallelWriter ECB;
+
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<Entity> prefabsEntities;
+
+        [NativeDisableContainerSafetyRestriction]
+        public BufferLookup<ResourceDataPoint> resourceBufferLookup;
+
+        [NativeDisableContainerSafetyRestriction]
+        public NativeArray<ResourceLookUpData> resourceLookUpData;
+
+        public int WorldScale;
+
+        private void Execute([ChunkIndexInQuery] int index, BuildingAspect buildingAspect,
+            SeparatorDataComponent separatorDataComponent)
+        {
+            if (buildingAspect.outputSlots[0].IsOccupied || buildingAspect.outputSlots[1].IsOccupied) return;
+
+            if (!buildingAspect.inputSlots[0].IsOccupied) return;
+            
+            ItemEntityUtility.SplitItemEntity(index, buildingAspect.entity, buildingAspect.outputSlots[0],
+                buildingAspect.outputSlots[1],
+                resourceBufferLookup[buildingAspect.inputSlots[0].SlotContent].AsNativeArray(),
+                ECB, prefabsEntities, WorldScale, resourceLookUpData, out var A, out var B);
+
+            ECB.DestroyEntity(index, buildingAspect.inputSlots[0].SlotContent);
+            buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
+        }
     }
 }

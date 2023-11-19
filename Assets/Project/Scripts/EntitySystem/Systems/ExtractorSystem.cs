@@ -24,12 +24,13 @@ namespace Project.Scripts.EntitySystem.Systems
         private NativeArray<Entity> prefabsEntities;
         
         private static bool firstUpdate = true;
-        
-        [BurstCompile]
+        private static EndVariableRateSimulationEntityCommandBufferSystem _endVariableECBSys;
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<ExtractorDataComponent>();
+            _endVariableECBSys =
+                state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
             state.EntityManager.AddComponentData(state.SystemHandle, new TimeRateDataComponent()
             {
                 timeSinceLastTick = 0,
@@ -54,9 +55,7 @@ namespace Project.Scripts.EntitySystem.Systems
             rateHandel.timeSinceLastTick += SystemAPI.Time.DeltaTime;
             if (rateHandel.timeSinceLastTick >= 1f / rateHandel.Rate)
             {
-                var ecbSingleton =state.World.GetExistingSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
-                
-                var ecb = ecbSingleton.CreateCommandBuffer().AsParallelWriter();
+                var ecb = _endVariableECBSys.CreateCommandBuffer().AsParallelWriter();
 
                 using var prefabs = new NativeArray<Entity>(prefabsEntities,Allocator.TempJob);
                 
@@ -67,7 +66,7 @@ namespace Project.Scripts.EntitySystem.Systems
                     prefabsEntities = prefabs,
                 }.ScheduleParallel(new JobHandle());
                 
-                ecbSingleton.AddJobHandleForProducer(dep);
+                _endVariableECBSys.AddJobHandleForProducer(dep);
                 
                 rateHandel.timeSinceLastTick = 0;
             }
@@ -96,89 +95,9 @@ namespace Project.Scripts.EntitySystem.Systems
                 return;
             }
 
-            var itemEntity = CreateItemEntity(index, extractorAspect.outputSlots[0],
+            ItemEntityUtility.CreateItemEntity(index,extractorAspect.entity ,extractorAspect.outputSlots[0],
                 itemResources, extractorAspect.ItemDataAspect.ItemForm,
                 extractorAspect.ItemDataAspect.ItemColor, ECB, prefabsEntities, WorldScale);
-
-            ECB.AddComponent(index, extractorAspect.entity, new NewItemRefHandelDataComponent()
-            {
-                entity = itemEntity,
-                SlotNumber = 0,
-            });
-        }
-
-        public static Entity CreateItemEntity(int index, OutputSlot outputSlot,
-            NativeArray<ResourceDataPoint> resourceDataPointsA, NativeArray<ResourceDataPoint> resourceDataPointsB
-            , EntityCommandBuffer.ParallelWriter ECB, NativeArray<Entity> prefabs,
-            int worldScale, NativeArray<ResourceLookUpData> resourceLookUpData)
-        {
-            using var itemBuffer = new NativeList<ResourceDataPoint>(Allocator.TempJob);
-            itemBuffer.AddRange(resourceDataPointsA);
-            itemBuffer.AddRange(resourceDataPointsB);
-
-
-            float4 color = float4.zero;
-            float form = 0;
-            foreach (var id in itemBuffer)
-            {
-                ResourceLookUpData lookUpData = resourceLookUpData[(int)id.id];
-                color += new float4(lookUpData.color.r, lookUpData.color.g, lookUpData.color.b, 0);
-                form += (int)lookUpData.form;
-            }
-
-            color *= 1f / itemBuffer.Length;
-            color.w = 1f;
-            form *= 1f / itemBuffer.Length;
-            form = Mathf.RoundToInt(form);
-
-            return CreateItemEntity(index, outputSlot, itemBuffer, (ItemForm)form,
-                color, ECB, prefabs, worldScale);
-        }
-
-
-        public static Entity CreateItemEntity(int index, OutputSlot outputSlot, NativeArray<ResourceDataPoint> resourceDataPoints,
-          ItemForm itemForm, float4 itemColor  ,EntityCommandBuffer.ParallelWriter ECB, NativeArray<Entity> prefabs, int worldScale)
-        {
-
-            var itemEntity = itemForm switch
-            {
-                ItemForm.Gas => ECB.Instantiate(index, prefabs[0]),
-                ItemForm.Fluid => ECB.Instantiate(index, prefabs[1]),
-                ItemForm.Solid => ECB.Instantiate(index, prefabs[2]),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
-            ECB.SetComponent(index, itemEntity, new ItemEntityStateDataComponent()
-            {
-                Arrived = true,
-                DestinationPos = outputSlot.Position,
-                PreviousPos = outputSlot.Position,
-            });
-
-
-            DynamicBuffer<ResourceDataPoint> bufferResource = ECB.SetBuffer<ResourceDataPoint>(index, itemEntity);
-          
-            bufferResource.AddRange(resourceDataPoints);
-
-            ECB.SetComponent(index, itemEntity, new LocalTransform()
-            {
-                Position = outputSlot.Position,
-                Scale = worldScale * .7f,
-            });
-
-            ECB.SetComponent(index, itemEntity, new ItemColor()
-            {
-                Value = itemColor,
-            });
-
-            ECB.SetComponent(index, itemEntity, new ItemDataComponent()
-            {
-                itemForm = itemForm,
-                itemColor = itemColor,
-            });
-
-            ECB.SetName(index, itemEntity, "Item");
-            return itemEntity;
         }
     }
 }
