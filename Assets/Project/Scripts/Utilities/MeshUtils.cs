@@ -40,7 +40,7 @@ namespace Project.Scripts.Utilities
 			int rot = Mathf.RoundToInt(rotFloat);
 			rot = rot % 360;
 			if (rot < 0) rot += 360;
-			//if (rot >= 360) rot -= 360;
+			if (rot >= 360) rot -= 360;
 			if (cachedQuaternionEulerArr == null) CacheQuaternionEuler();
 			return cachedQuaternionEulerArr[rot];
 		}
