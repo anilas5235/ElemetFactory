@@ -42,8 +42,8 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             if (otherBuilding.MyBuildingData.buildingDataID == 1)
             {
-                var conv = GenerationSystem._entityManager.GetAspect<ConveyorAspect>(otherBuilding.entity);
-                GenerationSystem._entityManager.SetComponentData(conv.conveyorDataComponent.ValueRO.head,
+                var conv = GenerationSystem.entityManager.GetAspect<ConveyorAspect>(otherBuilding.entity);
+                GenerationSystem.entityManager.SetComponentData(conv.conveyorDataComponent.ValueRO.head,
                     new ConveyorChainDataComponent()
                     {
                         Sleep = false,

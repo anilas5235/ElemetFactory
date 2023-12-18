@@ -25,7 +25,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
         public int2 Position { get; }
         
-        public ChunkDataAspect Chunk => GenerationSystem._entityManager.GetAspect<ChunkDataAspect>(ChunkEntity);
+        public ChunkDataAspect Chunk => GenerationSystem.entityManager.GetAspect<ChunkDataAspect>(ChunkEntity);
         
         public Entity ChunkEntity { get; }
     }

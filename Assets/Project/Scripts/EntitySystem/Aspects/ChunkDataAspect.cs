@@ -78,7 +78,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             var originCell =  _cellObjects[GetAryIndex(cellPosition)];
             Entity entity = PlacingSystem.CreateBuildingEntity(originCell, placedBuildingData);
             
-            BuildingAspect myBuildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
+            BuildingAspect myBuildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(entity);
             
             foreach (int2 posOffset in offsets)
             {
@@ -137,14 +137,14 @@ namespace Project.Scripts.EntitySystem.Aspects
                     if (!cell.IsOccupied) continue;
 
                     BuildingAspect otherBuildingAspect =
-                        GenerationSystem._entityManager.GetAspect<BuildingAspect>(cell.Building);
+                        GenerationSystem.entityManager.GetAspect<BuildingAspect>(cell.Building);
 
                     if (aspects.Contains(otherBuildingAspect)) continue;
                     myBuildingAspect.TryToConnectBuildings(otherBuildingAspect, direction);
                     aspects.Add(otherBuildingAspect);
                 }
                 
-                if(buildingID ==1) HandelConveyors(GenerationSystem._entityManager.GetAspect<ConveyorAspect>(entity));
+                if(buildingID ==1) HandelConveyors(GenerationSystem.entityManager.GetAspect<ConveyorAspect>(entity));
             }
 
             _buildings.Add(new EntityRefBufferElement()
@@ -165,15 +165,15 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             Entity head = default;
 
-            if (inputSlots[0].IsConnected && GenerationSystem._entityManager
+            if (inputSlots[0].IsConnected && GenerationSystem.entityManager
                     .GetComponentData<BuildingDataComponent>(inputSlots[0].EntityToPullFrom)
                     .BuildingData.buildingDataID == 1)
             {
                 var sourceBuilding =
-                    GenerationSystem._entityManager.GetAspect<ConveyorAspect>(inputSlots[0].EntityToPullFrom);
+                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(inputSlots[0].EntityToPullFrom);
                 head = sourceBuilding.conveyorDataComponent.ValueRO.head;
 
-                var buffer = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
+                var buffer = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head);
                 buffer.Add(new EntityRefBufferElement()
                 {
                     Entity = entity,
@@ -185,19 +185,19 @@ namespace Project.Scripts.EntitySystem.Aspects
                 });
             }
 
-            if (outputSlots[0].IsConnected && GenerationSystem._entityManager
+            if (outputSlots[0].IsConnected && GenerationSystem.entityManager
                     .GetComponentData<BuildingDataComponent>(outputSlots[0].EntityToPushTo)
                     .BuildingData.buildingDataID == 1)
             {
                 var destinationBuilding =
-                    GenerationSystem._entityManager.GetAspect<ConveyorAspect>(outputSlots[0].EntityToPushTo);
+                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(outputSlots[0].EntityToPushTo);
 
                 if (head != default)
                 {
                     //Connect two chains
-                    var bufferA = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
+                    var bufferA = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head);
                     Entity head2 = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var bufferB = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head2);
+                    var bufferB = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head2);
                     head = CreateChainHead(ecb, bufferA, bufferB,
                         out DynamicBuffer<EntityRefBufferElement> newChain);
 
@@ -217,7 +217,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 else
                 {
                     head = destinationBuilding.conveyorDataComponent.ValueRO.head;
-                    var buffer = GenerationSystem._entityManager.GetBuffer<EntityRefBufferElement>(head);
+                    var buffer = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head);
                     buffer.Insert(0, new EntityRefBufferElement()
                     {
                         Entity = entity,
@@ -315,7 +315,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (entity == default|| entity == Entity.Null) return false;
 
             var offsets = ResourcesUtility.GetGridPositionList(
-                GenerationSystem._entityManager.GetComponentData<BuildingDataComponent>(entity).BuildingData);
+                GenerationSystem.entityManager.GetComponentData<BuildingDataComponent>(entity).BuildingData);
             
             //free previously blocked cells
             foreach (int2 posOffset in offsets)
@@ -332,7 +332,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             }
 
             //disconnect Building
-            var buildingAspect = GenerationSystem._entityManager.GetAspect<BuildingAspect>(entity);
+            var buildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(entity);
 
             for (int i = 0; i < buildingAspect.inputSlots.Length; i++)
             {
@@ -343,7 +343,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if(!buildingAspect.inputSlots[i].IsConnected)continue;
 
                 var otherBuildingAspect =
-                    GenerationSystem._entityManager.GetAspect<BuildingAspect>(buildingAspect.inputSlots[i]
+                    GenerationSystem.entityManager.GetAspect<BuildingAspect>(buildingAspect.inputSlots[i]
                         .EntityToPullFrom);
                 int index = buildingAspect.inputSlots[i].outputIndex;
                 otherBuildingAspect.outputSlots.ElementAt(index).EntityToPushTo = default;
@@ -361,7 +361,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 }
                 if(!buildingAspect.outputSlots[i].IsConnected)continue;
                 var otherBuildingAspect =
-                    GenerationSystem._entityManager.GetAspect<BuildingAspect>(buildingAspect.outputSlots[i]
+                    GenerationSystem.entityManager.GetAspect<BuildingAspect>(buildingAspect.outputSlots[i]
                         .EntityToPushTo);
                 int index = buildingAspect.outputSlots[i].InputIndex;
                 otherBuildingAspect.inputSlots.ElementAt(index).EntityToPullFrom = default;
@@ -376,7 +376,7 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             if (buildingAspect.MyBuildingData.buildingDataID == 1)
             {
-                var headAspect = GenerationSystem._entityManager.GetAspect<ConveyorChainHeadAspect>(GenerationSystem._entityManager
+                var headAspect = GenerationSystem.entityManager.GetAspect<ConveyorChainHeadAspect>(GenerationSystem.entityManager
                     .GetComponentData<ConveyorDataComponent>(buildingAspect.entity).head);
                 headAspect.RemoveConveyor(buildingAspect.entity);
             }

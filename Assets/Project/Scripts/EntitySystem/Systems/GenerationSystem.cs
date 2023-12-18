@@ -22,41 +22,41 @@ namespace Project.Scripts.EntitySystem.Systems
         public const int ChunkSize = 16;
 
         public static GenerationSystem Instance;
-        public static EntityManager _entityManager;
+        public static EntityManager entityManager;
         public static Entity worldDataEntity, prefabsEntity;
         public static ComponentLookup<WorldDataComponent> worldDataLookup;
         public static Entity BackGround;
 
-        private static System.Random _random = new System.Random();
+        private static System.Random _random = new();
 
         #region Consts
 
         private static readonly float[] ResourcePatchSizeProbabilities = { 60f, 39f, 1f };
         private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
 
-        private static readonly int2[] Patch0Positions = { new int2(0, 0) };
+        private static readonly int2[] Patch0Positions = { new(0, 0) };
 
         private static readonly int2[] Patch1Positions =
-            { new int2(0, 1), new int2(1, 1), new int2(1, 0) };
+            { new(0, 1), new(1, 1), new (1, 0) };
 
         private static readonly int2[] Patch2Positions =
         {
-            new int2(-1, 1), new int2(-1, 0), new int2(-1, -1), new int2(0, -1),
-            new int2(1, -1),
+            new (-1, 1), new (-1, 0), new(-1, -1), new(0, -1),
+            new (1, -1),
         };
 
         private static readonly int2[] Patch3Positions =
         {
-            new int2(-2, 0), new int2(-2, 1), new int2(-2, -1), new int2(2, -1),
-            new int2(2, 1), new int2(2, 0), new int2(-1, -2), new int2(1, -2),
-            new int2(0, -2), new int2(-1, 2), new int2(1, 2), new int2(0, 2),
+            new (-2, 0), new (-2, 1), new (-2, -1), new (2, -1),
+            new (2, 1), new (2, 0), new (-1, -2), new (1, -2),
+            new (0, -2), new(-1, 2), new (1, 2), new (0, 2),
         };
 
 
         #endregion
 
         private static int playerViewRadius = 1, viewSize = WorldScale * ChunkSize * 9;
-        private static int2 chunkPosWithPlayer = new int2(-1000, -1000);
+        private static int2 chunkPosWithPlayer = new(-1000, -1000);
         private static List<int2> LoadedChunks;
 
         private static bool FirstUpdate = true;
@@ -64,7 +64,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public void OnCreate(ref SystemState state)
         {
             Instance = this;
-            _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
             state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<WorldDataComponent>();
             LoadedChunks = new List<int2>();
@@ -88,7 +88,7 @@ namespace Project.Scripts.EntitySystem.Systems
             worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
 
             try { worldDataLookup.GetRefRO(worldDataEntity); }
-            catch (Exception e) { worldDataLookup.Update(ref state); }
+            catch { worldDataLookup.Update(ref state); }
 
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
             int2 currentPos = GetChunkPosition(playerCam.transform.position);
@@ -147,7 +147,7 @@ namespace Project.Scripts.EntitySystem.Systems
         private Entity GenerateChunk(int2 chunkPosition)
         {
             EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
-            Entity entity = _entityManager.CreateEntity();
+            Entity entity = entityManager.CreateEntity();
             float3 worldPos = GetChunkWorldPosition(chunkPosition);
             ecb.SetName(entity, $"Chunk({chunkPosition.x},{chunkPosition.y})");
             ecb.AddComponent(entity, new LocalTransform()
@@ -156,9 +156,9 @@ namespace Project.Scripts.EntitySystem.Systems
                 Scale = WorldScale,
             });
             ResourcePatch[] patches = GenerateResources();
-            _entityManager.AddComponentData(entity, new ChunkDataComponent(entity,chunkPosition, worldPos,
+            entityManager.AddComponentData(entity, new ChunkDataComponent(entity,chunkPosition, worldPos,
                 SystemAPI.GetSingleton<PrefabsDataComponent>(), patches, ecb));
-            ecb.Playback(_entityManager);
+            ecb.Playback(entityManager);
             ecb.Dispose();
             return entity;
 

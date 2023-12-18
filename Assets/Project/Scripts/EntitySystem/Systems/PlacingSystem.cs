@@ -16,7 +16,7 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct PlacingSystem : ISystem
     {
         public static PlacingSystem Instance;
-        private static EntityManager TheEntityManager => GenerationSystem._entityManager;
+        private static EntityManager TheEntityManager => GenerationSystem.entityManager;
         
         public static BeginSimulationEntityCommandBufferSystem.Singleton beginSimulationEntityCommandBuffer; 
         public void OnCreate(ref SystemState state)
@@ -32,7 +32,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             state.Enabled = false;
             ResourcesUtility.SetUpBuildingData(
-                GenerationSystem._entityManager.GetComponentData<PrefabsDataComponent>(GenerationSystem.prefabsEntity));
+                GenerationSystem.entityManager.GetComponentData<PrefabsDataComponent>(GenerationSystem.prefabsEntity));
             
             beginSimulationEntityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }

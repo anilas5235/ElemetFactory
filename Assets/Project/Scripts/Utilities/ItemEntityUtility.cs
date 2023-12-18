@@ -24,7 +24,7 @@ namespace Project.Scripts.Utilities
             
             CalculateItemAppearance(itemBuffer,resourceLookUpData,out var color,out var form);
 
-            return CreateItemEntity(index,building, outputSlot, itemBuffer, form,
+            return CreateItemEntity(index,building, outputSlot, itemBuffer.AsArray(), form,
                 color, ECB, prefabs, worldScale);
         }
 
@@ -134,9 +134,9 @@ namespace Project.Scripts.Utilities
             CalculateItemAppearance(itemBufferA,resourceLookUpData,out var colorA,out var formA);
             CalculateItemAppearance(itemBufferB,resourceLookUpData,out var colorB,out var formB);
             
-            itemEntityA = CreateItemEntity(index,building, outputSlotA, itemBufferA, formA,
+            itemEntityA = CreateItemEntity(index,building, outputSlotA, itemBufferA.AsArray(), formA,
                 colorA, ECB, prefabs, worldScale);
-            itemEntityB = CreateItemEntity(index,building ,outputSlotB, itemBufferB, formB,
+            itemEntityB = CreateItemEntity(index,building ,outputSlotB, itemBufferB.AsArray(), formB,
                 colorB, ECB, prefabs, worldScale);
 
             return true;

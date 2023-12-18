@@ -42,7 +42,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (firstChain.Length > 0)
             {
                 var headEntity = ChunkDataAspect.CreateChainHead(ecb, out var buffer);
-                buffer.AddRange(firstChain);
+                buffer.AddRange(firstChain.AsArray());
                 foreach (EntityRefBufferElement conveyor in buffer)
                 {
                     ecb.SetComponent(conveyor.Entity, new ConveyorDataComponent()
@@ -55,7 +55,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             if (secondChain.Length > 0)
             {
                 var headEntity = ChunkDataAspect.CreateChainHead(ecb, out var buffer);
-                buffer.AddRange(secondChain);
+                buffer.AddRange(secondChain.AsArray());
                 foreach (EntityRefBufferElement conveyor in buffer)
                 {
                     ecb.SetComponent(conveyor.Entity, new ConveyorDataComponent()
