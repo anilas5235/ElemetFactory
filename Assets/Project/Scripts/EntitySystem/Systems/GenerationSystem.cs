@@ -1,17 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.Grid;
 using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
@@ -24,95 +27,112 @@ namespace Project.Scripts.EntitySystem.Systems
         public static GenerationSystem Instance;
         public static EntityManager entityManager;
         public static Entity worldDataEntity, prefabsEntity;
-        public static ComponentLookup<WorldDataComponent> worldDataLookup;
-        public static Entity BackGround;
+        public static WorldDataAspect worldDataAspect;
 
-        private static System.Random _random = new();
-
-        #region Consts
-
-        private static readonly float[] ResourcePatchSizeProbabilities = { 60f, 39f, 1f };
-        private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
-
-        private static readonly int2[] Patch0Positions = { new(0, 0) };
-
-        private static readonly int2[] Patch1Positions =
-            { new(0, 1), new(1, 1), new (1, 0) };
-
-        private static readonly int2[] Patch2Positions =
-        {
-            new (-1, 1), new (-1, 0), new(-1, -1), new(0, -1),
-            new (1, -1),
-        };
-
-        private static readonly int2[] Patch3Positions =
-        {
-            new (-2, 0), new (-2, 1), new (-2, -1), new (2, -1),
-            new (2, 1), new (2, 0), new (-1, -2), new (1, -2),
-            new (0, -2), new(-1, 2), new (1, 2), new (0, 2),
-        };
-
-
-        #endregion
-
-        private static int playerViewRadius = 1, viewSize = WorldScale * ChunkSize * 9;
-        private static int2 chunkPosWithPlayer = new(-1000, -1000);
-        private static List<int2> LoadedChunks;
-
-        private static bool FirstUpdate = true;
-
+        private static EndSimulationEntityCommandBufferSystem _endSimEntityCommandBufferSystem;
+        private static Entity _backGround, _generationRequestHolder;
+        private static GenerationRequestAspect _generationRequestAspect;
+        private static Unity.Mathematics.Random _random = new();
         public void OnCreate(ref SystemState state)
         {
             Instance = this;
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
             state.RequireForUpdate<PrefabsDataComponent>();
-            state.RequireForUpdate<WorldDataComponent>();
-            LoadedChunks = new List<int2>();
+            state.EntityManager.AddComponentData(state.SystemHandle, new GenerationSystemComponent()
+            {
+                PlayerViewRadius =1,
+                ViewSize = WorldScale * ChunkSize * 9,
+                ChunkPosWithPlayer = new int2(-1000, -1000),
+                LoadedChunks = new NativeList<int2>(Allocator.Persistent),
+                FirstUpdate = true,
+            });
+            
+            _endSimEntityCommandBufferSystem = state.World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
         }
-      
+
         public void OnUpdate(ref SystemState state)
         {
-            if (FirstUpdate)
+            var generationComp = SystemAPI.GetComponent<GenerationSystemComponent>(state.SystemHandle);
+            
+            if (generationComp.FirstUpdate)
             {
                 GridBuildingSystem.Work = true;
-                worldDataEntity = SystemAPI.GetSingleton<WorldDataComponent>().entity;
                 prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
 
-                BackGround = state.EntityManager.Instantiate(state.EntityManager
+                _backGround = state.EntityManager.Instantiate(state.EntityManager
                     .GetComponentData<PrefabsDataComponent>(prefabsEntity).TileVisual);
-                state.EntityManager.SetName(BackGround, "BackGroundTile");
+                state.EntityManager.SetName(_backGround, "BackGroundTile");
 
-                FirstUpdate = false;
+                _generationRequestHolder = state.EntityManager.CreateEntity();
+                state.EntityManager.SetName(_generationRequestHolder,"GenerationRequests");
+                state.EntityManager.AddBuffer<ChunkGenerationRequestBuffElement>(_generationRequestHolder);
+
+                worldDataAspect = SystemAPI.GetAspect<WorldDataAspect>(worldDataEntity);
+                
+                generationComp.FirstUpdate = false;
+            }
+            else
+            {
+                _generationRequestAspect = SystemAPI.GetAspect<GenerationRequestAspect>(_generationRequestHolder);
+
+                UpdatingPlayerState(state, generationComp);
+
+                if (_generationRequestAspect.GetNumOfRequestCount() > 0)
+                {
+                    CreateGenerationJob(SystemAPI.GetComponent<PrefabsDataComponent>(prefabsEntity));
+                }
             }
             
-            worldDataLookup = SystemAPI.GetComponentLookup<WorldDataComponent>();
+            SystemAPI.SetComponent(state.SystemHandle, generationComp);
+        }
 
-            try { worldDataLookup.GetRefRO(worldDataEntity); }
-            catch { worldDataLookup.Update(ref state); }
+        private static void CreateGenerationJob(PrefabsDataComponent prefabsDataComponent)
+        {
+            var ecb = _endSimEntityCommandBufferSystem.CreateCommandBuffer();
 
+            var genJob = new Generation()
+            {
+                ECB = ecb,
+                WorldScale = WorldScale,
+                WorldDataAspect = worldDataAspect,
+                Requests = _generationRequestAspect.GetAllRequests(),
+                prefabsComp = prefabsDataComponent,
+                _Random = _random,
+            };
+
+            _generationRequestAspect.ClearRequestList();
+            _endSimEntityCommandBufferSystem.AddJobHandleForProducer(genJob.Schedule());
+        }
+
+        private void UpdatingPlayerState(SystemState state, GenerationSystemComponent generationComp)
+        {
             Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
             int2 currentPos = GetChunkPosition(playerCam.transform.position);
             int radius =
-                Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect / (ChunkDataComponent.ChunkSize * WorldScale));
-            if (chunkPosWithPlayer.x == currentPos.x && chunkPosWithPlayer.y == currentPos.y &&
-                playerViewRadius == radius) return;
-            
-            chunkPosWithPlayer = currentPos.xy;
+                Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect /
+                                (ChunkDataComponent.ChunkSize * WorldScale));
+            if (generationComp.ChunkPosWithPlayer.x == currentPos.x &&
+                generationComp.ChunkPosWithPlayer.y == currentPos.y &&
+                generationComp.PlayerViewRadius == radius) return;
+
+            generationComp.ChunkPosWithPlayer = currentPos.xy;
 
             float3 backgroundPos = new float3(GetChunkWorldPosition(currentPos).xy, 2);
 
-            
-                state.EntityManager.SetComponentData(BackGround, new LocalTransform
-                {
-                    Position = backgroundPos,
-                    Scale = viewSize, });
-            
 
-            playerViewRadius = radius;
+            state.EntityManager.SetComponentData(_backGround, new LocalTransform
+            {
+                Position = backgroundPos,
+                Scale = generationComp.ViewSize,
+            });
+
+            generationComp.PlayerViewRadius = radius;
 
             List<int2> chunksToLoad = new List<int2>();
             List<int2> chunksToUnLoad = new List<int2>();
 
+            int playerViewRadius = generationComp.PlayerViewRadius;
+            int2 chunkPosWithPlayer = generationComp.ChunkPosWithPlayer;
             for (int x = -playerViewRadius; x < playerViewRadius + 1; x++)
             {
                 for (int y = -playerViewRadius; y < playerViewRadius + 1; y++)
@@ -121,7 +141,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 }
             }
 
-            foreach (int2 loadedChunkPos in LoadedChunks)
+            foreach (int2 loadedChunkPos in generationComp.LoadedChunks)
             {
                 if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
                 else chunksToUnLoad.Add(loadedChunkPos);
@@ -129,254 +149,42 @@ namespace Project.Scripts.EntitySystem.Systems
 
             foreach (int2 pos in chunksToUnLoad)
             {
-                ChunkDataAspect chunk = TryGenerateChunk(pos, out bool gen, ref state);
-                LoadedChunks.Remove(pos);
-                if (gen) continue;
-                chunk.InView = false;
+                if (TryGetChunk(pos, out var chunk))
+                {
+                    chunk.InView = false;
+                }
+
+                for (int i = 0; i < generationComp.LoadedChunks.Length; i++)
+                {
+                    var condition = generationComp.LoadedChunks[i] == pos;
+                    if (condition is not { x: true, y: true }) continue;
+
+                    generationComp.LoadedChunks.RemoveAt(i);
+                    break;
+                }
             }
 
             foreach (int2 pos in chunksToLoad)
             {
-                ChunkDataAspect chunk = TryGenerateChunk(pos, out bool gen, ref state);
-                LoadedChunks.Add(pos);
-                if (gen) continue;
-                chunk.InView = true;
+                if (TryGetChunk(pos, out var chunk))
+                {
+                    chunk.InView = true;
+                }
+
+                generationComp.LoadedChunks.Add(pos);
             }
         }
 
-        private Entity GenerateChunk(int2 chunkPosition)
+        public bool TryGetChunk(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
         {
-            EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
-            Entity entity = entityManager.CreateEntity();
-            float3 worldPos = GetChunkWorldPosition(chunkPosition);
-            ecb.SetName(entity, $"Chunk({chunkPosition.x},{chunkPosition.y})");
-            ecb.AddComponent(entity, new LocalTransform()
-            {
-                Position = worldPos,
-                Scale = WorldScale,
-            });
-            ResourcePatch[] patches = GenerateResources();
-            entityManager.AddComponentData(entity, new ChunkDataComponent(entity,chunkPosition, worldPos,
-                SystemAPI.GetSingleton<PrefabsDataComponent>(), patches, ecb));
-            ecb.Playback(entityManager);
-            ecb.Dispose();
-            return entity;
+            if (worldDataAspect.TryGetChunk(chunkPos, out chunkDataAspect)) { return true; }
 
-            ResourcePatch[] GenerateResources()
-            {
-                float distToCenter = math.sqrt(chunkPosition.x * chunkPosition.x + chunkPosition.y * chunkPosition.y);
-                if (distToCenter < 2f) return Array.Empty<ResourcePatch>();
-                int numberOfPatches = GetNumberOfChunkResources(7f);
-                if (numberOfPatches < 1) return Array.Empty<ResourcePatch>();
-                ResourcePatch[] resourcePatches = new ResourcePatch[numberOfPatches];
-                ResourceType[] chunkResources = new ResourceType[numberOfPatches];
-                List<int2> blockPositions = new List<int2>();
-
-                for (int i = 0; i < numberOfPatches; i++)
-                {
-                    bool done;
-                    do
-                    {
-                        ResourceType type = GetRandom(distToCenter);
-                        done = chunkResources.All(resource => type != resource);
-                        if (!done) continue;
-                        chunkResources[i] = type;
-                        resourcePatches[i] = GenerateResourcePatch(GetPatchSize(numberOfPatches), type, blockPositions);
-                    } while (!done);
-                }
-
-                return resourcePatches.ToArray();
-            }
-
-            ResourceType GetRandom(float distanceToCenter)
-            {
-                int pool = 1;
-                if (distanceToCenter >= 2f) pool += 3;
-                if (distanceToCenter >= 5f) pool += 1;
-                return (ResourceType)_random.Next(1, pool);
-            }
-
-            ResourcePatch GenerateResourcePatch(int patchSize, ResourceType resourceType, List<int2> blocked)
-            {
-                List<int2> cellPositions = GeneratePatchShape(patchSize, blocked);
-
-                blocked.AddRange(cellPositions);
-
-                return new ResourcePatch()
-                {
-                    Positions = new NativeArray<int2>(cellPositions.ToArray(), Allocator.Persistent),
-                    Resource = ResourcesUtility.CreateItemData(new[] { (uint)resourceType })
-                };
-            }
-
-            void GetPathBaseShape(int patchSize, out List<int2> cellPositions, out List<int2> outerCells)
-            {
-                cellPositions = new List<int2>();
-                outerCells = new List<int2>();
-
-                switch (patchSize)
-                {
-                    case 1:
-                        cellPositions.AddRange(Patch0Positions);
-                        cellPositions.AddRange(Patch1Positions);
-                        outerCells.AddRange(cellPositions);
-                        break;
-                    case 2:
-                        cellPositions.AddRange(Patch0Positions);
-                        cellPositions.AddRange(Patch1Positions);
-                        cellPositions.AddRange(Patch2Positions);
-                        outerCells.AddRange(Patch1Positions);
-                        outerCells.AddRange(Patch2Positions);
-                        break;
-                    case 3:
-                        cellPositions.AddRange(Patch0Positions);
-                        cellPositions.AddRange(Patch1Positions);
-                        cellPositions.AddRange(Patch2Positions);
-                        cellPositions.AddRange(Patch3Positions);
-                        outerCells.AddRange(Patch3Positions);
-                        break;
-                }
-            }
-
-            List<int2> GeneratePatchShape(int patchSize, List<int2> blocked)
-            {
-
-                GetPathBaseShape(patchSize, out List<int2> cellPositions, out List<int2> outerCells);
-
-                int2 minAndMaxCellCount = new int2((int)(outerCells.Count / 2f + cellPositions.Count),
-                    (int)(cellPositions.Count * 2f));
-                int2 center;
-                do
-                {
-                    center = new int2(_random.Next(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1),
-                        _random.Next(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1));
-                } while (blocked.Contains(center));
-
-                for (int i = 0; i < cellPositions.Count; i++) cellPositions[i] += center;
-                for (int i = 0; i < outerCells.Count; i++) outerCells[i] += center;
-
-                bool done = false;
-                int emptyIterations = 0;
-
-                do
-                {
-                    List<int2> removeList = new List<int2>(),
-                        addList = new List<int2>();
-                    foreach (var outerCell in outerCells)
-                    {
-                        if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
-                        if (blocked.Contains(outerCell))
-                        {
-                            removeList.Add(outerCell);
-                            continue;
-                        }
-
-                        foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D4)
-                        {
-                            if (cellPositions.Count + addList.Count >= minAndMaxCellCount.y) break;
-                            int2 newCell = outerCell + new int2(neighbourOffset.x, neighbourOffset.y);
-                            if (cellPositions.Contains(newCell) || addList.Contains(newCell) ||
-                                blocked.Contains(newCell + center) ||
-                                !ChunkDataAspect.IsValidPositionInChunk(newCell)) continue;
-                            float prob = 1f / (INT2Length(newCell) + .5f) * 4f;
-                            if (_random.Next(0, 100) / 100f >= prob) continue;
-                            if (!removeList.Contains(outerCell)) removeList.Add(outerCell);
-                            addList.Add(newCell);
-                        }
-                    }
-
-                    foreach (var t in removeList) outerCells.Remove(t);
-                    foreach (var t in addList)
-                    {
-                        outerCells.Add(t);
-                        cellPositions.Add(t);
-                    }
-
-                    if (!addList.Any()) emptyIterations++;
-
-                    if (cellPositions.Count > minAndMaxCellCount.x || emptyIterations >= 20) done = true;
-
-                } while (!done);
-
-                return cellPositions;
-            }
-
-            int GetNumberOfChunkResources(float antiCrowdingMultiplier)
-            {
-                int returnVal = 0;
-                float random = _random.Next(0, 100);
-
-                foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
-                {
-                    int2 chunkPos = new int2(neighbourOffset.x, neighbourOffset.y) + chunkPosition;
-                    if (TryGetChunk(chunkPos, out ChunkDataAspect chunk))
-                    {
-                        random -= chunk.NumPatches * antiCrowdingMultiplier;
-                    }
-                }
-
-                float currentStep = 0f;
-                for (int i = 0; i < ChunkResourceNumberProbabilities.Length; i++)
-                {
-                    if (ChunkResourceNumberProbabilities[i] == 0) continue;
-                    currentStep += ChunkResourceNumberProbabilities[i];
-                    if (random > currentStep) continue;
-                    returnVal += i;
-                    break;
-                }
-
-                return returnVal;
-            }
-
-            int GetPatchSize(int numberOfPatches = 1)
-            {
-                int returnVal = 1;
-                float random = (float)_random.Next(0, 100) - ((numberOfPatches - 1) * 20);
-                float currentStep = 0f;
-                for (int i = 0; i < ResourcePatchSizeProbabilities.Length; i++)
-                {
-                    if (ResourcePatchSizeProbabilities[i] == 0) continue;
-                    currentStep += ResourcePatchSizeProbabilities[i];
-                    if (random > currentStep) continue;
-                    returnVal += i;
-                    break;
-                }
-
-                return returnVal;
-            }
-
-            float INT2Length(int2 vec)
-            {
-                return math.sqrt(vec.x * vec.x + vec.y * vec.y);
-            }
-        }
-
-        public static ChunkDataAspect TryGenerateChunk(int2 chunkPosition, out bool newGenerated, ref SystemState systemState)
-        {
-            newGenerated = false;
-            if (TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect)) return chunkDataAspect;
-
-            newGenerated = true;
-            PositionChunkPair pair = new PositionChunkPair(Instance.GenerateChunk(chunkPosition),
-                chunkPosition);
-            worldDataLookup.Update(ref systemState);
-            worldDataLookup.GetRefRW(worldDataEntity).ValueRW.ChunkDataBank.Add(pair);
-            return default;
-        }
-
-        public static bool TryGetChunk(int2 chunkPos, out ChunkDataAspect chunkDataAspect)
-        {
-            chunkDataAspect = default;
-            foreach (var pair in worldDataLookup.GetRefRO(worldDataEntity).ValueRO.ChunkDataBank)
-            {
-                if (pair.Position.x != chunkPos.x ||
-                    pair.Position.y != chunkPos.y) continue;
-                chunkDataAspect = pair.Chunk;
-                return true;
-            }
-
+            _generationRequestAspect.AddRequest(chunkPos);
             return false;
+
         }
+
+        #region Helpers
 
         public static float3 GetChunkWorldPosition(int2 chunkPosition)
         {
@@ -384,12 +192,322 @@ namespace Project.Scripts.EntitySystem.Systems
             return new float3((float2)chunkPosition * factor, 0);
         }
 
-
         public static int2 GetChunkPosition(float3 transformPosition)
         {
             return new int2(
                 Mathf.RoundToInt(transformPosition.x / (ChunkDataComponent.ChunkSize * WorldScale)),
                 Mathf.RoundToInt(transformPosition.y / (ChunkDataComponent.ChunkSize * WorldScale)));
+        }
+        
+        #endregion
+    }
+    
+    public struct Generation : IJob
+    {
+        public EntityCommandBuffer ECB;
+        public int WorldScale;
+        public WorldDataAspect WorldDataAspect;
+        public NativeArray<ChunkGenerationRequestBuffElement> Requests;
+        public PrefabsDataComponent prefabsComp;
+        public Unity.Mathematics.Random _Random;
+        public NativeList<PositionChunkPair> generatedChunks;
+
+        #region Consts
+
+        private static readonly float[] ResourcePatchSizeProbabilities = { 60f, 39f, 1f };
+        private static readonly float[] ChunkResourceNumberProbabilities = { 70f, 25f, 5f };
+
+        private static readonly NativeArray<int2> Patch0Positions = new(new int2[] { new(0, 0) }, Allocator.Persistent);
+
+        private static readonly NativeArray<int2> Patch1Positions = new(
+            new int2[] { new(0, 1), new(1, 1), new(1, 0) }, Allocator.Persistent);
+
+        private static readonly NativeArray<int2> Patch2Positions = new(new int2[]
+        {
+            new(-1, 1), new(-1, 0), new(-1, -1), new(0, -1),
+            new(1, -1),
+        }, Allocator.Persistent);
+
+        private static readonly NativeArray<int2> Patch3Positions = new(new int2[]
+        {
+            new(-2, 0), new(-2, 1), new(-2, -1), new(2, -1),
+            new(2, 1), new(2, 0), new(-1, -2), new(1, -2),
+            new(0, -2), new(-1, 2), new(1, 2), new(0, 2),
+        }, Allocator.Persistent);
+
+
+        #endregion
+
+        private static float3 GetChunkWorldPosition(int2 chunkPosition)
+        {
+            float factor = ChunkDataComponent.ChunkSize * ChunkDataComponent.CellSize;
+            return new float3((float2)chunkPosition * factor, 0);
+        }
+
+        public void Execute()
+        {
+            foreach (var request in Requests)
+            {
+                if (CheckIfChunkExitsWhileGenerating(request.ChunkPosition)) { continue; }
+                generatedChunks.Add(GenerateChunk(request.ChunkPosition));
+            }
+            
+            WorldDataAspect.AddChunksToData(generatedChunks.AsArray());
+        }
+
+        private PositionChunkPair GenerateChunk(int2 chunkPosition)
+        {
+            Entity entity = ECB.CreateEntity();
+            float3 worldPos = GetChunkWorldPosition(chunkPosition);
+            ECB.SetName(entity, $"Chunk({chunkPosition.x},{chunkPosition.y})");
+            ECB.AddComponent(entity, new LocalTransform()
+            {
+                Position = worldPos,
+                Scale = WorldScale,
+            });
+            using var patches = GenerateResources(chunkPosition);
+            ECB.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
+                prefabsComp, patches, ECB));
+            return new PositionChunkPair(entity, chunkPosition);
+        }
+
+        private ResourceType GetRandom(float distanceToCenter)
+        {
+            int pool = 1;
+            if (distanceToCenter >= 2f) pool += 3;
+            if (distanceToCenter >= 5f) pool += 1;
+            return (ResourceType)_Random.NextInt(1, pool);
+        }
+
+        private ResourcePatch GenerateResourcePatch(int patchSize, ResourceType resourceType, NativeList<int2> blocked)
+        {
+            using NativeList<int2> cellPositions = GeneratePatchShape(patchSize, blocked);
+
+            blocked.AddRange(cellPositions.AsArray());
+
+            return new ResourcePatch()
+            {
+                Positions = new NativeArray<int2>(cellPositions.ToArray(), Allocator.Persistent),
+                Resource = ResourcesUtility.CreateItemData(new[] { (uint)resourceType })
+            };
+        }
+
+        private float INT2Length(int2 vec)
+        {
+            return math.sqrt(vec.x * vec.x + vec.y * vec.y);
+        }
+
+        private int GetPatchSize(int numberOfPatches = 1)
+        {
+            int returnVal = 1;
+            float random = _Random.NextFloat(0f, 100f) - ((numberOfPatches - 1) * 20);
+            float currentStep = 0f;
+            for (int i = 0; i < ResourcePatchSizeProbabilities.Length; i++)
+            {
+                if (ResourcePatchSizeProbabilities[i] == 0) continue;
+                currentStep += ResourcePatchSizeProbabilities[i];
+                if (random > currentStep) continue;
+                returnVal += i;
+                break;
+            }
+
+            return returnVal;
+        }
+
+        private void GetPathBaseShape(int patchSize, out NativeList<int2> cellPositions,
+            out NativeList<int2> outerCells)
+        {
+            cellPositions = new NativeList<int2>();
+            outerCells = new NativeList<int2>();
+
+            switch (patchSize)
+            {
+                case 1:
+                    cellPositions.AddRange(Patch0Positions);
+                    cellPositions.AddRange(Patch1Positions);
+                    outerCells.AddRange(cellPositions.AsArray());
+                    break;
+                case 2:
+                    cellPositions.AddRange(Patch0Positions);
+                    cellPositions.AddRange(Patch1Positions);
+                    cellPositions.AddRange(Patch2Positions);
+                    outerCells.AddRange(Patch1Positions);
+                    outerCells.AddRange(Patch2Positions);
+                    break;
+                case 3:
+                    cellPositions.AddRange(Patch0Positions);
+                    cellPositions.AddRange(Patch1Positions);
+                    cellPositions.AddRange(Patch2Positions);
+                    cellPositions.AddRange(Patch3Positions);
+                    outerCells.AddRange(Patch3Positions);
+                    break;
+            }
+        }
+
+        private NativeArray<ResourcePatch> GenerateResources(int2 chunkPosition)
+        {
+            float distToCenter = math.sqrt(chunkPosition.x * chunkPosition.x + chunkPosition.y * chunkPosition.y);
+            int numberOfPatches = GetNumberOfChunkResources(7f, chunkPosition);
+            if (distToCenter < 2f || numberOfPatches < 1) return new NativeArray<ResourcePatch>();
+            NativeArray<ResourcePatch> resourcePatches =
+                new NativeArray<ResourcePatch>(numberOfPatches, Allocator.TempJob);
+            NativeArray<ResourceType> chunkResources =
+                new NativeArray<ResourceType>(numberOfPatches, Allocator.TempJob);
+            NativeList<int2> blockPositions = new NativeList<int2>();
+
+            for (int i = 0; i < numberOfPatches; i++)
+            {
+                bool done;
+                do
+                {
+                    ResourceType type = GetRandom(distToCenter);
+                    done = true;
+                    foreach (var resource in chunkResources)
+                    {
+                        if (type == resource)
+                        {
+                            done = false;
+                            break;
+                        }
+                    }
+
+                    if (!done) continue;
+                    chunkResources[i] = type;
+                    resourcePatches[i] = GenerateResourcePatch(GetPatchSize(numberOfPatches), type, blockPositions);
+                } while (!done);
+            }
+
+            return resourcePatches;
+        }
+
+        private NativeList<int2> GeneratePatchShape(int patchSize, NativeList<int2> blocked)
+        {
+
+            GetPathBaseShape(patchSize, out var cellPositions, out var outerCells);
+
+            int2 minAndMaxCellCount = new int2((int)(outerCells.Length / 2f + cellPositions.Length),
+                (int)(cellPositions.Length * 2f));
+            int2 center;
+            do
+            {
+                center = new int2(_Random.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1),
+                    _Random.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1));
+            } while (blocked.Contains(center));
+
+            for (int i = 0; i < cellPositions.Length; i++) cellPositions[i] += center;
+            for (int i = 0; i < outerCells.Length; i++) outerCells[i] += center;
+
+            bool done = false;
+            int emptyIterations = 0;
+
+            do
+            {
+                using NativeList<int2> removeList = new(Allocator.TempJob);
+                using NativeList<int2> addList = new(Allocator.TempJob);
+                foreach (var outerCell in outerCells)
+                {
+                    if (cellPositions.Length + addList.Length >= minAndMaxCellCount.y) break;
+                    if (blocked.Contains(outerCell))
+                    {
+                        removeList.Add(outerCell);
+                        continue;
+                    }
+
+                    foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D4)
+                    {
+                        if (cellPositions.Length + addList.Length >= minAndMaxCellCount.y) break;
+                        int2 newCell = outerCell + new int2(neighbourOffset.x, neighbourOffset.y);
+                        if (cellPositions.Contains(newCell) || addList.Contains(newCell) ||
+                            blocked.Contains(newCell + center) ||
+                            !ChunkDataAspect.IsValidPositionInChunk(newCell)) continue;
+                        float prob = 1f / (INT2Length(newCell) + .5f) * 4f;
+                        if (_Random.NextFloat(0f, 100f) / 100f >= prob) continue;
+                        if (!removeList.Contains(outerCell)) removeList.Add(outerCell);
+                        addList.Add(newCell);
+                    }
+                }
+
+                foreach (var t in removeList)
+                {
+                    for (int i = 0; i < outerCells.Length; i++)
+                    {
+                        var condition = outerCells[i] == t;
+                        if (condition is { x: true, y: true })
+                        {
+                            outerCells.RemoveAt(i);
+                        }
+                    }
+                }
+
+                foreach (var t in addList)
+                {
+                    outerCells.Add(t);
+                    cellPositions.Add(t);
+                }
+
+                if (!addList.Any()) emptyIterations++;
+
+                if (cellPositions.Length > minAndMaxCellCount.x || emptyIterations >= 20) done = true;
+
+            } while (!done);
+
+            return cellPositions;
+        }
+
+        private int GetNumberOfChunkResources(float antiCrowdingMultiplier, int2 chunkPosition)
+        {
+            int returnVal = 0;
+            float randomNum = _Random.NextFloat(0f, 100f);
+
+            foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
+            {
+                int2 chunkPos = new int2(neighbourOffset.x, neighbourOffset.y) + chunkPosition;
+                if (TryGetChunkWhileGenerating(chunkPos, out ChunkDataAspect chunk))
+                {
+                    randomNum -= chunk.NumPatches * antiCrowdingMultiplier;
+                }
+            }
+
+            float currentStep = 0f;
+            for (int i = 0; i < ChunkResourceNumberProbabilities.Length; i++)
+            {
+                if (ChunkResourceNumberProbabilities[i] == 0) continue;
+                currentStep += ChunkResourceNumberProbabilities[i];
+                if (randomNum > currentStep) continue;
+                returnVal += i;
+                break;
+            }
+
+            return returnVal;
+        }
+
+        private bool TryGetChunkWhileGenerating(int2 chunkPosition, out ChunkDataAspect chunk)
+        {
+            if (WorldDataAspect.TryGetChunk(chunkPosition, out chunk)){ return true;}
+
+            foreach (PositionChunkPair chunkPair in generatedChunks)
+            {
+               var condition = chunkPair.Position == chunkPosition;
+               if (condition is not { x: true, y: true }) continue;
+               chunk = chunkPair.Chunk;
+               return true;
+            }
+
+            return false;
+        }
+
+        private bool CheckIfChunkExitsWhileGenerating(int2 chunkPosition)
+        {
+            if (WorldDataAspect.ChunkExits(chunkPosition)){ return true;}
+
+            foreach (PositionChunkPair chunkPair in generatedChunks)
+            {
+                var condition = chunkPair.Position == chunkPosition;
+                if (condition is not { x: true, y: true }) continue;
+                return true;
+            }
+
+            return false;
         }
     }
 }

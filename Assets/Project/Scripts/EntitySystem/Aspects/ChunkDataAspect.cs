@@ -45,7 +45,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         private CellObject GetCellFormPseudoPosition(int2 position, int2 chunkPosition)
         {
             int2 newChunkPos = GetChunkAndCellPositionFromPseudoPosition(position, chunkPosition, out int2 newPos);
-            GenerationSystem.TryGetChunk(newChunkPos, out ChunkDataAspect chunkData);
+            GenerationSystem.Instance.TryGetChunk(newChunkPos, out ChunkDataAspect chunkData);
             return chunkData.GetCell(newPos, newChunkPos);
         }
 
@@ -86,10 +86,12 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (IsValidPositionInChunk(position)) BlockCell(position, entity);
                 else
                 {
-                    if (GenerationSystem.TryGetChunk(
+                    if (GenerationSystem.Instance.TryGetChunk(
                             GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
-                            , out ChunkDataAspect chunk)) ;
-                    chunk.BlockCell(cellPos, entity);
+                            , out ChunkDataAspect chunk))
+                    {
+                        chunk.BlockCell(cellPos, entity);
+                    }
                 }
             }
 
@@ -324,7 +326,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if (IsValidPositionInChunk(position)) FreeCell(position);
                 else
                 {
-                    if (GenerationSystem.TryGetChunk(
+                    if (GenerationSystem.Instance.TryGetChunk(
                             GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
                             , out ChunkDataAspect chunk))
                         chunk.FreeCell(cellPos);

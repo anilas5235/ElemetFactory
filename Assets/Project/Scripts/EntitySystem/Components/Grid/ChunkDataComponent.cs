@@ -20,7 +20,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public static readonly int ChunkUnitSize = ChunkSize * CellSize;
         public static int HalfChunkSize => ChunkSize/2;
         public ChunkDataComponent(Entity entity,int2 chunkPosition, float3 worldPosition,
-            PrefabsDataComponent prefabs,ResourcePatch[] resourcePatches, EntityCommandBuffer ecb)
+            PrefabsDataComponent prefabs,NativeArray<ResourcePatch> resourcePatches, EntityCommandBuffer ecb)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;

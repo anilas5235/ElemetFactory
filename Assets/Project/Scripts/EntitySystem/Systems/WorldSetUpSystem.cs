@@ -1,7 +1,4 @@
-using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.EntitySystem.Components.Grid;
-using Project.Scripts.Grid;
-using Unity.Collections;
+using Project.Scripts.EntitySystem.Buffer;
 using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Systems
@@ -11,15 +8,11 @@ namespace Project.Scripts.EntitySystem.Systems
     {
         public void OnCreate(ref SystemState state)
         {
-            Entity worldData = state.EntityManager.CreateEntity();
-            state.EntityManager.AddComponent<WorldDataComponent>(worldData);
-            state.EntityManager.SetComponentData(worldData, new WorldDataComponent()
-            {
-                entity = worldData,
-                ChunkDataBank = new NativeList<PositionChunkPair>(Allocator.Persistent),
-            });
-            state.EntityManager.SetName(worldData,"WorldData");
-            GenerationSystem.worldDataEntity = worldData;
+            Entity worldDataEntity = state.EntityManager.CreateEntity();
+            state.EntityManager.AddBuffer<PositionChunkPair>(worldDataEntity);
+            
+            state.EntityManager.SetName(worldDataEntity,"WorldData");
+            GenerationSystem.worldDataEntity = worldDataEntity;
         }
 
         public void OnUpdate(ref SystemState state)

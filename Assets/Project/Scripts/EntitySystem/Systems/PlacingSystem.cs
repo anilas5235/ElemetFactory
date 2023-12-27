@@ -25,7 +25,6 @@ namespace Project.Scripts.EntitySystem.Systems
             Instance = this;
            
             state.RequireForUpdate<PrefabsDataComponent>();
-            state.RequireForUpdate<WorldDataComponent>();
         }
         
         public void OnUpdate(ref SystemState state)
@@ -41,7 +40,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             int2 cellPos = ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition);
             
-            if (GenerationSystem.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
+            if (GenerationSystem.Instance.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
             {
                return chunkDataAspect.TryToDeleteBuilding(cellPos);
             }
@@ -52,7 +51,7 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             int2 cellPos = ChunkDataAspect.GetCellPositionFormWorldPosition(mousePos, out int2 chunkPosition);
             
-            if (GenerationSystem.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
+            if (GenerationSystem.Instance.TryGetChunk(chunkPosition, out ChunkDataAspect chunkDataAspect))
             {
                return chunkDataAspect.TryToPlaceBuilding(buildingID,cellPos,facingDirection);
             }
