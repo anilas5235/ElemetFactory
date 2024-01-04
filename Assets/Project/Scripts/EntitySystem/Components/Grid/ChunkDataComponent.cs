@@ -4,11 +4,9 @@ using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
-using Project.Scripts.Utilities;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Rendering;
 using Unity.Transforms;
 
 namespace Project.Scripts.EntitySystem.Components.Grid
@@ -17,16 +15,16 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     {
         public static int ChunkSize => GenerationSystem.ChunkSize;
         public static int CellSize => GenerationSystem.WorldScale;
-        public static readonly int ChunkUnitSize = ChunkSize * CellSize;
+        public static int ChunkUnitSize => GenerationSystem.ChunkUnitSize;
         public static int HalfChunkSize => ChunkSize/2;
         public ChunkDataComponent(Entity entity,int2 chunkPosition, float3 worldPosition,
             PrefabsDataComponent prefabs,NativeArray<ResourcePatch> resourcePatches, EntityCommandBuffer ecb)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
-            ResourcePatches = new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent);
+            ResourcePatches = resourcePatches.Length > 0 ? new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent) : default;
 
-            var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.TempJob);
+            var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.Temp);
             
             for (int y = 0; y < ChunkSize; y++)
             {

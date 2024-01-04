@@ -37,5 +37,9 @@ namespace Project.Scripts.EntitySystem.Aspects
         {
             ChunkDataRefAry.AddRange(chunkPairs);
         }
+        public void AddChunksToData(PositionChunkPair chunkPairs)
+        {
+            ChunkDataRefAry.Add(chunkPairs);
+        }
     }
 }

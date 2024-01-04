@@ -11,15 +11,15 @@ namespace Project.Scripts.EntitySystem.Systems
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public partial class NewItemHandelSystem : SystemBase
     {
+        private static EndSimulationEntityCommandBufferSystem ecbSingleton;
         protected override void OnCreate()
         {
             RequireForUpdate<NewItemRefHandelDataComponent>();
+            ecbSingleton = World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
         }
 
         protected override void OnUpdate()
         {
-            var ecbSingleton = World.GetExistingSystemManaged<EndSimulationEntityCommandBufferSystem>();
-            
             var ecb = ecbSingleton.CreateCommandBuffer().AsParallelWriter();
             var dep = new NewItemHandel()
             {

@@ -23,7 +23,8 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public NativeArray<ChunkGenerationRequestBuffElement> GetAllRequests()
         {
-            return GenerationRequests.AsNativeArray();
+            var ary = new NativeArray<ChunkGenerationRequestBuffElement>(GenerationRequests.AsNativeArray(), Allocator.TempJob);
+            return ary;
         }
 
         public void ClearRequestList()

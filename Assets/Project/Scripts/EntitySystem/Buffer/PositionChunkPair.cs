@@ -5,7 +5,7 @@ using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Buffer
 {
-    public readonly struct PositionChunkPair : IBufferElementData
+    public struct PositionChunkPair : IBufferElementData
     {
         public PositionChunkPair(Entity chunkEntity, int2 position)
         {
@@ -13,10 +13,10 @@ namespace Project.Scripts.EntitySystem.Buffer
             Position = position;
         }
 
-        public int2 Position { get; }
+        public int2 Position;
         
         public ChunkDataAspect Chunk => GenerationSystem.entityManager.GetAspect<ChunkDataAspect>(ChunkEntity);
-        
-        public Entity ChunkEntity { get; }
+
+        public Entity ChunkEntity;
     }
 }
