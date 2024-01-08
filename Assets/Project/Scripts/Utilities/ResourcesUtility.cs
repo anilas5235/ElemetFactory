@@ -91,7 +91,7 @@ namespace Project.Scripts.Utilities
 
         public static Item CreateItemData(uint[] resourceIDs)
         {
-            NativeArray<uint> ids = new NativeArray<uint>(resourceIDs, Allocator.TempJob);
+            NativeArray<uint> ids = new NativeArray<uint>(resourceIDs, Allocator.Temp);
             Item item = CreateItemData(ids);
             ids.Dispose();
             return item;

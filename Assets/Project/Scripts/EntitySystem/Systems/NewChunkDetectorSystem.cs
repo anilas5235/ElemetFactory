@@ -28,7 +28,7 @@ namespace Project.Scripts.EntitySystem.Systems
             var ecb = ecbSingleton.CreateCommandBuffer();
             var jobHandle = new NewChunkHandle()
             {
-                worldDataAspect = SystemAPI.GetAspect<WorldDataAspect>(GenerationSystem.worldDataEntity),
+                worldData = SystemAPI.GetBuffer<PositionChunkPair>(GenerationSystem.worldDataEntity),
                 ECB = ecb,
             }.Schedule(new JobHandle());
             
@@ -46,11 +46,11 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct NewChunkHandle : IJobEntity
     {
         public EntityCommandBuffer ECB;
-        public WorldDataAspect worldDataAspect;
+        [NativeDisableContainerSafetyRestriction] public DynamicBuffer<PositionChunkPair> worldData;
         
-        private void Execute(Entity entity, NewChunkDataComponent flag, ChunkDataComponent chunkDataComponent)
+        private void Execute(Entity entity, NewChunkDataComponent flag)
         {
-            worldDataAspect.AddChunksToData(new PositionChunkPair(entity, chunkDataComponent.ChunkPosition));
+            worldData.Add(new PositionChunkPair(entity, flag.Position,flag.PatchNum));
             ECB.RemoveComponent<NewChunkDataComponent>(entity);
         }
     }

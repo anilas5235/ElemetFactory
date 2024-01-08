@@ -74,7 +74,6 @@ namespace Project.Scripts.EntitySystem.Systems
                 LoadedChunks = new NativeList<int2>(Allocator.Persistent),
                 FirstUpdate = true,
             });
-            
             _endSimEntityCommandBufferSystem = state.World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
         }
 
@@ -119,20 +118,47 @@ namespace Project.Scripts.EntitySystem.Systems
             using NativeArray<ChunkGenerationRequestBuffElement> requests = _generationRequestAspect.GetAllRequests();
             using var genChunkData = new NativeArray<ChunkGenTempData>(requests.Length, Allocator.TempJob);
 
-            var genJob = new Generation()
+            var genJob = new GenerationOfChunkData()
             {
-                ECB = ecb,
-                WorldScale = WorldScale,
                 WorldDataAspect = worldDataAspect,
                 Requests = requests,
-                prefabsComp = prefabsDataComponent,
                 RandomGenerator = _randomObj,
                 generatedChunks = genChunkData,
             };
 
             _generationRequestAspect.ClearRequestList();
             var handle = genJob.Schedule();
-            _endSimEntityCommandBufferSystem.AddJobHandleForProducer(handle);
+            handle.Complete();
+            foreach (var chunkGenTempData in genChunkData) { GenerateChunk(chunkGenTempData,ecb,prefabsDataComponent); }
+        }
+        
+        private static void GenerateChunk(ChunkGenTempData chunkGenTempData, EntityCommandBuffer ECB,PrefabsDataComponent prefabsComp)
+        {
+            Entity entity = ECB.CreateEntity();
+            int2 chunkPosition = chunkGenTempData.position;
+            float3 worldPos = GetChunkWorldPosition(chunkPosition);
+            ECB.SetName(entity, $"Ch({chunkPosition.x},{chunkPosition.y})");
+            ECB.AddComponent(entity, new LocalTransform()
+            {
+                Position = worldPos,
+                Scale = WorldScale,
+            });
+            var patches = new NativeArray<ResourcePatch>(chunkGenTempData.patches.Length,Allocator.Temp);
+
+            for (var index = 0; index < chunkGenTempData.patches.Length; index++)
+            {
+                var tempData = chunkGenTempData.patches[index];
+                patches[index] = new ResourcePatch()
+                {
+                    Positions = tempData.Positions,
+                    Resource = ResourcesUtility.CreateItemData(tempData.ResourceIDs)
+                };
+            }
+
+            ECB.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
+                prefabsComp,patches, ECB));
+            patches.Dispose();
+            ECB.AddComponent(entity,new NewChunkDataComponent(chunkGenTempData.position,chunkGenTempData.patches.Length));
         }
 
         private void UpdatingPlayerState(SystemState state, GenerationSystemComponent generationComp)
@@ -233,20 +259,12 @@ namespace Project.Scripts.EntitySystem.Systems
         #endregion
     }
     
-    public struct Generation : IJob
+    public struct GenerationOfChunkData : IJob
     {
-        public EntityCommandBuffer ECB;
-        public int WorldScale;
         public WorldDataAspect WorldDataAspect;
         [NativeDisableContainerSafetyRestriction,ReadOnly] public NativeArray<ChunkGenerationRequestBuffElement> Requests;
-        public PrefabsDataComponent prefabsComp;
         public Random RandomGenerator;
         [NativeDisableContainerSafetyRestriction] public NativeArray<ChunkGenTempData> generatedChunks ;
-
-        private static float3 GetChunkWorldPosition(int2 chunkPosition)
-        {
-            return new float3((float2)chunkPosition * GenerationSystem.ChunkUnitSize, 0);
-        }
         
         public void Execute()
         {
@@ -257,27 +275,6 @@ namespace Project.Scripts.EntitySystem.Systems
 
                 generatedChunks[index] = (GenerateChunkGenTempData(request.ChunkPosition));
             }
-
-            foreach (var chunkGenTempData in generatedChunks)
-            {
-                GenerateChunk(chunkGenTempData);
-            }
-        }
-
-        private void GenerateChunk(ChunkGenTempData chunkGenTempData)
-        {
-            Entity entity = ECB.CreateEntity();
-            int2 chunkPosition = chunkGenTempData.position;
-            float3 worldPos = GetChunkWorldPosition(chunkPosition);
-            ECB.SetName(entity, $"Chunk({chunkPosition.x},{chunkPosition.y})");
-            ECB.AddComponent(entity, new LocalTransform()
-            {
-                Position = worldPos,
-                Scale = WorldScale,
-            });
-            ECB.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
-                prefabsComp,chunkGenTempData.patches, ECB));
-            ECB.AddComponent(entity,new NewChunkDataComponent());
         }
 
         private ChunkGenTempData GenerateChunkGenTempData(int2 chunkPosition)
@@ -295,16 +292,16 @@ namespace Project.Scripts.EntitySystem.Systems
             return (ResourceType)RandomGenerator.NextInt(1, pool);
         }
 
-        private ResourcePatch GenerateResourcePatch(int patchSize, ResourceType resourceType, NativeList<int2> blocked)
+        private ResourcePatchTemp GenerateResourcePatch(int patchSize, ResourceType resourceType, NativeList<int2> blocked)
         {
             using NativeList<int2> cellPositions = GeneratePatchShape(patchSize, blocked);
 
             blocked.AddRange(cellPositions.AsArray());
 
-            return new ResourcePatch()
+            return new ResourcePatchTemp()
             {
-                Positions = new NativeArray<int2>(cellPositions.ToArray(), Allocator.Persistent),
-                Resource = ResourcesUtility.CreateItemData(new[] { (uint)resourceType })
+                Positions = new NativeArray<int2>(cellPositions.AsArray(), Allocator.Temp),
+                ResourceIDs = new NativeArray<uint>(new[] { (uint)resourceType },Allocator.Temp)
             };
         }
 
@@ -334,8 +331,8 @@ namespace Project.Scripts.EntitySystem.Systems
         private void GetPathBaseShape(int patchSize, out NativeList<int2> cellPositions,
             out NativeList<int2> outerCells)
         {
-            cellPositions = new NativeList<int2>();
-            outerCells = new NativeList<int2>();
+            cellPositions = new NativeList<int2>(Allocator.Temp);
+            outerCells = new NativeList<int2>(Allocator.Temp);
 
             switch (patchSize)
             {
@@ -361,16 +358,16 @@ namespace Project.Scripts.EntitySystem.Systems
             }
         }
 
-        private NativeArray<ResourcePatch> GenerateResources(int2 chunkPosition)
+        private NativeArray<ResourcePatchTemp> GenerateResources(int2 chunkPosition)
         {
             float distToCenter = math.sqrt(chunkPosition.x * chunkPosition.x + chunkPosition.y * chunkPosition.y);
             int numberOfPatches = GetNumberOfChunkResources(7f, chunkPosition);
-            if (distToCenter < 2f || numberOfPatches < 1) return new NativeArray<ResourcePatch>();
-            NativeArray<ResourcePatch> resourcePatches =
-                new NativeArray<ResourcePatch>(numberOfPatches, Allocator.TempJob);
+            if (distToCenter < 2f || numberOfPatches < 1) return new NativeArray<ResourcePatchTemp>();
+            NativeArray<ResourcePatchTemp> resourcePatches =
+                new NativeArray<ResourcePatchTemp>(numberOfPatches, Allocator.Temp);
             NativeArray<ResourceType> chunkResources =
-                new NativeArray<ResourceType>(numberOfPatches, Allocator.TempJob);
-            NativeList<int2> blockPositions = new NativeList<int2>();
+                new NativeArray<ResourceType>(numberOfPatches, Allocator.Temp);
+            NativeList<int2> blockPositions = new NativeList<int2>(Allocator.Temp);
 
             for (int i = 0; i < numberOfPatches; i++)
             {
@@ -462,7 +459,7 @@ namespace Project.Scripts.EntitySystem.Systems
                     cellPositions.Add(t);
                 }
 
-                if (!addList.Any()) emptyIterations++;
+                if (addList.Length < 1) emptyIterations++;
 
                 if (cellPositions.Length > minAndMaxCellCount.x || emptyIterations >= 20) done = true;
 
@@ -501,10 +498,10 @@ namespace Project.Scripts.EntitySystem.Systems
         private bool TryGetChunkWhileGenerating(int2 chunkPosition, out ChunkGenTempData chunk)
         {
             chunk = default;
-            if (WorldDataAspect.TryGetChunk(chunkPosition, out ChunkDataAspect chunkAspect))
+            if (WorldDataAspect.TryGetPositionChunkPair(chunkPosition, out var pair))
             {
-                chunk = new ChunkGenTempData(chunkAspect.ChunksPosition,
-                    new NativeArray<ResourcePatch>(chunkAspect.NumPatches, Allocator.None));
+                chunk = new ChunkGenTempData(chunkPosition,
+                    new NativeArray<ResourcePatchTemp>(pair.NumOfPatches, Allocator.Temp));
                 return true;
             }
 
@@ -538,10 +535,10 @@ namespace Project.Scripts.EntitySystem.Systems
     public readonly struct ChunkGenTempData
     {
         public readonly int2 position;
-        public readonly NativeArray<ResourcePatch> patches;
+        public readonly NativeArray<ResourcePatchTemp> patches;
         public int NumPatches => patches.Length;
 
-        public ChunkGenTempData(int2 position, NativeArray<ResourcePatch> patches)
+        public ChunkGenTempData(int2 position, NativeArray<ResourcePatchTemp> patches)
         {
             this.position = position;
             this.patches = patches;

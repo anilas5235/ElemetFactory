@@ -21,7 +21,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         
         public Entity Building;
         public bool IsOccupied => Building != default;
-        public ItemSystem.Item Resource;
+        public Item Resource;
 
         public bool DeleteBuilding()
         {

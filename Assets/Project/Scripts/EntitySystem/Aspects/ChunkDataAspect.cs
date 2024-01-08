@@ -27,7 +27,6 @@ namespace Project.Scripts.EntitySystem.Aspects
         private static int ChunkUnitSize => ChunkDataComponent.ChunkUnitSize;
         public int2 ChunksPosition => _chunkData.ValueRO.ChunkPosition;
         public float3 WorldPosition => _chunkData.ValueRO.WorldPosition;
-        public int NumPatches => _chunkData.ValueRO.ResourcePatches.Length;
 
         public bool InView
         {

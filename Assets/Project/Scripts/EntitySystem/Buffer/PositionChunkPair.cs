@@ -7,10 +7,11 @@ namespace Project.Scripts.EntitySystem.Buffer
 {
     public struct PositionChunkPair : IBufferElementData
     {
-        public PositionChunkPair(Entity chunkEntity, int2 position)
+        public PositionChunkPair(Entity chunkEntity, int2 position, int numOfPatches)
         {
             ChunkEntity = chunkEntity;
             Position = position;
+            NumOfPatches = numOfPatches;
         }
 
         public int2 Position;
@@ -18,5 +19,7 @@ namespace Project.Scripts.EntitySystem.Buffer
         public ChunkDataAspect Chunk => GenerationSystem.entityManager.GetAspect<ChunkDataAspect>(ChunkEntity);
 
         public Entity ChunkEntity;
+
+        public int NumOfPatches;
     }
 }

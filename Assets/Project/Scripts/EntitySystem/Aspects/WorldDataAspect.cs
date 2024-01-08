@@ -23,6 +23,18 @@ namespace Project.Scripts.EntitySystem.Aspects
             return false;
         }
 
+        public bool TryGetPositionChunkPair(int2 chunkPos, out PositionChunkPair pair)
+        {
+            pair = default;
+            
+            foreach (var currentPair in ChunkDataRefAry.AsNativeArray().Where(pair => pair.Position.x == chunkPos.x && pair.Position.y == chunkPos.y))
+            {
+                pair = currentPair;
+                return true;
+            }
+            return false;
+        }
+
         public bool ChunkExits(int2 chunkPos)
         {
             foreach (var pair in ChunkDataRefAry)
@@ -31,15 +43,6 @@ namespace Project.Scripts.EntitySystem.Aspects
             }
 
             return false;
-        }
-
-        public void AddChunksToData(NativeArray<PositionChunkPair> chunkPairs)
-        {
-            ChunkDataRefAry.AddRange(chunkPairs);
-        }
-        public void AddChunksToData(PositionChunkPair chunkPairs)
-        {
-            ChunkDataRefAry.Add(chunkPairs);
         }
     }
 }

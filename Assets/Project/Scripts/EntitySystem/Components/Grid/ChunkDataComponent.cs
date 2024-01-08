@@ -5,6 +5,7 @@ using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.ItemSystem;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -22,7 +23,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
-            ResourcePatches = resourcePatches.Length > 0 ? new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent) : default;
+            ResourcePatches = resourcePatches.Length > 0 ? new NativeArray<ResourcePatch>(resourcePatches,Allocator.Persistent): new NativeArray<ResourcePatch>(0,Allocator.Persistent);
 
             var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.Temp);
             
@@ -66,8 +67,8 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                 }
             }
 
-            var buffer = ecb.AddBuffer<CellObject>(entity);
-            buffer.AddRange(cellObjects);
+            var cellBuffer = ecb.AddBuffer<CellObject>(entity);
+            cellBuffer.AddRange(cellObjects);
             cellObjects.Dispose();
             ecb.AddBuffer<EntityRefBufferElement>(entity);
             InView = true;
