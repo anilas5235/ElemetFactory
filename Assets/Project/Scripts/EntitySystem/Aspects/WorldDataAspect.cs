@@ -44,5 +44,13 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             return false;
         }
+
+        public void GetAllChunks(NativeList<ChunkDataAspect> chunkDataAspects)
+        {
+            foreach (var positionChunkPair in ChunkDataRefAry)
+            {
+                chunkDataAspects.Add(positionChunkPair.Chunk);
+            }
+        }
     }
 }

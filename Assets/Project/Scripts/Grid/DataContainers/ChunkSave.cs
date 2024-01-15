@@ -1,7 +1,6 @@
 ﻿using System;
-using Project.Scripts.Buildings;
 using Project.Scripts.Buildings.BuildingFoundation;
-using UnityEngine;
+using Unity.Mathematics;
 
 namespace Project.Scripts.Grid.DataContainers
 {
@@ -10,6 +9,6 @@ namespace Project.Scripts.Grid.DataContainers
     {
         public ChunkResourcePatch[] chunkResourcePatches;
         public PlacedBuildingData[] placedBuildingData;
-        public Vector2Int chunkPosition;
+        public int2 chunkPosition;
     }
 }

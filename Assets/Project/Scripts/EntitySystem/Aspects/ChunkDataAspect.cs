@@ -16,11 +16,11 @@ namespace Project.Scripts.EntitySystem.Aspects
 {
     public readonly partial struct ChunkDataAspect : IAspect
     {
-        private readonly RefRW<ChunkDataComponent> _chunkData;
+        public readonly RefRW<ChunkDataComponent> _chunkData;
 
         private readonly DynamicBuffer<CellObject> _cellObjects;
 
-        private readonly DynamicBuffer<EntityRefBufferElement> _buildings;
+        public readonly DynamicBuffer<EntityRefBufferElement> _buildings;
         private static int ChunkSize => ChunkDataComponent.ChunkSize;
         private static int HalfChunkSize => ChunkDataComponent.HalfChunkSize;
         private static int CellSize => GenerationSystem.WorldScale;

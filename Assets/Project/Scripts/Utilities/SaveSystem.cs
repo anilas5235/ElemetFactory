@@ -11,8 +11,6 @@ namespace Project.Scripts.Utilities
             path = Application.persistentDataPath + "/" + path;
             
             File.WriteAllText(path, JsonUtility.ToJson(saveData,true));
-
-            Debug.Log("Save was successful");
         }
 
         public static T Load<T>(string path) where T : class, new()
@@ -20,17 +18,7 @@ namespace Project.Scripts.Utilities
             path = Application.persistentDataPath + "/" + path;
             Debug.Log(path);
 
-            T activeSave;
-            
-            if (File.Exists(path))
-            {
-                activeSave = JsonUtility.FromJson<T>(File.ReadAllText(path));
-                Debug.Log("Load was successful");
-            }
-            else
-            {
-                activeSave = new T();
-            }
+            var activeSave = File.Exists(path) ? JsonUtility.FromJson<T>(File.ReadAllText(path)) : new T();
             return activeSave;
         }
 
@@ -45,8 +33,6 @@ namespace Project.Scripts.Utilities
     [System.Serializable]
     public class SaveData
     {
-        public float[] audioOptions = new float[10];
-        public bool[] levelsUnlocked = new bool[10];
         public ChunkSave[] chunkSaves;
     }
 }

@@ -55,7 +55,6 @@ namespace Project.Scripts.Utilities
                 BuildingsData[i] = new BuildingLookUpData(data.nameString,entities[i],data.InputOffsets,
                     data.OutputOffsets, data.buildingID,data.neededTiles);
             }
-            Debug.Log("Setup Comp");
         }
 
         public static bool GetBuildingData(int buildingID, out BuildingLookUpData buildingLookUpData)
