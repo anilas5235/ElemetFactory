@@ -3,6 +3,7 @@ using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.DataObject;
+using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.ItemSystem;
 using Unity.Burst;
 using Unity.Collections;

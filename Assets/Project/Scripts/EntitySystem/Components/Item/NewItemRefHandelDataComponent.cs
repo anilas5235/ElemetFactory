@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace Project.Scripts.EntitySystem.Components
+namespace Project.Scripts.EntitySystem.Components.Item
 {
     public struct NewItemRefHandelDataComponent : IComponentData
     {

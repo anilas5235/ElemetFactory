@@ -1,5 +1,6 @@
 using System;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.ItemSystem;
 using Unity.Entities;
@@ -16,19 +17,10 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public readonly RefRW<ItemEntityStateDataComponent> dataComponent;
 
-        public readonly RefRW<ItemColor> color;
-
         public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,PrefabsDataComponent prefabs)
         {
-            Entity itemEntity = item.ItemForm switch
-            {
-                ItemForm.Gas => ecb.Instantiate(prefabs.ItemGas),
-                ItemForm.Fluid => ecb.Instantiate(prefabs.ItemLiquid),
-                ItemForm.Solid => ecb.Instantiate(prefabs.ItemSolid),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-                    
-            ecb.SetComponent(itemEntity,new ItemColor(){Value = item.Color});
+            var itemEntity = ecb.Instantiate(prefabs.ItemSolid); //TODO: new system for item prefabs
+            
             ecb.SetComponent(itemEntity, new ItemEntityStateDataComponent()
             {
                 Arrived = true,

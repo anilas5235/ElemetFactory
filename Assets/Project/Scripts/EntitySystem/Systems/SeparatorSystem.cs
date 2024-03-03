@@ -1,6 +1,7 @@
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.Utilities;
 using Unity.Burst;
 using Unity.Collections;
@@ -55,17 +56,13 @@ namespace Project.Scripts.EntitySystem.Systems
                 var ecb = _endVariableECBSys.CreateCommandBuffer().AsParallelWriter();
                 
                 using var prefabs = new NativeArray<Entity>(prefabsEntities,Allocator.TempJob);
-
-                using var resourceLookUp =
-                    new NativeArray<ResourceLookUpData>(ResourcesUtility.ResourceDataBank, Allocator.TempJob);
                 
                 var dep = new SeparatorWork()
                 {
                     ECB = ecb,
                     WorldScale = GenerationSystem.WorldScale,
                     prefabsEntities = prefabs,
-                    resourceLookUpData = resourceLookUp,
-                    resourceBufferLookup = SystemAPI.GetBufferLookup<ResourceDataPoint>(),
+                    resourceBufferLookup = SystemAPI.GetComponentLookup<ItemDataComponent>()
                 }.ScheduleParallel(new JobHandle());
                 
                 _endVariableECBSys.AddJobHandleForProducer(dep);
@@ -86,10 +83,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public NativeArray<Entity> prefabsEntities;
 
         [NativeDisableContainerSafetyRestriction]
-        public BufferLookup<ResourceDataPoint> resourceBufferLookup;
-
-        [NativeDisableContainerSafetyRestriction]
-        public NativeArray<ResourceLookUpData> resourceLookUpData;
+        public ComponentLookup<ItemDataComponent> resourceBufferLookup;
 
         public int WorldScale;
 
@@ -99,12 +93,9 @@ namespace Project.Scripts.EntitySystem.Systems
             if (buildingAspect.outputSlots[0].IsOccupied || buildingAspect.outputSlots[1].IsOccupied) return;
 
             if (!buildingAspect.inputSlots[0].IsOccupied) return;
-            
-            ItemEntityUtility.SplitItemEntity(index, buildingAspect.entity, buildingAspect.outputSlots[0],
-                buildingAspect.outputSlots[1],
-                resourceBufferLookup[buildingAspect.inputSlots[0].SlotContent].AsNativeArray(),
-                ECB, prefabsEntities, WorldScale, resourceLookUpData, out var A, out var B);
 
+            //TODO: New Recipe system
+            
             ECB.DestroyEntity(index, buildingAspect.inputSlots[0].SlotContent);
             buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
         }

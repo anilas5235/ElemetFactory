@@ -1,27 +1,27 @@
-﻿using Project.Scripts.EntitySystem.Aspects;
+﻿using System.Linq;
+using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Flags;
 using Project.Scripts.EntitySystem.Components.Grid;
-using Project.Scripts.ItemSystem;
+using Project.Scripts.EntitySystem.Systems;
 using Project.Scripts.Utilities;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
-namespace Project.Scripts.EntitySystem.Systems
+namespace Project.Scripts.EntitySystem.Others
 {
     public class GenerationOfChunkData 
     {
-        private WorldDataAspect WorldDataAspect;
-        private NativeArray<ChunkGenerationRequestBuffElement> Requests;
-        private Random RandomGenerator;
-        private NativeList<ChunkGenTempData> generatedChunks;
-        private EntityCommandBuffer ECB;
-        private PrefabsDataComponent prefabsComp;
+        private readonly WorldDataAspect _worldDataAspect;
+        private NativeArray<ChunkGenerationRequestBuffElement> _requests;
+        private Random _randomGenerator;
+        private NativeList<ChunkGenTempData> _generatedChunks;
+        private EntityCommandBuffer _ecb;
+        private readonly PrefabsDataComponent _prefabsComp;
 
         private static float WorldScale => GenerationSystem.WorldScale;
         
@@ -51,27 +51,27 @@ namespace Project.Scripts.EntitySystem.Systems
 
         public GenerationOfChunkData(WorldDataAspect worldDataAspect, NativeArray<ChunkGenerationRequestBuffElement> requests, Random randomGenerator, EntityCommandBuffer ecb, PrefabsDataComponent prefabsComp)
         {
-            WorldDataAspect = worldDataAspect;
-            Requests = requests;
-            RandomGenerator = randomGenerator;
-            generatedChunks = new NativeList<ChunkGenTempData>(Allocator.TempJob);
-            ECB = ecb;
-            this.prefabsComp = prefabsComp;
+            _worldDataAspect = worldDataAspect;
+            _requests = requests;
+            _randomGenerator = randomGenerator;
+            _generatedChunks = new NativeList<ChunkGenTempData>(Allocator.TempJob);
+            _ecb = ecb;
+            this._prefabsComp = prefabsComp;
         }
 
         public void Execute()
         {
-            foreach (var request in Requests)
+            foreach (var request in _requests)
             {
                 if (CheckIfChunkExitsWhileGenerating(request.ChunkPosition)) { continue; }
 
                 var chunkData = GenerateChunkGenTempData(request.ChunkPosition);
                 
-                generatedChunks.Add(chunkData);
+                _generatedChunks.Add(chunkData);
                 GenerateChunk(chunkData);
             }
 
-            generatedChunks.Dispose();
+            _generatedChunks.Dispose();
         }
 
         private ChunkGenTempData GenerateChunkGenTempData(int2 chunkPosition)
@@ -81,11 +81,11 @@ namespace Project.Scripts.EntitySystem.Systems
         
         private void GenerateChunk(ChunkGenTempData chunkGenTempData)
         {
-            Entity entity = ECB.CreateEntity();
-            int2 chunkPosition = chunkGenTempData.position;
-            float3 worldPos = GenerationSystem.GetChunkWorldPosition(chunkPosition);
-            ECB.SetName(entity, $"Ch({chunkPosition.x},{chunkPosition.y})");
-            ECB.AddComponent(entity, new LocalTransform()
+            var entity = _ecb.CreateEntity();
+            var chunkPosition = chunkGenTempData.position;
+            var worldPos = GenerationSystem.GetChunkWorldPosition(chunkPosition);
+            _ecb.SetName(entity, $"Ch({chunkPosition.x},{chunkPosition.y})");
+            _ecb.AddComponent(entity, new LocalTransform()
             {
                 Position = worldPos,
                 Scale = WorldScale,
@@ -98,24 +98,24 @@ namespace Project.Scripts.EntitySystem.Systems
                 patches[index] = new ResourcePatch()
                 {
                     Positions = tempData.Positions,
-                    Resource = ResourcesUtility.CreateItemData(tempData.ResourceIDs)
+                    ItemID = tempData.ItemID,
                 };
             }
 
-            ECB.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
-                prefabsComp,patches, ECB));
+            _ecb.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
+                _prefabsComp,patches, _ecb));
             patches.Dispose();
-            ECB.AddComponent(entity,new NewChunkDataComponent(chunkGenTempData.position,chunkGenTempData.patches.Length));
+            _ecb.AddComponent(entity,new NewChunkDataComponent(chunkGenTempData.position,chunkGenTempData.patches.Length));
         }
 
         #region GenerationSteps
 
-        private ResourceType GetRandom(float distanceToCenter)
+        private int GetRandom(float distanceToCenter)
         {
-            int pool = 1;
+            var pool = 1;
             if (distanceToCenter >= 2f) pool += 3;
             if (distanceToCenter >= 5f) pool += 1;
-            return (ResourceType)RandomGenerator.NextInt(1, pool);
+            return _randomGenerator.NextInt(1, pool);
         }
         private float INT2Length(int2 vec)
         {
@@ -123,24 +123,24 @@ namespace Project.Scripts.EntitySystem.Systems
         }
 
         #region PatchGeneration
-        private ResourcePatchTemp GenerateResourcePatch(int patchSize, ResourceType resourceType, NativeList<int2> blocked)
+        private ResourcePatch GenerateResourcePatch(int patchSize, int resourceID, NativeList<int2> blocked)
         {
-            using NativeList<int2> cellPositions = GeneratePatchShape(patchSize, blocked);
+            using var cellPositions = GeneratePatchShape(patchSize, blocked);
 
             blocked.AddRange(cellPositions.AsArray());
 
-            return new ResourcePatchTemp()
+            return new ResourcePatch()
             {
                 Positions = new NativeArray<int2>(cellPositions.AsArray(), Allocator.Temp),
-                ResourceIDs = new NativeArray<uint>(new[] { (uint)resourceType },Allocator.Temp)
+                ItemID = resourceID,
             };
         }
         private int GetPatchSize(int numberOfPatches = 1)
         {
-            int returnVal = 1;
-            float random = RandomGenerator.NextFloat(0f, 100f) - ((numberOfPatches - 1) * 20);
-            float currentStep = 0f;
-            for (int i = 0; i < ResourcePatchSizeProbabilities.Length; i++)
+            var returnVal = 1;
+            var random = _randomGenerator.NextFloat(0f, 100f) - ((numberOfPatches - 1) * 20);
+            var currentStep = 0f;
+            for (var i = 0; i < ResourcePatchSizeProbabilities.Length; i++)
             {
                 if (ResourcePatchSizeProbabilities[i] == 0) continue;
                 currentStep += ResourcePatchSizeProbabilities[i];
@@ -157,20 +157,20 @@ namespace Project.Scripts.EntitySystem.Systems
 
             GetPathBaseShape(patchSize, out var cellPositions, out var outerCells);
 
-            int2 minAndMaxCellCount = new int2((int)(outerCells.Length / 2f + cellPositions.Length),
+            var minAndMaxCellCount = new int2((int)(outerCells.Length / 2f + cellPositions.Length),
                 (int)(cellPositions.Length * 2f));
             int2 center;
             do
             {
-                center = new int2(RandomGenerator.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1),
-                    RandomGenerator.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1));
+                center = new int2(_randomGenerator.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1),
+                    _randomGenerator.NextInt(patchSize + 1, ChunkDataComponent.ChunkSize - patchSize - 1));
             } while (blocked.Contains(center));
 
-            for (int i = 0; i < cellPositions.Length; i++) cellPositions[i] += center;
-            for (int i = 0; i < outerCells.Length; i++) outerCells[i] += center;
+            for (var i = 0; i < cellPositions.Length; i++) cellPositions[i] += center;
+            for (var i = 0; i < outerCells.Length; i++) outerCells[i] += center;
 
-            bool done = false;
-            int emptyIterations = 0;
+            var done = false;
+            var emptyIterations = 0;
 
             do
             {
@@ -178,22 +178,23 @@ namespace Project.Scripts.EntitySystem.Systems
                 using NativeList<int2> addList = new(Allocator.TempJob);
                 foreach (var outerCell in outerCells)
                 {
-                    if (cellPositions.Length + addList.Length >= minAndMaxCellCount.y) break;
+                    if( cellPositions.Length + addList.Length >= minAndMaxCellCount.y){break;}
+                        
                     if (blocked.Contains(outerCell))
                     {
                         removeList.Add(outerCell);
                         continue;
                     }
 
-                    foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D4)
+                    foreach (var neighbourOffset in GeneralConstants.NeighbourOffsets2D4)
                     {
                         if (cellPositions.Length + addList.Length >= minAndMaxCellCount.y) break;
-                        int2 newCell = outerCell + new int2(neighbourOffset.x, neighbourOffset.y);
+                        var newCell = outerCell + new int2(neighbourOffset.x, neighbourOffset.y);
                         if (cellPositions.Contains(newCell) || addList.Contains(newCell) ||
                             blocked.Contains(newCell + center) ||
                             !ChunkDataAspect.IsValidPositionInChunk(newCell)) continue;
-                        float prob = 1f / (INT2Length(newCell) + .5f) * 4f;
-                        if (RandomGenerator.NextFloat(0f, 100f) / 100f >= prob) continue;
+                        var prob = 1f / (INT2Length(newCell) + .5f) * 4f;
+                        if (_randomGenerator.NextFloat(0f, 100f) / 100f >= prob) continue;
                         if (!removeList.Contains(outerCell)) removeList.Add(outerCell);
                         addList.Add(newCell);
                     }
@@ -201,7 +202,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
                 foreach (var t in removeList)
                 {
-                    for (int i = 0; i < outerCells.Length; i++)
+                    for (var i = 0; i < outerCells.Length; i++)
                     {
                         var condition = outerCells[i] == t;
                         if (condition is { x: true, y: true })
@@ -226,7 +227,7 @@ namespace Project.Scripts.EntitySystem.Systems
             return cellPositions;
         }
 
-        private void GetPathBaseShape(int patchSize, out NativeList<int2> cellPositions,
+        private static void GetPathBaseShape(int patchSize, out NativeList<int2> cellPositions,
             out NativeList<int2> outerCells)
         {
             cellPositions = new NativeList<int2>(Allocator.Temp);
@@ -256,32 +257,22 @@ namespace Project.Scripts.EntitySystem.Systems
             }
         }
         #endregion
-        private NativeArray<ResourcePatchTemp> GenerateResources(int2 chunkPosition)
+        private NativeArray<ResourcePatch> GenerateResources(int2 chunkPosition)
         {
-            float distToCenter = math.sqrt(chunkPosition.x * chunkPosition.x + chunkPosition.y * chunkPosition.y);
-            int numberOfPatches = GetNumberOfChunkResources(7f, chunkPosition);
-            if (distToCenter < 2f || numberOfPatches < 1) return new NativeArray<ResourcePatchTemp>();
-            NativeArray<ResourcePatchTemp> resourcePatches =
-                new NativeArray<ResourcePatchTemp>(numberOfPatches, Allocator.Temp);
-            NativeArray<ResourceType> chunkResources =
-                new NativeArray<ResourceType>(numberOfPatches, Allocator.Temp);
-            NativeList<int2> blockPositions = new NativeList<int2>(Allocator.Temp);
+            var distToCenter = math.sqrt(chunkPosition.x * chunkPosition.x + chunkPosition.y * chunkPosition.y);
+            var numberOfPatches = GetNumberOfChunkResources(7f, chunkPosition);
+            if (distToCenter < 2f || numberOfPatches < 1) return new NativeArray<ResourcePatch>();
+            var resourcePatches = new NativeArray<ResourcePatch>(numberOfPatches, Allocator.Temp);
+            var chunkResources = new NativeArray<int>(numberOfPatches, Allocator.Temp);
+            var blockPositions = new NativeList<int2>(Allocator.Temp);
 
-            for (int i = 0; i < numberOfPatches; i++)
+            for (var i = 0; i < numberOfPatches; i++)
             {
                 bool done;
                 do
                 {
-                    ResourceType type = GetRandom(distToCenter);
-                    done = true;
-                    foreach (var resource in chunkResources)
-                    {
-                        if (type == resource)
-                        {
-                            done = false;
-                            break;
-                        }
-                    }
+                    var type = GetRandom(distToCenter);
+                    done = chunkResources.All(resource => type != resource);
 
                     if (!done) continue;
                     chunkResources[i] = type;
@@ -293,20 +284,20 @@ namespace Project.Scripts.EntitySystem.Systems
         }
         private int GetNumberOfChunkResources(float antiCrowdingMultiplier, int2 chunkPosition)
         {
-            int returnVal = 0;
-            float randomNum = RandomGenerator.NextFloat(0f, 100f);
+            var returnVal = 0;
+            var randomNum = _randomGenerator.NextFloat(0f, 100f);
 
-            foreach (Vector2Int neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
+            foreach (var neighbourOffset in GeneralConstants.NeighbourOffsets2D8)
             {
-                int2 chunkPos = new int2(neighbourOffset.x, neighbourOffset.y) + chunkPosition;
+                var chunkPos = new int2(neighbourOffset.x, neighbourOffset.y) + chunkPosition;
                 if (TryGetChunkWhileGenerating(chunkPos, out var chunk))
                 {
                     randomNum -= chunk.NumPatches * antiCrowdingMultiplier;
                 }
             }
 
-            float currentStep = 0f;
-            for (int i = 0; i < ChunkResourceNumberProbabilities.Length; i++)
+            var currentStep = 0f;
+            for (var i = 0; i < ChunkResourceNumberProbabilities.Length; i++)
             {
                 if (ChunkResourceNumberProbabilities[i] == 0) continue;
                 currentStep += ChunkResourceNumberProbabilities[i];
@@ -321,17 +312,14 @@ namespace Project.Scripts.EntitySystem.Systems
         private bool TryGetChunkWhileGenerating(int2 chunkPosition, out ChunkGenTempData chunk)
         {
             chunk = default;
-            if (WorldDataAspect.TryGetPositionChunkPair(chunkPosition, out var pair))
+            if (_worldDataAspect.TryGetPositionChunkPair(chunkPosition, out var pair))
             {
-                chunk = new ChunkGenTempData(chunkPosition,
-                    new NativeArray<ResourcePatchTemp>(pair.NumOfPatches, Allocator.Temp));
+                chunk = new ChunkGenTempData(chunkPosition, new NativeArray<ResourcePatch>(pair.NumOfPatches, Allocator.Temp));
                 return true;
             }
 
-            foreach (var chunkData in generatedChunks)
+            foreach (var chunkData in from chunkData in _generatedChunks let condition = chunkData.position == chunkPosition where condition is { x: true, y: true } select chunkData)
             {
-                var condition = chunkData.position == chunkPosition;
-                if (condition is not { x: true, y: true }) continue;
                 chunk = chunkData;
                 return true;
             }
@@ -341,9 +329,9 @@ namespace Project.Scripts.EntitySystem.Systems
 
         private bool CheckIfChunkExitsWhileGenerating(int2 chunkPosition)
         {
-            if (WorldDataAspect.ChunkExits(chunkPosition)){ return true;}
+            if (_worldDataAspect.ChunkExits(chunkPosition)){ return true;}
 
-            foreach (var chunkData in generatedChunks)
+            foreach (var chunkData in _generatedChunks)
             {
                 var condition = chunkData.position == chunkPosition;
                 if (condition is not { x: true, y: true }) continue;

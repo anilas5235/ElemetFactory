@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Project.Scripts.EntitySystem.Components
+namespace Project.Scripts.EntitySystem.Components.Item
 {
     public struct ItemEntityStateDataComponent : IComponentData
     {

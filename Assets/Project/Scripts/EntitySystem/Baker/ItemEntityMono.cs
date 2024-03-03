@@ -1,4 +1,5 @@
 ﻿using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Item;
 using Unity.Entities;
 using UnityEngine;
 

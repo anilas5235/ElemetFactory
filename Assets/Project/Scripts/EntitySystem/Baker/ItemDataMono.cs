@@ -1,4 +1,5 @@
 ﻿using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Item;
 using Unity.Entities;
 using UnityEngine;
 
@@ -12,7 +13,6 @@ namespace Project.Scripts.EntitySystem.Baker
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity,new ItemDataComponent());
-                AddBuffer<ResourceDataPoint>(entity);
             }
         }
     }

@@ -3,9 +3,7 @@ using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Systems;
-using Project.Scripts.ItemSystem;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -27,43 +25,32 @@ namespace Project.Scripts.EntitySystem.Components.Grid
 
             var cellObjects = new NativeArray<CellObject>(ChunkSize * ChunkSize, Allocator.Temp);
             
-            for (int y = 0; y < ChunkSize; y++)
+            for (var y = 0; y < ChunkSize; y++)
             {
-                for (int x = 0; x < ChunkSize; x++)
+                for (var x = 0; x < ChunkSize; x++)
                 {
-                    int2 pos = new int2(x, y);
-                    float3 cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(pos, WorldPosition);
-                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition,  chunkPosition,Item.EmptyItem);
+                    var pos = new int2(x, y);
+                    var cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(pos, WorldPosition);
+                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition,  chunkPosition, ItemSystem.Item.EmptyItem.ItemID);
                 }
             }
             
-            foreach (ResourcePatch resourcePatch in ResourcePatches)
+            foreach (var resourcePatch in ResourcePatches)
             {
-                Item item = resourcePatch.Resource;
-                foreach (int2 position in resourcePatch.Positions)
+                foreach (var position in resourcePatch.Positions)
                 {
-                    float3 cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(position, WorldPosition);
-                    
-                    var itemEntity = item.ItemForm switch
-                    {
-                        ItemForm.Gas => ecb.Instantiate(prefabs.GasTile),
-                        ItemForm.Fluid => ecb.Instantiate(prefabs.LiquidTile),
-                        ItemForm.Solid => ecb.Instantiate(prefabs.SolidTile),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                    ecb.AddComponent(itemEntity, new TileColor()
-                    {
-                        Value = item.Color,
-                    });
-                    ecb.SetName(itemEntity, $"Resource");
+                    var cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(position, WorldPosition);
 
+                    var itemEntity = ecb.Instantiate(prefabs.SolidTile); //TODO: new system for resource tile prefabs
+
+                    ecb.SetName(itemEntity, $"Resource");
 
                     ecb.SetComponent(itemEntity, new LocalTransform()
                     {
                         Position = cellWorldPosition + new float3(0, 0, 1),
                         Scale = CellSize,
                     });
-                    cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,item);
+                    cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,resourcePatch.ItemID);
                 }
             }
 

@@ -3,6 +3,7 @@ using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Grid;
+using Project.Scripts.EntitySystem.Others;
 using Project.Scripts.Grid;
 using Unity.Collections;
 using Unity.Entities;
@@ -77,13 +78,10 @@ namespace Project.Scripts.EntitySystem.Systems
                 {
                     var ecb = _endSimEntityCommandBufferSystem.CreateCommandBuffer();
 
-                    using NativeArray<ChunkGenerationRequestBuffElement> requests =
-                        _generationRequestAspect.GetAllRequests();
+                    using var requests = _generationRequestAspect.GetAllRequests();
 
-                    PrefabsDataComponent prefabsDataComponent =
-                        SystemAPI.GetComponent<PrefabsDataComponent>(prefabsEntity);
-                    var genJob =
-                        new GenerationOfChunkData(worldDataAspect, requests, _randomObj, ecb, prefabsDataComponent);
+                    var prefabsDataComponent = SystemAPI.GetComponent<PrefabsDataComponent>(prefabsEntity);
+                    var genJob = new GenerationOfChunkData(worldDataAspect, requests, _randomObj, ecb, prefabsDataComponent);
 
                     genJob.Execute();
 
@@ -195,10 +193,10 @@ namespace Project.Scripts.EntitySystem.Systems
     public readonly struct ChunkGenTempData
     {
         public readonly int2 position;
-        public readonly NativeArray<ResourcePatchTemp> patches;
+        public readonly NativeArray<ResourcePatch> patches;
         public int NumPatches => patches.Length;
 
-        public ChunkGenTempData(int2 position, NativeArray<ResourcePatchTemp> patches)
+        public ChunkGenTempData(int2 position, NativeArray<ResourcePatch> patches)
         {
             this.position = position;
             this.patches = patches;

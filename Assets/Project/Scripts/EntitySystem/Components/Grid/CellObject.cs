@@ -1,16 +1,15 @@
-﻿using Project.Scripts.ItemSystem;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Mathematics;
 
 namespace Project.Scripts.EntitySystem.Components.Grid
 {
     public struct CellObject : IBufferElementData
     {
-        public CellObject(int2 position,float3 worldPosition, int2 chunkPosition, ItemSystem.Item resource)
+        public CellObject(int2 position,float3 worldPosition, int2 chunkPosition, int resourceID)
         {
             Position = position;
             ChunkPosition = chunkPosition;
-            Resource = resource;
+            ResourceID = resourceID;
             WorldPosition = worldPosition;
             Building = default;
         }
@@ -21,7 +20,8 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         
         public Entity Building;
         public bool IsOccupied => Building != default;
-        public Item Resource;
+        
+        public int ResourceID { get; }
 
         public bool DeleteBuilding()
         {

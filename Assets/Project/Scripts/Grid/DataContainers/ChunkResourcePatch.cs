@@ -8,6 +8,6 @@ namespace Project.Scripts.Grid.DataContainers
     public struct ChunkResourcePatch
     {
         public int2[] positions;
-        public uint resourceID;
+        public int resourceID;
     }
 }

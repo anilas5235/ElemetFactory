@@ -1,52 +1,25 @@
-using System.Linq;
-using Unity.Collections;
-using Unity.Mathematics;
-
 namespace Project.Scripts.ItemSystem
 {
-    public enum ResourceType : byte
-    {
-        None,
-        H,
-        C,
-        O,
-        N,
-        S,
-        Al,
-        Fe,
-        Na,
-        Cl,
-    }
-    public enum ItemForm : byte
-    {
-        Gas,
-        Fluid,
-        Solid,
-    }
     public readonly struct Item
     {
-        public static readonly Item EmptyItem = new Item();
-        public ItemForm ItemForm{ get; }
-        public float4 Color{ get; }
-        public NativeArray<uint> ResourceIDs { get; }
-        public Item(NativeArray<uint> resourceIDs, ItemForm form, float4 color)
+        public static readonly Item EmptyItem = new();
+        
+        public int ItemID { get; }
+       
+        public Item(int itemID = -1)
         {
-            ResourceIDs = new NativeArray<uint>(resourceIDs,Allocator.Persistent);
-            ItemForm = form;
-            Color = color;
+            ItemID = itemID;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != GetType()) return false;
-            Item target = (Item) obj;
-            if (ResourceIDs.Length != target.ResourceIDs.Length) return false;
-            return !ResourceIDs.Where((t, i) => t != target.ResourceIDs[i]).Any();
+            if (obj == null || obj.GetType() != GetType()) {return false;}
+            var target = (Item) obj;
+            return target.ItemID == ItemID;
         }
-
-        public override string ToString()
+        public override int GetHashCode()
         {
-            return ResourceIDs.Aggregate(string.Empty, (current, resourceID) => current + (ResourceType)resourceID);
+            return ItemID;
         }
     }
 }

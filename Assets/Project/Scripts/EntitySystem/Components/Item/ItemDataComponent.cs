@@ -1,17 +1,9 @@
-﻿using Project.Scripts.ItemSystem;
-using Unity.Entities;
-using Unity.Mathematics;
+﻿using Unity.Entities;
 
-namespace Project.Scripts.EntitySystem.Components
+namespace Project.Scripts.EntitySystem.Components.Item
 {
     public struct ItemDataComponent : IComponentData
     {
-        public ItemForm itemForm;
-        public float4 itemColor;
-    }
-
-    public struct ResourceDataPoint : IBufferElementData
-    {
-        public uint id;
+        public int ItemID;
     }
 }

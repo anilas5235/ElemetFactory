@@ -9,12 +9,6 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     public struct ResourcePatch
     {
         public NativeArray<int2> Positions;
-        public Item Resource;
-    }
-    
-    public struct ResourcePatchTemp
-    {
-        public NativeArray<int2> Positions;
-        public NativeArray<uint> ResourceIDs;
+        public int ItemID;
     }
 }

@@ -1,5 +1,6 @@
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.Item;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;

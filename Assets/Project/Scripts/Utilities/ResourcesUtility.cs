@@ -24,34 +24,21 @@ namespace Project.Scripts.Utilities
             Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
         };
-        
-        public static readonly ResourceLookUpData[] ResourceDataBank = new[]
-        {
-            new ResourceLookUpData(ResourceType.None,new Color(.7f,.7f,.7f),ItemForm.Solid),
-            new ResourceLookUpData(ResourceType.H,new Color(.1f,.8f,1f), ItemForm.Gas),
-            new ResourceLookUpData(ResourceType.C,new Color(.1f,.1f,.1f), ItemForm.Solid),
-            new ResourceLookUpData(ResourceType.O,new Color(0f,1f,0f), ItemForm.Gas),
-            new ResourceLookUpData(ResourceType.N,new Color(1f,0f,0f), ItemForm.Gas),
-            new ResourceLookUpData(ResourceType.S,new Color(1f,1f,0f), ItemForm.Solid),
-            new ResourceLookUpData(ResourceType.Al,new Color(1f,.5f,0f), ItemForm.Solid),
-            new ResourceLookUpData(ResourceType.Fe,new Color(.5f,0f,1f), ItemForm.Solid),
-            new ResourceLookUpData(ResourceType.Na,new Color(1f,.2f,1f), ItemForm.Gas),
-        };
-        public static void SetUpBuildingData(PrefabsDataComponent ComponentData)
+        public static void SetUpBuildingData(PrefabsDataComponent componentData)
         {
             Entity[] entities = new[]
             {
-                ComponentData.Extractor,
-                ComponentData.Conveyor,
-                ComponentData.Combiner,
-                ComponentData.Separator,
-                ComponentData.TrashCan,
+                componentData.Extractor,
+                componentData.Conveyor,
+                componentData.Combiner,
+                componentData.Separator,
+                componentData.TrashCan,
             };
 
             BuildingsData = new BuildingLookUpData[entities.Length];
-            for (int i = 0; i < BuildingsData.Length; i++)
+            for (var i = 0; i < BuildingsData.Length; i++)
             {
-                BuildingScriptableData data = BuildingScriptableDataAry[i];
+                var data = BuildingScriptableDataAry[i];
                 BuildingsData[i] = new BuildingLookUpData(data.nameString,entities[i],data.InputOffsets,
                     data.OutputOffsets, data.buildingID,data.neededTiles);
             }
@@ -69,43 +56,6 @@ namespace Project.Scripts.Utilities
             return false;
         }
 
-        public static Item CreateItemData(NativeArray<uint> resourceIDs)
-        {
-            float4 color = float4.zero;
-            float form =0;
-            foreach (var id in resourceIDs)
-            {
-                ResourceLookUpData lookUpData = GetResourceData(id);
-                color += new float4(lookUpData.color.r, lookUpData.color.g, lookUpData.color.b,0);
-                form += (int)lookUpData.form;
-            }
-            
-            color *= 1f / resourceIDs.Length;
-            color.w = 1f;
-            form *= 1f / resourceIDs.Length;
-            form = Mathf.RoundToInt(form);
-            
-            return new Item(resourceIDs,(ItemForm)form,color);
-        }
-
-        public static Item CreateItemData(uint[] resourceIDs)
-        {
-            NativeArray<uint> ids = new NativeArray<uint>(resourceIDs, Allocator.Temp);
-            Item item = CreateItemData(ids);
-            ids.Dispose();
-            return item;
-        }
-        
-        public static ResourceLookUpData GetResourceData(ResourceType resourceType)
-        {
-            return GetResourceData((uint)resourceType);
-        }
-        
-        public static ResourceLookUpData GetResourceData(uint resourceID)
-        {
-            return ResourceDataBank[resourceID];
-        }
-
         public static int2[] GetGridPositionList(PlacedBuildingData myPlacedBuildingData)
         {
             if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingLookUpData data)) return default;
@@ -117,22 +67,6 @@ namespace Project.Scripts.Utilities
             }
 
             return positions.ToArray();
-        }
-    }
-
-    [Serializable]
-    public readonly struct ResourceLookUpData
-    {
-        public string Name => resourceType.ToString();
-        public readonly ResourceType resourceType;
-        public readonly Color color;
-        public readonly ItemForm form;
-
-        public ResourceLookUpData(ResourceType resourceType, Color color, ItemForm form)
-        {
-            this.color = color;
-            this.form = form;
-            this.resourceType = resourceType;
         }
     }
 
@@ -153,25 +87,16 @@ namespace Project.Scripts.Utilities
             BuildingID = buildingID;
 
             neededTileOffsets = new CellOffsetHandler[neededTiles.Length];
-            for (int i = 0; i < neededTiles.Length; i++)
-            {
-                neededTileOffsets[i] = new CellOffsetHandler(neededTiles[i]);
-            }
+            for (var i = 0; i < neededTiles.Length; i++) { neededTileOffsets[i] = new CellOffsetHandler(neededTiles[i]); }
 
             _inputPortInfos = new PortDataHandler[inputPortData.Length];
-            for (int i = 0; i < _inputPortInfos.Length; i++)
-            {
-                _inputPortInfos[i] = new PortDataHandler(inputPortData[i]);
-            }
+            for (var i = 0; i < _inputPortInfos.Length; i++) { _inputPortInfos[i] = new PortDataHandler(inputPortData[i]); }
 
             _outputPortInfos = new PortDataHandler[outputPortData.Length];
-            for (int i = 0; i < _outputPortInfos.Length; i++)
-            {
-                _outputPortInfos[i] = new PortDataHandler(outputPortData[i]);
-            }
+            for (var i = 0; i < _outputPortInfos.Length; i++) { _outputPortInfos[i] = new PortDataHandler(outputPortData[i]); }
 
             _inputDirections = new CellOffsetHandler[inputPortData.Length];
-            for (int i = 0; i < _inputDirections.Length; i++)
+            for (var i = 0; i < _inputDirections.Length; i++)
             {
                 _inputDirections[i] =
                     new CellOffsetHandler(PlacedBuildingUtility.FacingDirectionToVector(inputPortData[i].direction) +
@@ -179,7 +104,7 @@ namespace Project.Scripts.Utilities
             }
 
             _outputDirection = new CellOffsetHandler[outputPortData.Length];
-            for (int i = 0; i < outputPortData.Length; i++)
+            for (var i = 0; i < outputPortData.Length; i++)
             {
                 _outputDirection[i] = new CellOffsetHandler(
                     PlacedBuildingUtility.FacingDirectionToVector(outputPortData[i].direction) +
