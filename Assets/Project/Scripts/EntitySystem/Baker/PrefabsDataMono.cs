@@ -1,4 +1,3 @@
-using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Components;
 using Unity.Entities;
 using UnityEngine;
@@ -15,7 +14,6 @@ namespace Project.Scripts.EntitySystem.Baker
             GasResource,
             LiquidResource,
             SolidResource,
-        
             Extractor,
             Conveyor,
             Combiner,
@@ -30,7 +28,6 @@ namespace Project.Scripts.EntitySystem.Baker
             var entity = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent(entity, new PrefabsDataComponent(
-            
                 entity,
                 GetEntity(authoring.ItemGas, TransformUsageFlags.Dynamic),
                 GetEntity(authoring.ItemLiquid, TransformUsageFlags.Dynamic),

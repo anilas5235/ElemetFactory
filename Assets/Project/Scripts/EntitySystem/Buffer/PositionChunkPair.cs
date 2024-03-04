@@ -20,6 +20,6 @@ namespace Project.Scripts.EntitySystem.Buffer
 
         public Entity ChunkEntity;
 
-        public int NumOfPatches;
+        public readonly int NumOfPatches;
     }
 }

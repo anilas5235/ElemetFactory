@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Project.Scripts.Buildings.Parts
@@ -18,7 +17,7 @@ namespace Project.Scripts.Buildings.Parts
         {
             containedType = default;
             containedAmount = 0;
-            maxContainableAmount = Int32.MaxValue;
+            maxContainableAmount = int.MaxValue;
         }
 
         public Container(T type, int containedAmount = 0, int maxContainableAmount = Int32.MaxValue)
@@ -46,8 +45,8 @@ namespace Project.Scripts.Buildings.Parts
         public T[] Extract(int amount = 1)
         {
             amount = Mathf.Clamp(amount, 0, containedAmount);
-            T[] result = new T[amount];
-            for (int i = 0; i < result.Length; i++) result[i] = containedType;
+            var result = new T[amount];
+            for (var i = 0; i < result.Length; i++) result[i] = containedType;
             containedAmount -= amount;
             return result;
         }

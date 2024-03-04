@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections;
-using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.EntitySystem.Components.MaterialModify;
+﻿using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.ItemSystem;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Project.Scripts.Utilities
 {

@@ -318,8 +318,9 @@ namespace Project.Scripts.EntitySystem.Others
                 return true;
             }
 
-            foreach (var chunkData in from chunkData in _generatedChunks let condition = chunkData.position == chunkPosition where condition is { x: true, y: true } select chunkData)
+            foreach (var chunkData in _generatedChunks)
             {
+                if (chunkData.position.x != chunkPosition.x || chunkData.position.y != chunkPosition.y){continue;}
                 chunk = chunkData;
                 return true;
             }

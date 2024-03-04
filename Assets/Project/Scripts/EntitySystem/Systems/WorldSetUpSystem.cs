@@ -68,7 +68,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public void Execute()
         {
             var chunkSaves = new List<ChunkSave>();
-            using var chunks = new NativeList<ChunkDataAspect>();
+            var chunks = new NativeList<ChunkDataAspect>(Allocator.Temp);
             
             _worldDataAspect.GetAllChunks(chunks);
 
@@ -102,6 +102,7 @@ namespace Project.Scripts.EntitySystem.Systems
             
             WorldSaveHandler.CurrentWorldSave.chunkSaves = chunkSaves.ToArray();
             WorldSaveHandler.SaveWorldToFile();
+            chunks.Dispose();
         }
     }
 

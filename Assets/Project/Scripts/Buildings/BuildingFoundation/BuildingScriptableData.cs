@@ -11,10 +11,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         Down,
         Left,
     }
-
-    /*
-     * Code based on the work of Code Monkey
-     */
+  
     [CreateAssetMenu(menuName = "BuildingSystem/BuildingScriptableData")]
     public class BuildingScriptableData : ScriptableObject
     {
