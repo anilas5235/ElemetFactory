@@ -11,11 +11,10 @@ GameObject:
   - component: {fileID: 8232190868387762745}
   - component: {fileID: 6473889069711902287}
   - component: {fileID: 2798167410517695104}
-  - component: {fileID: 5158536019637549681}
-  - component: {fileID: 6946671458933738523}
-  - component: {fileID: 6861615413990532829}
+  - component: {fileID: 4968517531634516459}
+  - component: {fileID: 1042116514535678186}
   m_Layer: 0
-  m_Name: Separator
+  m_Name: Conveyor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43,7 +42,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8099156330893030993}
-  m_Mesh: {fileID: 4300000, guid: 61a5dc837123ca843b1de8819b1e5f12, type: 2}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &2798167410517695104
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -64,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 99998dc59742b55499b3a8554fcba645, type: 2}
+  - {fileID: 2100000, guid: 828007824cb83e442a5f9c4d26e4e18c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -86,7 +85,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5158536019637549681
+--- !u!114 &4968517531634516459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -95,10 +94,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8099156330893030993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ef0e9515af84a8db52c2de0688e7c49, type: 3}
+  m_Script: {fileID: 11500000, guid: c7ff89d47a5786a49b69dd332b5e6c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6946671458933738523
+--- !u!114 &1042116514535678186
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -111,16 +110,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Inputs: 1
-  Outputs: 2
---- !u!114 &6861615413990532829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8099156330893030993}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00bf0619d6a97194fa9e3264ffabb56e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  Outputs: 1

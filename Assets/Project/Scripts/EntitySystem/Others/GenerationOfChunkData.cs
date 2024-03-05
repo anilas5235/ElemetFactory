@@ -21,7 +21,7 @@ namespace Project.Scripts.EntitySystem.Others
         private Random _randomGenerator;
         private NativeList<ChunkGenTempData> _generatedChunks;
         private EntityCommandBuffer _ecb;
-        private readonly PrefabsDataComponent _prefabsComp;
+        private readonly Entity _tilePrefab;
 
         private static float WorldScale => GenerationSystem.WorldScale;
         
@@ -49,14 +49,14 @@ namespace Project.Scripts.EntitySystem.Others
         }, Allocator.Persistent);
         #endregion
 
-        public GenerationOfChunkData(WorldDataAspect worldDataAspect, NativeArray<ChunkGenerationRequestBuffElement> requests, Random randomGenerator, EntityCommandBuffer ecb, PrefabsDataComponent prefabsComp)
+        public GenerationOfChunkData(WorldDataAspect worldDataAspect, NativeArray<ChunkGenerationRequestBuffElement> requests, Random randomGenerator, EntityCommandBuffer ecb, Entity tilePrefab)
         {
             _worldDataAspect = worldDataAspect;
             _requests = requests;
             _randomGenerator = randomGenerator;
             _generatedChunks = new NativeList<ChunkGenTempData>(Allocator.TempJob);
             _ecb = ecb;
-            this._prefabsComp = prefabsComp;
+            _tilePrefab = tilePrefab;
         }
 
         public void Execute()
@@ -103,7 +103,7 @@ namespace Project.Scripts.EntitySystem.Others
             }
 
             _ecb.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
-                _prefabsComp,patches, _ecb));
+                _tilePrefab,patches, _ecb));
             patches.Dispose();
             _ecb.AddComponent(entity,new NewChunkDataComponent(chunkGenTempData.position,chunkGenTempData.patches.Length));
         }

@@ -6,14 +6,13 @@ namespace Project.Scripts.EntitySystem.Baker
 {
     public class TrashCanMono : MonoBehaviour
     {
-    }
-    
-    public class TrashCanDataBaker : Baker<TrashCanMono>
-    {
-        public override void Bake(TrashCanMono authoring)
+        public class TrashCanDataBaker : Baker<TrashCanMono>
         {
-            var entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity,new TrashCanDataComponent());
+            public override void Bake(TrashCanMono authoring)
+            {
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new TrashCanDataComponent());
+            }
         }
     }
 }

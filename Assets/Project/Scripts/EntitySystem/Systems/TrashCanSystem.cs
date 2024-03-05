@@ -1,6 +1,8 @@
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.DataObject;
+using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.Utilities;
 using Unity.Burst;
 using Unity.Collections;
@@ -18,7 +20,7 @@ namespace Project.Scripts.EntitySystem.Systems
         
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<ItemPrefabsDataComponent>();
             state.RequireForUpdate<TrashCanDataComponent>();
             _endVariableECBSys =
                 state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();

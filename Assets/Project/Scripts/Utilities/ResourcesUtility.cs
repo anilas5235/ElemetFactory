@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.EntitySystem.Components;
-using Project.Scripts.ItemSystem;
-using Unity.Burst;
+using Project.Scripts.EntitySystem.Buffer;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -14,7 +12,7 @@ namespace Project.Scripts.Utilities
 {
     public static class ResourcesUtility
     {
-        private static BuildingLookUpData[] BuildingsData;
+        private static BuildingLookUpData[] _buildingsData;
 
         private static readonly BuildingScriptableData[] BuildingScriptableDataAry = new[]
         {
@@ -24,22 +22,29 @@ namespace Project.Scripts.Utilities
             Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
             Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
         };
-        public static void SetUpBuildingData(PrefabsDataComponent componentData)
+        public static void SetUpBuildingData(NativeArray<EntityIDPair> entityIDPairs)
         {
-            Entity[] entities = new[]
-            {
-                componentData.Extractor,
-                componentData.Conveyor,
-                componentData.Combiner,
-                componentData.Separator,
-                componentData.TrashCan,
-            };
-
-            BuildingsData = new BuildingLookUpData[entities.Length];
-            for (var i = 0; i < BuildingsData.Length; i++)
+            _buildingsData = new BuildingLookUpData[entityIDPairs.Length];
+            for (var i = 0; i < _buildingsData.Length; i++)
             {
                 var data = BuildingScriptableDataAry[i];
-                BuildingsData[i] = new BuildingLookUpData(data.nameString,entities[i],data.InputOffsets,
+                var prefab = Entity.Null;
+
+                foreach (var entityIDPair in entityIDPairs)
+                {
+                    if (entityIDPair.ID != data.buildingID){continue;}
+                    
+                    prefab = entityIDPair.Entity;
+                    break;
+                }
+
+                if (prefab == Entity.Null)
+                {
+                    Debug.LogError($"Prefab entity for building id {data.buildingID} could not be found",data);
+                    continue;
+                }
+                
+                _buildingsData[i] = new BuildingLookUpData(data.nameString,prefab,data.InputOffsets,
                     data.OutputOffsets, data.buildingID,data.neededTiles);
             }
         }
@@ -47,7 +52,7 @@ namespace Project.Scripts.Utilities
         public static bool GetBuildingData(int buildingID, out BuildingLookUpData buildingLookUpData)
         {
             buildingLookUpData = default;
-            foreach (BuildingLookUpData data in BuildingsData)
+            foreach (var data in _buildingsData)
             {
                 if (data.BuildingID != buildingID) continue;
                 buildingLookUpData = data;
@@ -58,10 +63,10 @@ namespace Project.Scripts.Utilities
 
         public static int2[] GetGridPositionList(PlacedBuildingData myPlacedBuildingData)
         {
-            if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out BuildingLookUpData data)) return default;
-            List<int2> positions = new List<int2>();
+            if (!GetBuildingData(myPlacedBuildingData.buildingDataID, out var data)) return default;
+            var positions = new List<int2>();
 
-            foreach (CellOffsetHandler tileOffset in data.neededTileOffsets)
+            foreach (var tileOffset in data.neededTileOffsets)
             {
                 positions.Add(tileOffset.GetPortDirection((FacingDirection)myPlacedBuildingData.directionID));
             }

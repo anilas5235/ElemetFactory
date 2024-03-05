@@ -16,7 +16,6 @@ namespace Project.Scripts.EntitySystem.Systems
         private static EndVariableRateSimulationEntityCommandBufferSystem _endVariableECBSys;
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<PrefabsDataComponent>();
             state.RequireForUpdate<ExtractorDataComponent>();
             _endVariableECBSys =
                 state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();

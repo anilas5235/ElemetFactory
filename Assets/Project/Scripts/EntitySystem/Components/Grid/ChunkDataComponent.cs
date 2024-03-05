@@ -17,7 +17,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
         public static int ChunkUnitSize => GenerationSystem.ChunkUnitSize;
         public static int HalfChunkSize => ChunkSize/2;
         public ChunkDataComponent(Entity entity,int2 chunkPosition, float3 worldPosition,
-            PrefabsDataComponent prefabs,NativeArray<ResourcePatch> resourcePatches, EntityCommandBuffer ecb)
+           Entity tilePrefab,NativeArray<ResourcePatch> resourcePatches, EntityCommandBuffer ecb)
         {
             ChunkPosition = chunkPosition;
             WorldPosition = worldPosition;
@@ -41,7 +41,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                 {
                     var cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(position, WorldPosition);
 
-                    var itemEntity = ecb.Instantiate(prefabs.SolidTile); //TODO: new system for resource tile prefabs
+                    var itemEntity = ecb.Instantiate(tilePrefab);
 
                     ecb.SetName(itemEntity, $"Resource");
 

@@ -6,14 +6,13 @@ namespace Project.Scripts.EntitySystem.Baker
 {
     public class SeparatorMono : MonoBehaviour
     {
-    }
-    
-    public class SeparatorDataBaker : Baker<SeparatorMono>
-    {
-        public override void Bake(SeparatorMono authoring)
+        public class SeparatorDataBaker : Baker<SeparatorMono>
         {
-            var entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity,new SeparatorDataComponent());
+            public override void Bake(SeparatorMono authoring)
+            {
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new SeparatorDataComponent());
+            }
         }
     }
 }

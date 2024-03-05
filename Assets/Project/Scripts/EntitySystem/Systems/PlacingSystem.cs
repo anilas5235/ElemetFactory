@@ -1,7 +1,8 @@
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Aspects;
-using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.Utilities;
@@ -24,14 +25,14 @@ namespace Project.Scripts.EntitySystem.Systems
             state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); 
             Instance = this;
            
-            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<ItemPrefabsDataComponent>();
         }
         
         public void OnUpdate(ref SystemState state)
         {
             state.Enabled = false;
             ResourcesUtility.SetUpBuildingData(
-                GenerationSystem.entityManager.GetComponentData<PrefabsDataComponent>(GenerationSystem.prefabsEntity));
+                GenerationSystem.entityManager.GetBuffer<EntityIDPair>(GenerationSystem.prefabsEntity).AsNativeArray());
             
             beginSimulationEntityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }

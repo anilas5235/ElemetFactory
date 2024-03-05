@@ -17,9 +17,9 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public readonly RefRW<ItemEntityStateDataComponent> dataComponent;
 
-        public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,PrefabsDataComponent prefabs)
+        public static Entity CreateItemEntity(Item item, EntityCommandBuffer ecb,float3 location,Entity itemPrefab)
         {
-            var itemEntity = ecb.Instantiate(prefabs.ItemSolid); //TODO: new system for item prefabs
+            var itemEntity = ecb.Instantiate(itemPrefab); 
             
             ecb.SetComponent(itemEntity, new ItemEntityStateDataComponent()
             {

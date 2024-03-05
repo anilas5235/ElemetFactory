@@ -1,6 +1,7 @@
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Item;
 using Unity.Burst;
 using Unity.Collections;
@@ -15,14 +16,10 @@ namespace Project.Scripts.EntitySystem.Systems
     [BurstCompile]
     public partial struct CombinerSystem : ISystem
     {
-        private NativeArray<Entity> _prefabsEntities;
-        
-        private static bool firstUpdate = true;
         private static EndVariableRateSimulationEntityCommandBufferSystem _endVariableECBSys;
-        
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<ItemPrefabsDataComponent>();
             state.RequireForUpdate<CombinerDataComponent>();
             _endVariableECBSys =
                 state.World.GetOrCreateSystemManaged<EndVariableRateSimulationEntityCommandBufferSystem>();
@@ -35,31 +32,16 @@ namespace Project.Scripts.EntitySystem.Systems
         
         public void OnUpdate(ref SystemState state)
         {
-            if (firstUpdate)
-            {
-                var prefabs = SystemAPI.GetSingleton<PrefabsDataComponent>();
-                _prefabsEntities = new NativeArray<Entity>(new[]
-                {
-                    prefabs.ItemGas,
-                    prefabs.ItemLiquid,
-                    prefabs.ItemSolid
-                }, Allocator.Persistent);
-                firstUpdate = false;
-            }
-            
             var rateHandel = SystemAPI.GetComponent<TimeRateDataComponent>(state.SystemHandle);
             rateHandel.timeSinceLastTick += SystemAPI.Time.DeltaTime;
             if (rateHandel.timeSinceLastTick >= 1f / rateHandel.Rate)
             {
                 var ecb = _endVariableECBSys.CreateCommandBuffer().AsParallelWriter();
                 
-                using var prefabs = new NativeArray<Entity>(_prefabsEntities,Allocator.TempJob);
-                
                 var dep = new CombinerWork()
                 {
                     ECB = ecb,
                     WorldScale = GenerationSystem.WorldScale,
-                    prefabsEntities = prefabs,
                     ItemDataLookup = SystemAPI.GetComponentLookup<ItemDataComponent>(),
                 }.ScheduleParallel(new JobHandle());
                 
@@ -76,9 +58,6 @@ namespace Project.Scripts.EntitySystem.Systems
     public partial struct CombinerWork : IJobEntity
     {
         public EntityCommandBuffer.ParallelWriter ECB;
-
-        [NativeDisableContainerSafetyRestriction]
-        public NativeArray<Entity> prefabsEntities;
 
         [NativeDisableContainerSafetyRestriction]
         public ComponentLookup<ItemDataComponent> ItemDataLookup;

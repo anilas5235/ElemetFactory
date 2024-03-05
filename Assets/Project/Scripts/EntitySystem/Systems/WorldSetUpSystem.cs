@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Project.Scripts.Buildings.BuildingFoundation;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
-using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
+using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Flags;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.General;
@@ -30,7 +30,8 @@ namespace Project.Scripts.EntitySystem.Systems
             GenerationSystem.worldDataEntity = worldDataEntity;
             
             _endSimEntityCommandBufferSystem = state.World.GetOrCreateSystemManaged<EndInitializationEntityCommandBufferSystem>();
-            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<ItemPrefabsDataComponent>();
+            state.RequireForUpdate<TilePrefabsDataComponent>();
         }
 
         public void OnUpdate(ref SystemState state)
@@ -39,7 +40,7 @@ namespace Project.Scripts.EntitySystem.Systems
 
             var ecb = _endSimEntityCommandBufferSystem.CreateCommandBuffer();
 
-            var builder = new WorldBuilder(ecb,SystemAPI.GetComponent<PrefabsDataComponent>(GenerationSystem.prefabsEntity),worldData);
+            var builder = new WorldBuilder(ecb,worldData,SystemAPI.GetSingleton<TilePrefabsDataComponent>().TilePrefab);
             
             builder.Execute();
           
@@ -109,14 +110,14 @@ namespace Project.Scripts.EntitySystem.Systems
     public class WorldBuilder
     {
         private EntityCommandBuffer _ecb;
-        private readonly PrefabsDataComponent _prefabsComp;
         private readonly WorldSave _saveData;
+        private readonly Entity _tilePrefab;
 
-        public WorldBuilder(EntityCommandBuffer ecb, PrefabsDataComponent prefabsComp, WorldSave saveData)
+        public WorldBuilder(EntityCommandBuffer ecb, WorldSave saveData, Entity tilePrefab)
         {
             _ecb = ecb;
-            _prefabsComp = prefabsComp;
             _saveData = saveData;
+            _tilePrefab = tilePrefab;
         }
 
         private static float WorldScale => GenerationSystem.WorldScale;
@@ -153,7 +154,7 @@ namespace Project.Scripts.EntitySystem.Systems
             }
 
             _ecb.AddComponent(entity, new ChunkDataComponent(entity, chunkPosition, worldPos,
-                _prefabsComp,patches, _ecb));
+                _tilePrefab,patches, _ecb));
             patches.Dispose();
             _ecb.AddComponent(entity,new NewChunkDataComponent(chunkData.chunkPosition,chunkData.chunkResourcePatches.Length));
         }

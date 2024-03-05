@@ -6,14 +6,13 @@ namespace Project.Scripts.EntitySystem.Baker
 {
     public class CombinerMono : MonoBehaviour
     {
-    }
-    
-    public class CombinerDataBaker : Baker<CombinerMono>
-    {
-        public override void Bake(CombinerMono authoring)
+        public class CombinerDataBaker : Baker<CombinerMono>
         {
-            var entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity,new CombinerDataComponent());
+            public override void Bake(CombinerMono authoring)
+            {
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new CombinerDataComponent());
+            }
         }
     }
 }

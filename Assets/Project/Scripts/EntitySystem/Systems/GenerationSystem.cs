@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components;
+using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.EntitySystem.Others;
 using Project.Scripts.Grid;
@@ -24,20 +25,20 @@ namespace Project.Scripts.EntitySystem.Systems
         public static GenerationSystem Instance;
         public static EntityManager entityManager;
         public static Entity worldDataEntity, prefabsEntity;
+        public static TilePrefabsDataComponent TilePrefabsDataComponent;
 
         private static WorldDataAspect worldDataAspect;
         private static EndSimulationEntityCommandBufferSystem _endSimEntityCommandBufferSystem;
         private static Entity _backGround, _generationRequestHolder;
         private static GenerationRequestAspect _generationRequestAspect;
-
-        private static Random _randomObj = new Random(0x6E624EB7u);
+        private static Random _randomObj = new Random(1);
         
         
         public void OnCreate(ref SystemState state)
         {
             Instance = this;
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            state.RequireForUpdate<PrefabsDataComponent>();
+            state.RequireForUpdate<TilePrefabsDataComponent>();
             state.EntityManager.AddComponentData(state.SystemHandle, new GenerationSystemComponent()
             {
                 PlayerViewRadius =1,
@@ -56,10 +57,11 @@ namespace Project.Scripts.EntitySystem.Systems
             if (generationComp.FirstUpdate)
             {
                 GridBuildingSystem.Work = true;
-                prefabsEntity = SystemAPI.GetSingleton<PrefabsDataComponent>().entity;
+                TilePrefabsDataComponent = SystemAPI.GetSingleton<TilePrefabsDataComponent>();
+                prefabsEntity = TilePrefabsDataComponent.Entity;
 
                 _backGround = state.EntityManager.Instantiate(state.EntityManager
-                    .GetComponentData<PrefabsDataComponent>(prefabsEntity).TileVisual);
+                    .GetComponentData<TilePrefabsDataComponent>(prefabsEntity).TileBackGroundPrefab);
                 state.EntityManager.SetName(_backGround, "BackGroundTile");
 
                 _generationRequestHolder = state.EntityManager.CreateEntity();
@@ -79,9 +81,8 @@ namespace Project.Scripts.EntitySystem.Systems
                     var ecb = _endSimEntityCommandBufferSystem.CreateCommandBuffer();
 
                     using var requests = _generationRequestAspect.GetAllRequests();
-
-                    var prefabsDataComponent = SystemAPI.GetComponent<PrefabsDataComponent>(prefabsEntity);
-                    var genJob = new GenerationOfChunkData(worldDataAspect, requests, _randomObj, ecb, prefabsDataComponent);
+                  
+                    var genJob = new GenerationOfChunkData(worldDataAspect, requests, _randomObj, ecb, TilePrefabsDataComponent.TilePrefab);
 
                     genJob.Execute();
 
