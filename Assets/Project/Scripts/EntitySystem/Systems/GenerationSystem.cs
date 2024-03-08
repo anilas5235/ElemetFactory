@@ -21,6 +21,7 @@ namespace Project.Scripts.EntitySystem.Systems
         public const int WorldScale = 10;
         public const int ChunkSize = 16;
         public const int ChunkUnitSize = WorldScale * ChunkSize;
+        private const int BackGroundScale = ChunkUnitSize * 9;
 
         public static GenerationSystem Instance;
         public static EntityManager entityManager;
@@ -64,6 +65,11 @@ namespace Project.Scripts.EntitySystem.Systems
                 _backGround = state.EntityManager.Instantiate(
                 SystemAPI.GetComponent<TilePrefabsDataComponent>(prefabsEntity).TileBackGroundPrefab);
                 state.EntityManager.SetName(_backGround, "BackGroundTile");
+                SystemAPI.SetComponent(_backGround,new LocalTransform()
+                {
+                    Position = new float3(0,0,2),
+                    Scale = BackGroundScale,
+                });
 
                 _generationRequestHolder = state.EntityManager.CreateEntity();
                 state.EntityManager.SetName(_generationRequestHolder, "GenerationRequests");
@@ -111,7 +117,7 @@ namespace Project.Scripts.EntitySystem.Systems
             state.EntityManager.SetComponentData(_backGround, new LocalTransform
             {
                 Position = backgroundPos,
-                Scale = ChunkUnitSize,
+                Scale = BackGroundScale,
             });
 
             generationComp.PlayerViewRadius = radius;
