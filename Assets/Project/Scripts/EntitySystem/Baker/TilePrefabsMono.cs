@@ -16,6 +16,7 @@ namespace Project.Scripts.EntitySystem.Baker
                 
                 AddComponent(entity,new TilePrefabsDataComponent()
                 {
+                    Entity = entity,
                     TilePrefab = GetEntity(authoring.tilePrefab,TransformUsageFlags.Dynamic),
                     TileBackGroundPrefab = GetEntity(authoring.tileBackGroundPrefab,TransformUsageFlags.Dynamic),
                 });

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-5394588231893908020
+--- !u!114 &-8459636059107482410
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,16 +20,16 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SolidResource
-  m_Shader: {fileID: -6465566751694194690, guid: 657a7b4cbb971bc4388f1e5ad5e22557, type: 3}
+  m_Name: ItemAtlasMat
+  m_Shader: {fileID: -6465566751694194690, guid: cb7cd899ea7363a4ba5dbc5187f1e8a2, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2999
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -40,8 +40,8 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _BaseTexture:
-        m_Texture: {fileID: 2800000, guid: f72e1fb0ef313474ea2da3bb421e7d15, type: 3}
+    - _Atlas:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -72,10 +72,11 @@ Material:
     m_Floats:
     - _EnableExternalAlpha: 0
     - _QueueControl: 0
-    - _QueueOffset: -1
+    - _QueueOffset: 0
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
+    - _Position: {r: 0, g: 0, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SizeSingle: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

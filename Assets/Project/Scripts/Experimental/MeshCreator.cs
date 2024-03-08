@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Project.Scripts.Utilities;
 using Unity.Mathematics;
 using UnityEditor;
@@ -7,6 +5,7 @@ using UnityEngine;
 
 namespace Project.Scripts.Experimental
 {
+#if UNITY_EDITOR
     public class MeshCreator : MonoBehaviour
     {
         private const string BasePath = "Assets/Project/Resources/Mesh";
@@ -20,8 +19,8 @@ namespace Project.Scripts.Experimental
 
         private void CreateMesh(Material material,float2 center)
         {
-            Texture tex = material.GetTexture(BaseTexture);
-            Mesh mesh = MeshUtils.CreateQuad(center,(float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit);
+            var tex = material.GetTexture(BaseTexture);
+            var mesh = MeshUtils.CreateQuad(center,(float)tex.width / PixelsPerUnit, (float)tex.height / PixelsPerUnit);
             CreateMeshAsset(mesh,material.name);
         }
 
@@ -32,9 +31,9 @@ namespace Project.Scripts.Experimental
 
         private void CreateMeshAsset(Mesh mesh, string usedAssetName)
         {
-            string path = BasePath;
-            AssetDatabase.CreateAsset(mesh, $"{path}/{usedAssetName}.mesh");
+            AssetDatabase.CreateAsset(mesh, $"{BasePath}/{usedAssetName}.mesh");
             AssetDatabase.SaveAssets();
         }
     }
+#endif
 }

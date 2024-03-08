@@ -1,15 +1,4 @@
-﻿/* 
-    ------------------- Code Monkey -------------------
-
-    Thank you for downloading this package
-    I hope you find it useful in your projects
-    If you have any questions let me know
-    Cheers!
-
-               unitycodemonkey.com
-    --------------------------------------------------
- */
-
+﻿
 using System;
 using UnityEngine;
 
@@ -17,19 +6,13 @@ namespace Project.Scripts.Utilities
 {
 	public static class MeshUtils
 	{
-
-		private static readonly Vector3 Vector3zero = Vector3.zero;
-		private static readonly Vector3 Vector3one = Vector3.one;
-		private static readonly Vector3 Vector3yDown = new Vector3(0, -1);
-
-
 		private static Quaternion[] cachedQuaternionEulerArr;
 
 		private static void CacheQuaternionEuler()
 		{
 			if (cachedQuaternionEulerArr != null) return;
 			cachedQuaternionEulerArr = new Quaternion[360];
-			for (int i = 0; i < 360; i++)
+			for (var i = 0; i < 360; i++)
 			{
 				cachedQuaternionEulerArr[i] = Quaternion.Euler(0, 0, i);
 			}
@@ -37,8 +20,8 @@ namespace Project.Scripts.Utilities
 
 		private static Quaternion GetQuaternionEuler(float rotFloat)
 		{
-			int rot = Mathf.RoundToInt(rotFloat);
-			rot = rot % 360;
+			var rot = Mathf.RoundToInt(rotFloat);
+			rot %= 360;
 			if (rot < 0) rot += 360;
 			if (rot >= 360) rot -= 360;
 			if (cachedQuaternionEulerArr == null) CacheQuaternionEuler();
@@ -48,10 +31,12 @@ namespace Project.Scripts.Utilities
 
 		public static Mesh CreateEmptyMesh()
 		{
-			Mesh mesh = new Mesh();
-			mesh.vertices = Array.Empty<Vector3>();
-			mesh.uv = Array.Empty<Vector2>();
-			mesh.triangles = Array.Empty<int>();
+			var mesh = new Mesh
+			{
+				vertices = Array.Empty<Vector3>(),
+				uv = Array.Empty<Vector2>(),
+				triangles = Array.Empty<int>()
+			};
 			return mesh;
 		}
 
@@ -75,25 +60,25 @@ namespace Project.Scripts.Utilities
 				mesh = CreateEmptyMesh();
 			}
 
-			Vector3[] vertices = new Vector3[4 + mesh.vertices.Length];
-			Vector2[] uvs = new Vector2[4 + mesh.uv.Length];
-			int[] triangles = new int[6 + mesh.triangles.Length];
+			var vertices = new Vector3[4 + mesh.vertices.Length];
+			var uvs = new Vector2[4 + mesh.uv.Length];
+			var triangles = new int[6 + mesh.triangles.Length];
 
 			mesh.vertices.CopyTo(vertices, 0);
 			mesh.uv.CopyTo(uvs, 0);
 			mesh.triangles.CopyTo(triangles, 0);
 
-			int index = vertices.Length / 4 - 1;
+			var index = vertices.Length / 4 - 1;
 			//Relocate vertices
-			int vIndex = index * 4;
-			int vIndex0 = vIndex;
-			int vIndex1 = vIndex + 1;
-			int vIndex2 = vIndex + 2;
-			int vIndex3 = vIndex + 3;
+			var vIndex = index * 4;
+			var vIndex0 = vIndex;
+			var vIndex1 = vIndex + 1;
+			var vIndex2 = vIndex + 2;
+			var vIndex3 = vIndex + 3;
 
 			baseSize *= .5f;
 
-			bool skewed = baseSize.x != baseSize.y;
+			var skewed = Math.Abs(baseSize.x - baseSize.y) > float.Epsilon;
 			if (skewed)
 			{
 				vertices[vIndex0] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, baseSize.y);
@@ -116,7 +101,7 @@ namespace Project.Scripts.Utilities
 			uvs[vIndex3] = new Vector2(uv11.x, uv11.y);
 
 			//Create triangles
-			int tIndex = index * 6;
+			var tIndex = index * 6;
 
 			triangles[tIndex + 0] = vIndex0;
 			triangles[tIndex + 1] = vIndex3;
@@ -139,15 +124,15 @@ namespace Project.Scripts.Utilities
 			float rot, Vector3 baseSize, Vector2 uv00, Vector2 uv11)
 		{
 			//Relocate vertices
-			int vIndex = index * 4;
-			int vIndex0 = vIndex;
-			int vIndex1 = vIndex + 1;
-			int vIndex2 = vIndex + 2;
-			int vIndex3 = vIndex + 3;
+			var vIndex = index * 4;
+			var vIndex0 = vIndex;
+			var vIndex1 = vIndex + 1;
+			var vIndex2 = vIndex + 2;
+			var vIndex3 = vIndex + 3;
 
 			baseSize *= .5f;
 
-			bool skewed = baseSize.x != baseSize.y;
+			var skewed = Math.Abs(baseSize.x - baseSize.y) > float.Epsilon;
 			if (skewed)
 			{
 				vertices[vIndex0] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, baseSize.y);
@@ -170,7 +155,7 @@ namespace Project.Scripts.Utilities
 			uvs[vIndex3] = new Vector2(uv11.x, uv11.y);
 
 			//Create triangles
-			int tIndex = index * 6;
+			var tIndex = index * 6;
 
 			triangles[tIndex + 0] = vIndex0;
 			triangles[tIndex + 1] = vIndex3;
@@ -190,12 +175,12 @@ namespace Project.Scripts.Utilities
 		/// <returns></returns>
 		public static Mesh CreateQuad(Vector2 center,float width = 1, float height = 1)
 		{
-			Mesh mesh = new Mesh();
+			var mesh = new Mesh();
 
-			Vector2 offsetCenter = new Vector2(.5f, .5f) - center;
-			Vector2 scale = new Vector2(width,height);
+			var offsetCenter = new Vector2(.5f, .5f) - center;
+			var scale = new Vector2(width,height);
 
-			Vector3[] vertices = new Vector3[4]
+			var vertices = new Vector3[]
 			{
 				(offsetCenter + new Vector2(-.5f,-.5f)) * scale,
 				(offsetCenter + new Vector2(-.5f,.5f))*scale,
@@ -204,7 +189,7 @@ namespace Project.Scripts.Utilities
 			};
 			mesh.vertices = vertices;
 
-			int[] tris = new int[6]
+			var tris = new[]
 			{
 				// lower left triangle
 				0, 1, 3,
@@ -213,7 +198,7 @@ namespace Project.Scripts.Utilities
 			};
 			mesh.triangles = tris;
 
-			Vector3[] normals = new Vector3[4]
+			var normals = new[]
 			{
 				-Vector3.forward,
 				-Vector3.forward,
@@ -222,12 +207,12 @@ namespace Project.Scripts.Utilities
 			};
 			mesh.normals = normals;
 
-			Vector2[] uv = new Vector2[4]
+			var uv = new Vector2[]
 			{
-				new Vector2(0, 0),
-				new Vector2(0, 1),
-				new Vector2(1, 1),
-				new Vector2(1, 0),
+				new (0, 0),
+				new (0, 1),
+				new (1, 1),
+				new (1, 0),
 			};
 			mesh.uv = uv;
 

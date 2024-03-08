@@ -42,7 +42,7 @@ namespace Project.Scripts.EntitySystem.Systems
             state.EntityManager.AddComponentData(state.SystemHandle, new GenerationSystemComponent()
             {
                 PlayerViewRadius =1,
-                ViewSize = WorldScale * ChunkSize * 9,
+                ViewSize = ChunkUnitSize * 9,
                 ChunkPosWithPlayer = new int2(-1000, -1000),
                 LoadedChunks = new NativeList<int2>(Allocator.Persistent),
                 FirstUpdate = true,
@@ -59,9 +59,10 @@ namespace Project.Scripts.EntitySystem.Systems
                 GridBuildingSystem.Work = true;
                 TilePrefabsDataComponent = SystemAPI.GetSingleton<TilePrefabsDataComponent>();
                 prefabsEntity = TilePrefabsDataComponent.Entity;
+                state.EntityManager.SetName(prefabsEntity,"PrefabsHolder");
 
-                _backGround = state.EntityManager.Instantiate(state.EntityManager
-                    .GetComponentData<TilePrefabsDataComponent>(prefabsEntity).TileBackGroundPrefab);
+                _backGround = state.EntityManager.Instantiate(
+                SystemAPI.GetComponent<TilePrefabsDataComponent>(prefabsEntity).TileBackGroundPrefab);
                 state.EntityManager.SetName(_backGround, "BackGroundTile");
 
                 _generationRequestHolder = state.EntityManager.CreateEntity();
@@ -95,55 +96,53 @@ namespace Project.Scripts.EntitySystem.Systems
 
         private void UpdatingPlayerState(SystemState state, GenerationSystemComponent generationComp)
         {
-            Camera playerCam = GridBuildingSystem.Instance.PlayerCam;
-            int2 currentPos = GetChunkPosition(playerCam.transform.position);
-            int radius =
-                Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect /
-                                (ChunkDataComponent.ChunkSize * WorldScale));
+            var playerCam = GridBuildingSystem.Instance.PlayerCam;
+            var currentPos = GetChunkPosition(playerCam.transform.position);
+            var radius = Mathf.CeilToInt(playerCam.orthographicSize * playerCam.aspect /
+                                         (ChunkDataComponent.ChunkSize * WorldScale));
             if (generationComp.ChunkPosWithPlayer.x == currentPos.x &&
                 generationComp.ChunkPosWithPlayer.y == currentPos.y &&
                 generationComp.PlayerViewRadius == radius) return;
 
             generationComp.ChunkPosWithPlayer = currentPos.xy;
 
-            float3 backgroundPos = new float3(GetChunkWorldPosition(currentPos).xy, 2);
-
+            var backgroundPos = new float3(GetChunkWorldPosition(currentPos).xy, 2);
 
             state.EntityManager.SetComponentData(_backGround, new LocalTransform
             {
                 Position = backgroundPos,
-                Scale = generationComp.ViewSize,
+                Scale = ChunkUnitSize,
             });
 
             generationComp.PlayerViewRadius = radius;
 
-            List<int2> chunksToLoad = new List<int2>();
-            List<int2> chunksToUnLoad = new List<int2>();
+            var chunksToLoad = new List<int2>();
+            var chunksToUnLoad = new List<int2>();
 
-            int playerViewRadius = generationComp.PlayerViewRadius;
-            int2 chunkPosWithPlayer = generationComp.ChunkPosWithPlayer;
-            for (int x = -playerViewRadius; x < playerViewRadius + 1; x++)
+            var playerViewRadius = generationComp.PlayerViewRadius;
+            var chunkPosWithPlayer = generationComp.ChunkPosWithPlayer;
+            for (var x = -playerViewRadius; x < playerViewRadius + 1; x++)
             {
-                for (int y = -playerViewRadius; y < playerViewRadius + 1; y++)
+                for (var y = -playerViewRadius; y < playerViewRadius + 1; y++)
                 {
                     chunksToLoad.Add(new int2(x, y) + chunkPosWithPlayer);
                 }
             }
 
-            foreach (int2 loadedChunkPos in generationComp.LoadedChunks)
+            foreach (var loadedChunkPos in generationComp.LoadedChunks)
             {
                 if (chunksToLoad.Contains(loadedChunkPos)) chunksToLoad.Remove(loadedChunkPos);
                 else chunksToUnLoad.Add(loadedChunkPos);
             }
 
-            foreach (int2 pos in chunksToUnLoad)
+            foreach (var pos in chunksToUnLoad)
             {
                 if (TryGetChunk(pos, out var chunk))
                 {
                     chunk.InView = false;
                 }
 
-                for (int i = 0; i < generationComp.LoadedChunks.Length; i++)
+                for (var i = 0; i < generationComp.LoadedChunks.Length; i++)
                 {
                     var condition = generationComp.LoadedChunks[i] == pos;
                     if (condition is not { x: true, y: true }) continue;
@@ -153,7 +152,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 }
             }
 
-            foreach (int2 pos in chunksToLoad)
+            foreach (var pos in chunksToLoad)
             {
                 if (TryGetChunk(pos, out var chunk))
                 {
