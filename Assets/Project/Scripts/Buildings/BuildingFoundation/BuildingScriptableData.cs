@@ -12,7 +12,7 @@ namespace Project.Scripts.Buildings.BuildingFoundation
         Left,
     }
   
-    [CreateAssetMenu(menuName = "BuildingSystem/BuildingScriptableData")]
+    [CreateAssetMenu(menuName = "ElementFactory/Data/Building")]
     public class BuildingScriptableData : ScriptableObject
     {
         public string nameString;
