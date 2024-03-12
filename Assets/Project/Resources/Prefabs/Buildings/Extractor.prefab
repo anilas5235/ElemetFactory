@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 8232190868387762745}
   - component: {fileID: 6473889069711902287}
   - component: {fileID: 2798167410517695104}
-  - component: {fileID: 4968517531634516459}
-  - component: {fileID: 1042116514535678186}
+  - component: {fileID: 8869107401539097873}
+  - component: {fileID: 2294761140625577316}
   m_Layer: 0
-  m_Name: Conveyor
+  m_Name: Extractor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42,7 +42,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8099156330893030993}
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 4300000, guid: 71e4e1ff7b16e8247840ae996b542b79, type: 2}
 --- !u!23 &2798167410517695104
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 828007824cb83e442a5f9c4d26e4e18c, type: 2}
+  - {fileID: 2100000, guid: 13a1c1da841582e409eb1826afc1a476, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85,7 +85,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4968517531634516459
+--- !u!114 &8869107401539097873
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,10 +94,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8099156330893030993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7ff89d47a5786a49b69dd332b5e6c6a, type: 3}
+  m_Script: {fileID: 11500000, guid: e53b52f4b1cf3a44c9b0b1d6da5d91fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1042116514535678186
+--- !u!114 &2294761140625577316
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,5 +109,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5d743a16aea4073b569c60ff9125c50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Inputs: 1
-  Outputs: 1

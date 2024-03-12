@@ -132,8 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1842601375}
-  - component: {fileID: 1842601378}
-  - component: {fileID: 1842601377}
   - component: {fileID: 1842601376}
   m_Layer: 0
   m_Name: PerfapData
@@ -166,37 +164,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1842601373}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9349e59ab92f4685b20685688536a2e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tilePrefab: {fileID: 7548931456545085481, guid: 279097ca668111d40b20f4f253d2d847, type: 3}
-  tileBackGroundPrefab: {fileID: 7548931456545085481, guid: ab30369ccc864b646894ad850f5fc7ce, type: 3}
---- !u!114 &1842601377
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1842601373}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dadffa449c5e4a6399b97ee0211a6c00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemPrefab: {fileID: 8099156330893030993, guid: 1000e5b0970191f43a2233b9bb4269b5, type: 3}
---- !u!114 &1842601378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1842601373}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: adae8128fb5d477c8005cd83c17f83d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildingScriptableData:
+  ItemPrefab: {fileID: 8099156330893030993, guid: 1000e5b0970191f43a2233b9bb4269b5, type: 3}
+  TilePrefab: {fileID: 7548931456545085481, guid: 279097ca668111d40b20f4f253d2d847, type: 3}
+  TileBackgroundPrefab: {fileID: 7548931456545085481, guid: ab30369ccc864b646894ad850f5fc7ce, type: 3}
+  BuildingScriptableData:
   - {fileID: 11400000, guid: db36dca40e288004793ad04444dee92c, type: 2}
   - {fileID: 11400000, guid: 9860de6acd046844589f6a5d30ae1102, type: 2}
   - {fileID: 11400000, guid: f17712f547a3a064488bbf1bc9e1af9b, type: 2}

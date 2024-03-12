@@ -12,11 +12,12 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Systems
 {
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public partial struct WorldSetUpSystem : ISystem
+    public partial struct WorldSetUpSystem : ISystem,ISystemStartStop
     {
         public static WorldSetUpSystem Instance;
         private static EndInitializationEntityCommandBufferSystem _endSimEntityCommandBufferSystem;
@@ -25,8 +26,8 @@ namespace Project.Scripts.EntitySystem.Systems
         {
             worldDataEntity = state.EntityManager.CreateEntity();
             state.EntityManager.AddBuffer<PositionChunkPair>(worldDataEntity);
-            
             state.EntityManager.SetName(worldDataEntity,"WorldData");
+            
             GenerationSystem.worldDataEntity = worldDataEntity;
             
             _endSimEntityCommandBufferSystem = state.World.GetOrCreateSystemManaged<EndInitializationEntityCommandBufferSystem>();
@@ -34,6 +35,11 @@ namespace Project.Scripts.EntitySystem.Systems
             state.RequireForUpdate<TilePrefabsDataComponent>();
         }
 
+        public void OnStartRunning(ref SystemState state)
+        {
+            
+        }
+        
         public void OnUpdate(ref SystemState state)
         {
             var worldData =  WorldSaveHandler.GetWorldSave();
@@ -46,12 +52,16 @@ namespace Project.Scripts.EntitySystem.Systems
           
             state.Enabled = false;
         }
-
-        public void OnDestroy(ref SystemState state)
+        
+        public void OnStopRunning(ref SystemState state)
         {
             var save = new WorldSaver(SystemAPI.GetAspect<WorldDataAspect>(GenerationSystem.worldDataEntity),
                 SystemAPI.GetComponentLookup<BuildingDataComponent>());
             save.Execute();
+        }
+        public void OnDestroy(ref SystemState state)
+        {
+            
         }
     }
 
