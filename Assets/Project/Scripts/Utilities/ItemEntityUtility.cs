@@ -1,4 +1,5 @@
-﻿using Project.Scripts.EntitySystem.Components.Item;
+﻿using Project.Scripts.EntitySystem.Buffer;
+using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.ItemSystem;
 using Unity.Collections;
 using Unity.Entities;
@@ -30,13 +31,13 @@ namespace Project.Scripts.Utilities
             ecb.SetComponent(index, itemEntity, new ItemEntityStateDataComponent()
             {
                 Arrived = true,
-                DestinationPos = outputSlot.Position,
-                PreviousPos = outputSlot.Position,
+                DestinationPos = outputSlot.WorldPosition,
+                PreviousPos = outputSlot.WorldPosition,
             });
 
             ecb.SetComponent(index, itemEntity, new LocalTransform()
             {
-                Position = outputSlot.Position,
+                Position = outputSlot.WorldPosition,
                 Scale = worldScale * .7f,
             });
 

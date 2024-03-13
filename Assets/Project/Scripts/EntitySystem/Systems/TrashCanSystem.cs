@@ -2,10 +2,7 @@ using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.DataObject;
-using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.Utilities;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 
@@ -66,7 +63,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 var slot = buildingAspect.inputSlots[i];
                 if(!slot.IsOccupied) continue;
                 ECB.DestroyEntity(index,slot.SlotContent);
-                buildingAspect.inputSlots.ElementAt(i).SlotContent = default;
+                buildingAspect.inputSlots.ElementAt(i).SetSlotContent();
             }
         }
     }

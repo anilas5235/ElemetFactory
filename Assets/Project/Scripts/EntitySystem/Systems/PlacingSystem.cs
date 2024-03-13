@@ -19,22 +19,13 @@ namespace Project.Scripts.EntitySystem.Systems
         public static PlacingSystem Instance;
         private static EntityManager TheEntityManager => GenerationSystem.entityManager;
         
-        public static BeginSimulationEntityCommandBufferSystem.Singleton beginSimulationEntityCommandBuffer; 
+        public static BeginSimulationEntityCommandBufferSystem beginSimulationEntityCommandBuffer; 
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); 
             Instance = this;
-           
+            beginSimulationEntityCommandBuffer = state.World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
+            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>(); 
             state.RequireForUpdate<ItemPrefabsDataComponent>();
-        }
-        
-        public void OnUpdate(ref SystemState state)
-        {
-            state.Enabled = false;
-            ResourcesUtility.SetUpBuildingData(
-                GenerationSystem.entityManager.GetBuffer<EntityIDPair>(GenerationSystem.prefabsEntity).AsNativeArray());
-            
-            beginSimulationEntityCommandBuffer = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         public bool TryToDeleteBuilding(float3 mousePos)

@@ -75,8 +75,8 @@ namespace Project.Scripts.EntitySystem.Systems
                
             ECB.DestroyEntity(index,buildingAspect.inputSlots[0].SlotContent);
             ECB.DestroyEntity(index,buildingAspect.inputSlots[1].SlotContent);
-            buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
-            buildingAspect.inputSlots.ElementAt(1).SlotContent = default;
+            buildingAspect.inputSlots.ElementAt(0).SetSlotContent();
+            buildingAspect.inputSlots.ElementAt(1).SetSlotContent();
         }
     }
 }

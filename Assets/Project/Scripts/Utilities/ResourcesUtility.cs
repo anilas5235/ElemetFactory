@@ -13,42 +13,6 @@ namespace Project.Scripts.Utilities
     public static class ResourcesUtility
     {
         private static BuildingLookUpData[] _buildingsData;
-
-        private static readonly BuildingScriptableData[] BuildingScriptableDataAry = new[]
-        {
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Extractor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Conveyor"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Combiner"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/Separator"),
-            Resources.Load<BuildingScriptableData>("Buildings/Data/TrashCan"),
-        };
-        public static void SetUpBuildingData(NativeArray<EntityIDPair> entityIDPairs)
-        {
-            _buildingsData = new BuildingLookUpData[entityIDPairs.Length];
-            for (var i = 0; i < _buildingsData.Length; i++)
-            {
-                var data = BuildingScriptableDataAry[i];
-                var prefab = Entity.Null;
-
-                foreach (var entityIDPair in entityIDPairs)
-                {
-                    if (entityIDPair.ID != data.buildingID){continue;}
-                    
-                    prefab = entityIDPair.Entity;
-                    break;
-                }
-
-                if (prefab == Entity.Null)
-                {
-                    Debug.LogError($"Prefab entity for building id {data.buildingID} could not be found",data);
-                    continue;
-                }
-                
-                _buildingsData[i] = new BuildingLookUpData(data.nameString,prefab,data.InputOffsets,
-                    data.OutputOffsets, data.buildingID,data.neededTiles);
-            }
-        }
-
         public static bool GetBuildingData(int buildingID, out BuildingLookUpData buildingLookUpData)
         {
             buildingLookUpData = default;

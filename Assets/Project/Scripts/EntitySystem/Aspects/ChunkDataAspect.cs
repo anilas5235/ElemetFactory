@@ -16,22 +16,22 @@ namespace Project.Scripts.EntitySystem.Aspects
 {
     public readonly partial struct ChunkDataAspect : IAspect
     {
-        public readonly RefRW<ChunkDataComponent> _chunkData;
+        public readonly RefRW<ChunkDataComponent> chunkData;
 
         private readonly DynamicBuffer<CellObject> _cellObjects;
 
-        public readonly DynamicBuffer<EntityRefBufferElement> _buildings;
+        public readonly DynamicBuffer<EntityRefBufferElement> buildings;
         private static int ChunkSize => ChunkDataComponent.ChunkSize;
         private static int HalfChunkSize => ChunkDataComponent.HalfChunkSize;
         private static int CellSize => GenerationSystem.WorldScale;
         private static int ChunkUnitSize => ChunkDataComponent.ChunkUnitSize;
-        public int2 ChunksPosition => _chunkData.ValueRO.ChunkPosition;
-        public float3 WorldPosition => _chunkData.ValueRO.WorldPosition;
+        public int2 ChunksPosition => chunkData.ValueRO.ChunkPosition;
+        public float3 WorldPosition => chunkData.ValueRO.WorldPosition;
 
         public bool InView
         {
-            get => _chunkData.ValueRO.InView;
-            set => _chunkData.ValueRW.InView = value;
+            get => chunkData.ValueRO.InView;
+            set => chunkData.ValueRW.InView = value;
         }
 
         public CellObject GetCell(int2 position,int2 chunkPosition)
@@ -41,16 +41,16 @@ namespace Project.Scripts.EntitySystem.Aspects
                GetCellFormPseudoPosition(position,chunkPosition);
         }
 
-        private CellObject GetCellFormPseudoPosition(int2 position, int2 chunkPosition)
+        private static CellObject GetCellFormPseudoPosition(int2 position, int2 chunkPosition)
         {
-            int2 newChunkPos = GetChunkAndCellPositionFromPseudoPosition(position, chunkPosition, out int2 newPos);
-            GenerationSystem.Instance.TryGetChunk(newChunkPos, out ChunkDataAspect chunkData);
-            return chunkData.GetCell(newPos, newChunkPos);
+            var newChunkPos = GetChunkAndCellPositionFromPseudoPosition(position, chunkPosition, out var newPos);
+            GenerationSystem.Instance.TryGetChunk(newChunkPos, out var tempChunkData);
+            return tempChunkData.GetCell(newPos, newChunkPos);
         }
 
-        public static int2 GetChunkAndCellPositionFromPseudoPosition(int2 position, int2 chunkPosition, out int2 cellPosition)
+        private static int2 GetChunkAndCellPositionFromPseudoPosition(int2 position, int2 chunkPosition, out int2 cellPosition)
         {
-            int2 chunkOffset = new int2(Mathf.FloorToInt((float)position.x / ChunkSize),
+            var chunkOffset = new int2(Mathf.FloorToInt((float)position.x / ChunkSize),
                 Mathf.FloorToInt((float)position.y / ChunkSize));
             cellPosition = position - chunkOffset * ChunkSize;
             return chunkPosition + chunkOffset;
@@ -58,7 +58,7 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public bool TryToPlaceBuilding(int buildingID, int2 cellPosition, FacingDirection facingDirection)
         {
-            PlacedBuildingData placedBuildingData = new PlacedBuildingData()
+            var placedBuildingData = new PlacedBuildingData()
             {
                 directionID = (byte)facingDirection,
                 buildingDataID = buildingID,
@@ -67,37 +67,37 @@ namespace Project.Scripts.EntitySystem.Aspects
 
             var offsets = ResourcesUtility.GetGridPositionList(placedBuildingData);
 
-            foreach (int2 offset in offsets)
+            foreach (var offset in offsets)
             {
-                int2 position = offset + cellPosition;
+                var position = offset + cellPosition;
 
                 if (GetCell(position, ChunksPosition).IsOccupied) return false;
             }
 
             var originCell =  _cellObjects[GetAryIndex(cellPosition)];
-            Entity entity = PlacingSystem.CreateBuildingEntity(originCell, placedBuildingData);
+            var entity = PlacingSystem.CreateBuildingEntity(originCell, placedBuildingData);
             
-            BuildingAspect myBuildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(entity);
+            var myBuildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(entity);
             
-            foreach (int2 posOffset in offsets)
+            foreach (var posOffset in offsets)
             {
-                int2 position = posOffset + cellPosition;
+                var position = posOffset + cellPosition;
                 if (IsValidPositionInChunk(position)) BlockCell(position, entity);
                 else
                 {
                     if (GenerationSystem.Instance.TryGetChunk(
-                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
-                            , out ChunkDataAspect chunk))
+                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out var cellPos)
+                            , out var chunk))
                     {
                         chunk.BlockCell(cellPos, entity);
                     }
                 }
             }
 
-            if (ResourcesUtility.GetBuildingData(buildingID, out BuildingLookUpData data))
+            if (ResourcesUtility.GetBuildingData(buildingID, out var data))
             {
                 //set port Positions
-                int2[] inputOffsets = data.GetInputOffsets(facingDirection);
+                var inputOffsets = data.GetInputOffsets(facingDirection);
                 float2 relativeOffset;
                 switch (facingDirection)
                 {
@@ -113,32 +113,33 @@ namespace Project.Scripts.EntitySystem.Aspects
                         throw new ArgumentOutOfRangeException(nameof(facingDirection), facingDirection, null);
                 }
                 
-                float zOffset = 0;
-                for (int i = 0; i < myBuildingAspect.inputSlots.Length; i++)
+                const float zOffset = 0;
+                for (var i = 0; i < myBuildingAspect.inputSlots.Length; i++)
                 {
-                    float2 portOffset = inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
-                    myBuildingAspect.inputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
-                    myBuildingAspect.inputSlots.ElementAt(i).ownIndex = i;
+                    var portOffset = inputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    myBuildingAspect.inputSlots.ElementAt(i).SetWorldPosition(originCell.WorldPosition + new float3(portOffset,zOffset));
+                    myBuildingAspect.inputSlots.ElementAt(i).SetOwnIndex(i);
+                    //myBuildingAspect.inputSlots.ElementAt(i).SetFacingDirection();
                 }
 
-                int2[] outputOffsets = data.GetOutputOffsets(facingDirection);
-                for (int i = 0; i < myBuildingAspect.outputSlots.Length; i++)
+                var outputOffsets = data.GetOutputOffsets(facingDirection);
+                for (var i = 0; i < myBuildingAspect.outputSlots.Length; i++)
                 {
-                    float2 portOffset = outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
-                    myBuildingAspect.outputSlots.ElementAt(i).Position = originCell.WorldPosition + new float3(portOffset,zOffset);
-                    myBuildingAspect.outputSlots.ElementAt(i).OwnIndex = i;
+                    var portOffset = outputOffsets[i] * relativeOffset * GenerationSystem.WorldScale;
+                    myBuildingAspect.outputSlots.ElementAt(i).SetWorldPosition(originCell.WorldPosition + new float3(portOffset,zOffset)); 
+                    myBuildingAspect.outputSlots.ElementAt(i).SetOwnIndex(i);
+                    //myBuildingAspect.outputSlots.ElementAt(i).SetFacingDirection();
                 }
                 
                 //connect with neighbours 
-                List<BuildingAspect> aspects = new List<BuildingAspect>();
-                IEnumerable<int2> offsetsData = inputOffsets.Union(outputOffsets);
+                var aspects = new List<BuildingAspect>();
+                var offsetsData = inputOffsets.Union(outputOffsets);
                 foreach (int2 direction in offsetsData)
                 {
-                    CellObject cell = GetCell(cellPosition + direction, ChunksPosition);
+                    var cell = GetCell(cellPosition + direction, ChunksPosition);
                     if (!cell.IsOccupied) continue;
 
-                    BuildingAspect otherBuildingAspect =
-                        GenerationSystem.entityManager.GetAspect<BuildingAspect>(cell.Building);
+                    var otherBuildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(cell.Building);
 
                     if (aspects.Contains(otherBuildingAspect)) continue;
                     myBuildingAspect.TryToConnectBuildings(otherBuildingAspect, direction);
@@ -148,7 +149,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if(buildingID ==1) HandelConveyors(GenerationSystem.entityManager.GetAspect<ConveyorAspect>(entity));
             }
 
-            _buildings.Add(new EntityRefBufferElement()
+            buildings.Add(new EntityRefBufferElement()
             {
                 Entity = entity,
             });
@@ -156,22 +157,21 @@ namespace Project.Scripts.EntitySystem.Aspects
             return true;
         }
         
-        private void HandelConveyors(ConveyorAspect conveyorAspect)
+        private static void HandelConveyors(ConveyorAspect conveyorAspect)
         {
             var inputSlots = conveyorAspect.inputSlots;
             var outputSlots = conveyorAspect.outputSlots;
             var entity = conveyorAspect.entity;
-            EntityCommandBuffer ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer();
 
             Entity head = default;
 
             if (inputSlots[0].IsConnected && GenerationSystem.entityManager
-                    .GetComponentData<BuildingDataComponent>(inputSlots[0].EntityToPullFrom)
+                    .GetComponentData<BuildingDataComponent>(inputSlots[0].ConnectedEntity)
                     .BuildingData.buildingDataID == 1)
             {
                 var sourceBuilding =
-                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(inputSlots[0].EntityToPullFrom);
+                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(inputSlots[0].ConnectedEntity);
                 head = sourceBuilding.conveyorDataComponent.ValueRO.head;
 
                 var buffer = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head);
@@ -187,17 +187,17 @@ namespace Project.Scripts.EntitySystem.Aspects
             }
 
             if (outputSlots[0].IsConnected && GenerationSystem.entityManager
-                    .GetComponentData<BuildingDataComponent>(outputSlots[0].EntityToPushTo)
+                    .GetComponentData<BuildingDataComponent>(outputSlots[0].ConnectedEntity)
                     .BuildingData.buildingDataID == 1)
             {
                 var destinationBuilding =
-                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(outputSlots[0].EntityToPushTo);
+                    GenerationSystem.entityManager.GetAspect<ConveyorAspect>(outputSlots[0].ConnectedEntity);
 
                 if (head != default)
                 {
                     //Connect two chains
                     var bufferA = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head);
-                    Entity head2 = destinationBuilding.conveyorDataComponent.ValueRO.head;
+                    var head2 = destinationBuilding.conveyorDataComponent.ValueRO.head;
                     var bufferB = GenerationSystem.entityManager.GetBuffer<EntityRefBufferElement>(head2);
                     head = CreateChainHead(ecb, bufferA, bufferB,
                         out DynamicBuffer<EntityRefBufferElement> newChain);
@@ -205,7 +205,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                     ecb.DestroyEntity(head);
                     ecb.DestroyEntity(head2);
 
-                    foreach (EntityRefBufferElement chainLink in newChain)
+                    foreach (var chainLink in newChain)
                     {
 
                         ecb.SetComponent(chainLink.Entity,
@@ -243,7 +243,8 @@ namespace Project.Scripts.EntitySystem.Aspects
                 });
             }
         }
-        public static Entity CreateChainHead(EntityCommandBuffer ecb,
+
+        private static Entity CreateChainHead(EntityCommandBuffer ecb,
             DynamicBuffer<EntityRefBufferElement>chainA,DynamicBuffer<EntityRefBufferElement> chainB,
             out DynamicBuffer<EntityRefBufferElement> buffer)
         {
@@ -265,7 +266,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         public bool BlockCell(int2 cellPosition, Entity entity)
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
-            int index = GetAryIndex(cellPosition);
+            var index = GetAryIndex(cellPosition);
             _cellObjects.ElementAt(index).PlaceBuilding(entity);
             return true;
         }
@@ -273,7 +274,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         public bool FreeCell(int2 cellPosition)
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
-            int index = GetAryIndex(cellPosition);
+            var index = GetAryIndex(cellPosition);
             _cellObjects.ElementAt(index).DeleteBuilding();
             return true;
         }
@@ -309,8 +310,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         {
             if (!IsValidPositionInChunk(cellPosition)) return false;
             
-            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer();
 
             Entity entity = GetCell(cellPosition, ChunksPosition).Building;
             if (entity == default|| entity == Entity.Null) return false;
@@ -326,8 +326,8 @@ namespace Project.Scripts.EntitySystem.Aspects
                 else
                 {
                     if (GenerationSystem.Instance.TryGetChunk(
-                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out int2 cellPos)
-                            , out ChunkDataAspect chunk))
+                            GetChunkAndCellPositionFromPseudoPosition(position, ChunksPosition, out var cellPos)
+                            , out var chunk))
                         chunk.FreeCell(cellPos);
                 }
             }
@@ -335,7 +335,7 @@ namespace Project.Scripts.EntitySystem.Aspects
             //disconnect Building
             var buildingAspect = GenerationSystem.entityManager.GetAspect<BuildingAspect>(entity);
 
-            for (int i = 0; i < buildingAspect.inputSlots.Length; i++)
+            for (var i = 0; i < buildingAspect.inputSlots.Length; i++)
             {
                 if (buildingAspect.inputSlots[i].IsOccupied)
                 {
@@ -344,17 +344,16 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if(!buildingAspect.inputSlots[i].IsConnected)continue;
 
                 var otherBuildingAspect =
-                    GenerationSystem.entityManager.GetAspect<BuildingAspect>(buildingAspect.inputSlots[i]
-                        .EntityToPullFrom);
-                int index = buildingAspect.inputSlots[i].outputIndex;
-                otherBuildingAspect.outputSlots.ElementAt(index).EntityToPushTo = default;
-                otherBuildingAspect.outputSlots.ElementAt(index).InputIndex = 0;
+                    GenerationSystem.entityManager.GetAspect<BuildingAspect>(buildingAspect.inputSlots[i].ConnectedEntity);
+                var index = buildingAspect.inputSlots[i].ConnectedIndex;
+                otherBuildingAspect.outputSlots.ElementAt(index).SetConnectedEntity();
+                otherBuildingAspect.outputSlots.ElementAt(index).SetConnectedIndex();
 
-                buildingAspect.inputSlots.ElementAt(i).EntityToPullFrom = default;
-                buildingAspect.inputSlots.ElementAt(i).outputIndex =0;
+                buildingAspect.inputSlots.ElementAt(i).SetConnectedEntity();
+                buildingAspect.inputSlots.ElementAt(i).SetConnectedIndex();
             }
 
-            for (int i = 0; i < buildingAspect.outputSlots.Length; i++)
+            for (var i = 0; i < buildingAspect.outputSlots.Length; i++)
             {
                 if (buildingAspect.outputSlots[i].IsOccupied)
                 {
@@ -363,17 +362,16 @@ namespace Project.Scripts.EntitySystem.Aspects
                 if(!buildingAspect.outputSlots[i].IsConnected)continue;
                 var otherBuildingAspect =
                     GenerationSystem.entityManager.GetAspect<BuildingAspect>(buildingAspect.outputSlots[i]
-                        .EntityToPushTo);
-                int index = buildingAspect.outputSlots[i].InputIndex;
-                otherBuildingAspect.inputSlots.ElementAt(index).EntityToPullFrom = default;
-                otherBuildingAspect.inputSlots.ElementAt(index).outputIndex = default;
+                        .ConnectedEntity);
+                var index = buildingAspect.outputSlots[i].ConnectedIndex;
+                otherBuildingAspect.inputSlots.ElementAt(index).SetConnectedEntity();
+                otherBuildingAspect.inputSlots.ElementAt(index).SetConnectedIndex();
 
-                buildingAspect.outputSlots.ElementAt(i).EntityToPushTo = default;
-                buildingAspect.outputSlots.ElementAt(i).InputIndex = default;
+                buildingAspect.outputSlots.ElementAt(i).SetConnectedEntity();
+                buildingAspect.outputSlots.ElementAt(i).SetConnectedIndex();
             }
 
             //destroy Building entity
-            
 
             if (buildingAspect.MyBuildingData.buildingDataID == 1)
             {
@@ -382,10 +380,10 @@ namespace Project.Scripts.EntitySystem.Aspects
                 headAspect.RemoveConveyor(buildingAspect.entity);
             }
 
-            for (var index = 0; index < _buildings.Length; index++)
+            for (var index = 0; index < buildings.Length; index++)
             {
-                if (_buildings[index].Entity != entity) continue;
-                _buildings.RemoveAt(index);
+                if (buildings[index].Entity != entity) continue;
+                buildings.RemoveAt(index);
                 break;
             }
 

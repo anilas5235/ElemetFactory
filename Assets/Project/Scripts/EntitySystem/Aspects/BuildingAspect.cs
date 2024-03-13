@@ -5,12 +5,10 @@ using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Grid;
 using Project.Scripts.EntitySystem.Systems;
-using Project.Scripts.ItemSystem;
 using Project.Scripts.Utilities;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Project.Scripts.EntitySystem.Aspects
 {
@@ -28,27 +26,26 @@ namespace Project.Scripts.EntitySystem.Aspects
 
         public void TryToConnectBuildings(BuildingAspect otherBuilding, int2 otherBuildingRelativePosition)
         {
-            if (!ResourcesUtility.GetBuildingData(MyBuildingData.buildingDataID, out BuildingLookUpData myLookUpData))
+            if (!ResourcesUtility.GetBuildingData(MyBuildingData.buildingDataID, out var myLookUpData))
                 return;
             if (!ResourcesUtility.GetBuildingData(otherBuilding.MyBuildingData.buildingDataID,
-                    out BuildingLookUpData otherLookUpData)) return;
-            int2 chunkDiff = GenerationSystem.GetChunkPosition(Transform.Position)
-                             - GenerationSystem.GetChunkPosition(otherBuilding.Transform.Position);
+                    out var otherLookUpData)) return;
+            var chunkDiff = GenerationSystem.GetChunkPosition(Transform.Position)
+                            - GenerationSystem.GetChunkPosition(otherBuilding.Transform.Position);
             chunkDiff *= ChunkDataComponent.ChunkSize;
 
             TryConnectInputs(myLookUpData, otherLookUpData, otherBuilding, chunkDiff,otherBuildingRelativePosition);
 
             TryConnectOutputs(myLookUpData, otherLookUpData, otherBuilding, chunkDiff);
 
-            if (otherBuilding.MyBuildingData.buildingDataID == 1)
-            {
-                var conv = GenerationSystem.entityManager.GetAspect<ConveyorAspect>(otherBuilding.entity);
-                GenerationSystem.entityManager.SetComponentData(conv.conveyorDataComponent.ValueRO.head,
-                    new ConveyorChainDataComponent()
-                    {
-                        Sleep = false,
-                    });
-            }
+            if (otherBuilding.MyBuildingData.buildingDataID != 1) return;
+            
+            var conv = GenerationSystem.entityManager.GetAspect<ConveyorAspect>(otherBuilding.entity);
+            GenerationSystem.entityManager.SetComponentData(conv.conveyorDataComponent.ValueRO.head,
+                new ConveyorChainDataComponent()
+                {
+                    Sleep = false,
+                });
         }
 
         private void TryConnectInputs(BuildingLookUpData myLookUpData, BuildingLookUpData otherLookUpData,
@@ -57,42 +54,42 @@ namespace Project.Scripts.EntitySystem.Aspects
             var myInputPortInfoList = myLookUpData.GetInputPortInfo(MyBuildingData.directionID);
             var otherOutputPortInfoList =
                 otherLookUpData.GetOutputPortInfo(otherBuilding.MyBuildingData.directionID);
-            int2[] otherGridPositionList = ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
+            var otherGridPositionList = ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
 
-            foreach (PortInstantData myInputPortInstantData in myInputPortInfoList)
+            foreach (var myInputPortInstantData in myInputPortInfoList)
             {
                 if (otherBuilding.MyBuildingData.buildingDataID == 1 && MyBuildingData.buildingDataID ==1)
                 {
-                    int2 offset = otherBuildingRelativePosition -
-                         myLookUpData.GetBodyOffset(myInputPortInstantData.bodyPartID, MyBuildingData.directionID);
+                    var offset = otherBuildingRelativePosition -
+                                 myLookUpData.GetBodyOffset(myInputPortInstantData.bodyPartID, MyBuildingData.directionID);
                     if(!PlacedBuildingUtility.DoYouPointAtMe(otherBuilding.MyBuildingData.directionID,offset))continue;
                 }
-                byte currentInputPortID = myInputPortInstantData.portID;
+                var currentInputPortID = myInputPortInstantData.portID;
                 if (inputSlots[currentInputPortID].IsConnected) continue;
 
-                int2 point = MyBuildingData.origin +
-                             myLookUpData.GetBodyOffset(myInputPortInstantData.bodyPartID, MyBuildingData.directionID)+
-                             PlacedBuildingUtility.FacingDirectionToVector(myInputPortInstantData.direction);
+                var point = MyBuildingData.origin +
+                            myLookUpData.GetBodyOffset(myInputPortInstantData.bodyPartID, MyBuildingData.directionID)+
+                            PlacedBuildingUtility.FacingDirectionToVector(myInputPortInstantData.direction);
 
                 if (!TryGetBodyID(otherGridPositionList, point, otherBuilding.MyBuildingData, chunkDiff,
-                        out int bodyID)) continue;
+                        out var bodyID)) continue;
 
-                PortInstantData[] specificPortList =
+                var specificPortList =
                     otherOutputPortInfoList.Where(data => data.portID == bodyID).ToArray();
 
-                foreach (PortInstantData otherOutputPortInstantData in specificPortList)
+                foreach (var otherOutputPortInstantData in specificPortList)
                 {
-                    byte otherOutputPortID = otherOutputPortInstantData.portID;
+                    var otherOutputPortID = otherOutputPortInstantData.portID;
                     if (otherBuilding.outputSlots[otherOutputPortID].IsConnected) continue;
 
                     if (myInputPortInfoList[currentInputPortID].direction !=
                         PlacedBuildingUtility.GetOppositeDirection(otherOutputPortInstantData.direction)) continue;
                     
-                    inputSlots.ElementAt(currentInputPortID).EntityToPullFrom = otherBuilding.entity;
-                    inputSlots.ElementAt(currentInputPortID).outputIndex = otherOutputPortID;
+                    inputSlots.ElementAt(currentInputPortID).SetConnectedEntity(otherBuilding.entity);
+                    inputSlots.ElementAt(currentInputPortID).SetConnectedIndex(otherOutputPortID);
 
-                    otherBuilding.outputSlots.ElementAt(otherOutputPortID).EntityToPushTo = entity;
-                    otherBuilding.outputSlots.ElementAt(otherOutputPortID).InputIndex = currentInputPortID;
+                    otherBuilding.outputSlots.ElementAt(otherOutputPortID).SetConnectedEntity(entity);
+                    otherBuilding.outputSlots.ElementAt(otherOutputPortID).SetConnectedIndex(currentInputPortID);
                     break;
                 }
             }
@@ -101,38 +98,38 @@ namespace Project.Scripts.EntitySystem.Aspects
         private void TryConnectOutputs(BuildingLookUpData myLookUpData, BuildingLookUpData otherLookUpData,
             BuildingAspect otherBuilding, int2 chunkDiff)
         {
-            PortInstantData[] myOutputPortInfoList = myLookUpData.GetOutputPortInfo(MyBuildingData.directionID);
-            PortInstantData[] otherInputPortInfoList =
+            var myOutputPortInfoList = myLookUpData.GetOutputPortInfo(MyBuildingData.directionID);
+            var otherInputPortInfoList =
                 otherLookUpData.GetInputPortInfo(otherBuilding.MyBuildingData.directionID);
-            int2[] otherGridPositionList = ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
+            var otherGridPositionList = ResourcesUtility.GetGridPositionList(otherBuilding.MyBuildingData);
 
-            foreach (PortInstantData myOutputPortInstantData in myOutputPortInfoList)
+            foreach (var myOutputPortInstantData in myOutputPortInfoList)
             {
-                byte currentOutputPortID = myOutputPortInstantData.portID;
+                var currentOutputPortID = myOutputPortInstantData.portID;
                 if (outputSlots[currentOutputPortID].IsConnected) continue;
 
-                int2 point = MyBuildingData.origin +
-                             PlacedBuildingUtility.FacingDirectionToVector(myOutputPortInstantData.direction);
+                var point = MyBuildingData.origin +
+                            PlacedBuildingUtility.FacingDirectionToVector(myOutputPortInstantData.direction);
 
                 if (!TryGetBodyID(otherGridPositionList, point, otherBuilding.MyBuildingData, chunkDiff,
-                        out int bodyID)) continue;
+                        out var bodyID)) continue;
 
-                PortInstantData[] specificPortList =
+                var specificPortList =
                     otherInputPortInfoList.Where(data => data.portID == bodyID).ToArray();
 
-                foreach (PortInstantData otherInputPortInstantData in specificPortList)
+                foreach (var otherInputPortInstantData in specificPortList)
                 {
-                    byte otherInputPortID = otherInputPortInstantData.portID;
+                    var otherInputPortID = otherInputPortInstantData.portID;
                     if (otherBuilding.inputSlots[otherInputPortID].IsConnected) continue;
 
                     if (myOutputPortInfoList[currentOutputPortID].direction !=
                         PlacedBuildingUtility.GetOppositeDirection(otherInputPortInstantData.direction)) continue;
 
-                    outputSlots.ElementAt(currentOutputPortID).EntityToPushTo = otherBuilding.entity;
-                    outputSlots.ElementAt(currentOutputPortID).InputIndex = otherInputPortID;
+                    outputSlots.ElementAt(currentOutputPortID).SetConnectedEntity(otherBuilding.entity);
+                    outputSlots.ElementAt(currentOutputPortID).SetConnectedIndex(otherInputPortID);
 
-                    otherBuilding.inputSlots.ElementAt(otherInputPortID).EntityToPullFrom = entity;
-                    otherBuilding.inputSlots.ElementAt(otherInputPortID).outputIndex = currentOutputPortID;
+                    otherBuilding.inputSlots.ElementAt(otherInputPortID).SetConnectedEntity(entity);
+                    otherBuilding.inputSlots.ElementAt(otherInputPortID).SetConnectedIndex(currentOutputPortID);
                     break;
                 }
             }
@@ -143,7 +140,7 @@ namespace Project.Scripts.EntitySystem.Aspects
         {
             bodyID = -1;
 
-            for (int j = 0; j < gridPositionList.Length; j++)
+            for (var j = 0; j < gridPositionList.Length; j++)
             {
                 var isSame = point == gridPositionList[j] + otherBuildingData.origin + chunkDiff;
                 if (isSame is not { x: true, y: true }) continue;

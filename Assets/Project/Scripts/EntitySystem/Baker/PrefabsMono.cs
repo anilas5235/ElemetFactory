@@ -14,12 +14,11 @@ namespace Project.Scripts.EntitySystem.Baker
 {
     public class PrefabsMono : MonoBehaviour
     {
-        public GameObject 
-            ItemPrefab,
-            TilePrefab,
-            TileBackgroundPrefab;
+        public GameObject itemPrefab;
+        public GameObject tilePrefab;
+        public GameObject tileBackgroundPrefab;
 
-        public BuildingScriptableData[] BuildingScriptableData;
+        public GameObject[] buildings;
         private static ItemScriptableData[] GetItemScriptableDataData()
         {
             return Resources.LoadAll<ItemScriptableData>("Data/Items");
@@ -35,32 +34,22 @@ namespace Project.Scripts.EntitySystem.Baker
                 
                 var buffer = AddBuffer<EntityIDPair>(entity);
 
-                foreach (var scriptableData in authoring.BuildingScriptableData)
+
+                foreach (var prefab in authoring.buildings)
                 {
-                    var buildingPrefab = GetEntity(scriptableData.prefab, TransformUsageFlags.Dynamic);
-
-                    var inBuff = SetBuffer<InputSlot>(entity);
-                    for (var i = 0; i < scriptableData.InputOffsets.Length; i++)
-                    {
-                        inBuff.Add(new InputSlot());
-                    }
-
-                    var outBuff = SetBuffer<OutputSlot>(entity);
-                    for (var i = 0; i < scriptableData.OutputOffsets.Length; i++)
-                    {
-                        outBuff.Add(new OutputSlot());
-                    }
-
+                    var buildingAuthoring = prefab.GetComponent<BuildingMono>();
+                    var buildingPrefab = GetEntity(prefab, TransformUsageFlags.Dynamic);
+                    
                     buffer.Add(new EntityIDPair()
                     {
-                        ID = scriptableData.buildingID,
+                        ID = buildingAuthoring.BuildingID,
                         Entity = buildingPrefab,
                     });
-                    Debug.Log($"Crated Prefab for {scriptableData.nameString}");
+                    Debug.Log($"Crated Prefab for {buildingAuthoring.NameString}");
                 }
 
                 //Baking Items------------------------------------------------------------------------------------------
-                var prefabItem = GetEntity(authoring.ItemPrefab, TransformUsageFlags.Dynamic);
+                var prefabItem = GetEntity(authoring.itemPrefab, TransformUsageFlags.Dynamic);
                 
                 AddComponent(entity,new ItemPrefabsDataComponent()
                 {
@@ -74,8 +63,8 @@ namespace Project.Scripts.EntitySystem.Baker
                 AddComponent(entity,new TilePrefabsDataComponent()
                 {
                     Entity = entity,
-                    TilePrefab = GetEntity(authoring.TilePrefab,TransformUsageFlags.Dynamic),
-                    TileBackGroundPrefab = GetEntity(authoring.TileBackgroundPrefab, TransformUsageFlags.Dynamic),
+                    TilePrefab = GetEntity(authoring.tilePrefab,TransformUsageFlags.Dynamic),
+                    TileBackGroundPrefab = GetEntity(authoring.tileBackgroundPrefab, TransformUsageFlags.Dynamic),
                 });
                 Debug.Log($"Created Tile Prefabs");
             }

@@ -86,7 +86,7 @@ namespace Project.Scripts.EntitySystem.Systems
             foreach (var chunkDataAspect in chunks)
             {
                 var newChunkData = new ChunkSave();
-                var patches = chunkDataAspect._chunkData.ValueRO.ResourcePatches.ToArray();
+                var patches = chunkDataAspect.chunkData.ValueRO.ResourcePatches.ToArray();
                 newChunkData.chunkResourcePatches = new ChunkResourcePatch[patches.Length];
                 for (var i = 0; i < patches.Length; i++)
                 {
@@ -98,11 +98,11 @@ namespace Project.Scripts.EntitySystem.Systems
                     newChunkData.chunkResourcePatches[i] = patchData;
                 }
 
-                newChunkData.placedBuildingData = new PlacedBuildingData[chunkDataAspect._buildings.Length];
+                newChunkData.placedBuildingData = new PlacedBuildingData[chunkDataAspect.buildings.Length];
 
-                for (var i = 0; i < chunkDataAspect._buildings.Length; i++)
+                for (var i = 0; i < chunkDataAspect.buildings.Length; i++)
                 {
-                    var entityRef = chunkDataAspect._buildings[i];
+                    var entityRef = chunkDataAspect.buildings[i];
                     var buildingData = _buildingsLookUp.GetRefRO(entityRef.Entity).ValueRO.BuildingData;
                     newChunkData.placedBuildingData[i] = buildingData;
                 }

@@ -36,8 +36,7 @@ namespace Project.Scripts.EntitySystem.Aspects
                 });
             }
             
-            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer(
-                World.DefaultGameObjectInjectionWorld.Unmanaged);
+            var ecb = PlacingSystem.beginSimulationEntityCommandBuffer.CreateCommandBuffer();
 
             if (firstChain.Length > 0)
             {

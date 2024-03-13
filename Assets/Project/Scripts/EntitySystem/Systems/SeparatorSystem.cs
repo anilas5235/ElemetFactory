@@ -3,9 +3,7 @@ using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.Utilities;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
@@ -77,7 +75,7 @@ namespace Project.Scripts.EntitySystem.Systems
             //TODO: New Recipe system
             
             ECB.DestroyEntity(index, buildingAspect.inputSlots[0].SlotContent);
-            buildingAspect.inputSlots.ElementAt(0).SlotContent = default;
+            buildingAspect.inputSlots.ElementAt(0).SetSlotContent();
         }
     }
 }

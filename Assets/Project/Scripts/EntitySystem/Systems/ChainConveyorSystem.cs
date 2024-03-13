@@ -3,9 +3,7 @@ using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.EntitySystem.Components.DataObject;
 using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.ItemSystem;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
@@ -16,7 +14,6 @@ namespace Project.Scripts.EntitySystem.Systems
     [UpdateInGroup(typeof(VariableRateSimulationSystemGroup),OrderFirst = true)]
     public partial struct ChainConveyorSystem : ISystem
     {
-        private EntityQuery otherBuildingsQuery;
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -27,11 +24,6 @@ namespace Project.Scripts.EntitySystem.Systems
                 timeSinceLastTick = 0,
                 Rate = 1f
             });
-            
-            otherBuildingsQuery = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<BuildingDataComponent>()
-                .WithAbsent<ConveyorDataComponent>()
-                .Build(ref state);
         }
         
         public void OnUpdate(ref SystemState state)
@@ -68,8 +60,8 @@ namespace Project.Scripts.EntitySystem.Systems
         [NativeDisableContainerSafetyRestriction] public ComponentLookup<ItemEntityStateDataComponent> itemStates;
         public EntityCommandBuffer.ParallelWriter ECB;
 
-        private int changes;
-        private bool firstConnected, lastConnected;
+        private int _changes;
+        private bool _firstConnected, _lastConnected;
         
         private void Execute([ChunkIndexInQuery]int index,Entity entity,DynamicBuffer<EntityRefBufferElement> chain, ConveyorChainDataComponent chainDataComponent)
         {
@@ -77,26 +69,26 @@ namespace Project.Scripts.EntitySystem.Systems
             
             for (var linkIndex = chain.Length - 1; linkIndex >= 0; linkIndex--)
             {
-                Entity currentBuilding = chain[linkIndex].Entity;
-                DynamicBuffer<InputSlot> currentInput = inputsLookup[currentBuilding];
-                DynamicBuffer<OutputSlot> currentOutput = outputsLookup[currentBuilding];
+                var currentBuilding = chain[linkIndex].Entity;
+                var currentInput = inputsLookup[currentBuilding];
+                var currentOutput = outputsLookup[currentBuilding];
 
                 if (linkIndex == chain.Length - 1)
                 {
-                    lastConnected = currentOutput[0].IsConnected;
-                    if (lastConnected)
+                    _lastConnected = currentOutput[0].IsConnected;
+                    if (_lastConnected)
                     {
-                        Entity targetBuilding = currentOutput[0].EntityToPushTo;
-                        DynamicBuffer<InputSlot> targetInput = inputsLookup[targetBuilding];
-                        int targetSlotIndex = currentOutput[0].InputIndex;
-
+                        var targetBuilding = currentOutput[0].ConnectedEntity;
+                        var targetInput = inputsLookup[targetBuilding];
+                        var targetSlotIndex = currentOutput[0].ConnectedIndex;
+                        
                         if (currentOutput[0].IsOccupied && !targetInput[targetSlotIndex].IsOccupied)
                         {
-                            targetInput.ElementAt(targetSlotIndex).SlotContent = currentOutput[0].SlotContent;
-                            currentOutput.ElementAt(0).SlotContent = Entity.Null;
+                            targetInput.ElementAt(targetSlotIndex).SetSlotContent(currentOutput[0].SlotContent);
+                            currentOutput.ElementAt(0).SetSlotContent(default);
                             UpdateItemState(index, targetInput[targetSlotIndex].SlotContent,
-                                targetInput[targetSlotIndex].Position, itemStates, ECB);
-                            changes++;
+                                targetInput[targetSlotIndex].WorldPosition, itemStates, ECB);
+                            _changes++;
                         }
                     }
                 }
@@ -104,62 +96,58 @@ namespace Project.Scripts.EntitySystem.Systems
                 //push input to output
                 if (!currentOutput[0].IsOccupied && currentInput[0].IsOccupied)
                 {
-                    currentOutput.ElementAt(0).SlotContent = currentInput[0].SlotContent;
-                    currentInput.ElementAt(0).SlotContent = Entity.Null;
-                    UpdateItemState(index, currentOutput[0].SlotContent, currentOutput[0].Position, itemStates, ECB);
-                    changes++;
+                    currentOutput.ElementAt(0).SetSlotContent(currentInput[0].SlotContent);
+                    currentInput.ElementAt(0).SetSlotContent(default);
+                    UpdateItemState(index, currentOutput[0].SlotContent, currentOutput[0].WorldPosition, itemStates, ECB);
+                    _changes++;
                 }
 
                 if (linkIndex > 0)
                 {
-                    Entity nextBuilding = chain[linkIndex - 1].Entity;
-                    DynamicBuffer<OutputSlot> nextOutput = outputsLookup[nextBuilding];
+                    var nextBuilding = chain[linkIndex - 1].Entity;
+                    var nextOutput = outputsLookup[nextBuilding];
                     //pull form next link
-                    if (!currentInput[0].IsOccupied && nextOutput[0].IsOccupied)
-                    {
-                        currentInput.ElementAt(0).SlotContent = nextOutput[0].SlotContent;
-                        nextOutput.ElementAt(0).SlotContent = Entity.Null;
-                        UpdateItemState(index, currentInput[0].SlotContent, currentInput[0].Position, itemStates, ECB);
-                    }
+                    if (currentInput[0].IsOccupied || !nextOutput[0].IsOccupied) continue;
+                    
+                    currentInput.ElementAt(0).SetSlotContent(nextOutput[0].SlotContent);
+                    nextOutput.ElementAt(0).SetSlotContent(default);
+                    UpdateItemState(index, currentInput[0].SlotContent, currentInput[0].WorldPosition, itemStates, ECB);
                 }
                 else
                 {
-                    firstConnected = currentInput[0].IsConnected;
-                    if (firstConnected)
-                    {
-                        Entity lastBuilding = currentInput[0].EntityToPullFrom;
-                        DynamicBuffer<OutputSlot> lastOutput = outputsLookup[lastBuilding];
-                        int lastSlotIndex = currentInput[0].outputIndex;
+                    _firstConnected = currentInput[0].IsConnected;
+                    if (!_firstConnected) continue;
+                    
+                    var lastBuilding = currentInput[0].ConnectedEntity;
+                    var lastOutput = outputsLookup[lastBuilding];
+                    var lastSlotIndex = currentInput[0].ConnectedIndex;
 
-                        //pull form next link
-                        if (!currentInput[0].IsOccupied && lastOutput[lastSlotIndex].IsOccupied)
-                        {
-                            currentInput.ElementAt(0).SlotContent = lastOutput[lastSlotIndex].SlotContent;
-                            lastOutput.ElementAt(lastSlotIndex).SlotContent = Entity.Null;
-                            UpdateItemState(index, currentInput[0].SlotContent, currentInput[0].Position, itemStates,
-                                ECB);
-                            changes++;
-                        }
-                    }
+                    //pull form next link
+                    if (currentInput[0].IsOccupied || !lastOutput[lastSlotIndex].IsOccupied) continue;
+                    
+                    currentInput.ElementAt(0).SetSlotContent(lastOutput[lastSlotIndex].SlotContent);
+                    lastOutput.ElementAt(lastSlotIndex).SetSlotContent(default);
+                    UpdateItemState(index, currentInput[0].SlotContent, currentInput[0].WorldPosition, itemStates,
+                        ECB);
+                    _changes++;
                 }
             }
 
-            if (changes < 1 && !firstConnected && !lastConnected)
-            {
-                chainDataComponent.Sleep = true;
-                ECB.SetComponent(index,entity,chainDataComponent);
-            }
+            if (_changes >= 1 || _firstConnected || _lastConnected) return;
+            
+            chainDataComponent.Sleep = true;
+            ECB.SetComponent(index,entity,chainDataComponent);
         }
-        
-        public static void UpdateItemState(int index,Entity itemEntity, float3 destination,
-            ComponentLookup<ItemEntityStateDataComponent> itemStates, EntityCommandBuffer.ParallelWriter ECB)
+
+        private static void UpdateItemState(int index,Entity itemEntity, float3 destination,
+            ComponentLookup<ItemEntityStateDataComponent> itemStates, EntityCommandBuffer.ParallelWriter ecb)
         {
             var itemState = itemStates[itemEntity];
             itemState.PreviousPos = itemState.DestinationPos;
             itemState.DestinationPos = destination;
             itemState.Progress = 0;
             itemState.Arrived = false;
-            ECB.SetComponent(index, itemEntity, itemState);
+            ecb.SetComponent(index, itemEntity, itemState);
         }
     }
 }

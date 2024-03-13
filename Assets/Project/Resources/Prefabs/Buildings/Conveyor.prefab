@@ -109,3 +109,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5d743a16aea4073b569c60ff9125c50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nameString: Conveyor
+  buildingID: 1
+  neededTiles:
+  - x: 0
+    y: 0
+  inputOffsets:
+  - bodyPartID: 0
+    direction: 0
+    portID: 0
+  outputOffsets:
+  - bodyPartID: 0
+    direction: 2
+    portID: 0

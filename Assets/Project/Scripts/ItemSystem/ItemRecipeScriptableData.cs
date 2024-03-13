@@ -7,7 +7,7 @@ namespace Project.Scripts.ItemSystem
     public class ItemRecipeScriptableData : ScriptableObject
     {
         public string trivialName;
-        public BuildingScriptableData building;
+        public int buildingID;
         public ItemScriptableData[] ingredients;
         public ItemScriptableData[] products;
     }

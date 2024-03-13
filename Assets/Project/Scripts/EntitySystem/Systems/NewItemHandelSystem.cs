@@ -1,4 +1,5 @@
-﻿using Project.Scripts.EntitySystem.Components;
+﻿using Project.Scripts.EntitySystem.Buffer;
+using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Item;
 using Project.Scripts.ItemSystem;
 using Unity.Burst;
@@ -41,7 +42,7 @@ namespace Project.Scripts.EntitySystem.Systems
         private void Execute(Entity entity,[ChunkIndexInQuery] int index, NewItemRefHandelDataComponent itemRefHandelDataComponent)
         {
             var buffer = outputsLookup[entity];
-            buffer.ElementAt(itemRefHandelDataComponent.SlotNumber).SlotContent = itemRefHandelDataComponent.entity;
+            buffer.ElementAt(itemRefHandelDataComponent.SlotNumber).SetSlotContent(itemRefHandelDataComponent.entity);
             ECB.RemoveComponent<NewItemRefHandelDataComponent>(index,entity);
         }
     }
