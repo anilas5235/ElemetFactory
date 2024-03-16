@@ -1,7 +1,5 @@
-using System;
 using Project.Scripts.EntitySystem.Aspects;
 using Project.Scripts.EntitySystem.Buffer;
-using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Project.Scripts.EntitySystem.Systems;
 using Unity.Collections;
 using Unity.Entities;
@@ -31,7 +29,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                 {
                     var pos = new int2(x, y);
                     var cellWorldPosition = ChunkDataAspect.GetCellWorldPosition(pos, WorldPosition);
-                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition,  chunkPosition, ItemSystem.Item.EmptyItem.ItemID);
+                    cellObjects[ChunkDataAspect.GetAryIndex(pos)] = new CellObject(pos, cellWorldPosition,  chunkPosition, -1);
                 }
             }
             
@@ -50,7 +48,7 @@ namespace Project.Scripts.EntitySystem.Components.Grid
                         Position = cellWorldPosition + new float3(0, 0, 1),
                         Scale = CellSize,
                     });
-                    cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,resourcePatch.ItemID);
+                    cellObjects[ChunkDataAspect.GetAryIndex(position)] = new CellObject(position, cellWorldPosition,chunkPosition,resourcePatch.itemID);
                 }
             }
 

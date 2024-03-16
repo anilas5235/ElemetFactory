@@ -1,32 +1,26 @@
-﻿using Project.Scripts.EntitySystem.Buffer;
+﻿using Project.Scripts.EntitySystem.BlobAssets;
+using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.ItemSystem;
+using Project.Scripts.EntitySystem.Components.MaterialModify;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Transforms;
 
 namespace Project.Scripts.Utilities
 {
     public static class ItemEntityUtility
     {
-        public static NativeKeyValueArrays<int, Entity> ItemPrefabs { get; private set;}
-        public static NativeKeyValueArrays<int, Entity> TilePrefabs { get; private set;}
-
-        public static void SetItemPrefabs(NativeKeyValueArrays<int, Entity> itemPrefabs)
-        {
-            ItemPrefabs = itemPrefabs;
-        }
-        
-        public static void SetTilePrefabs(NativeKeyValueArrays<int, Entity> tilePrefabs)
-        {
-            TilePrefabs = tilePrefabs;
-        }
-        
         public static Entity CreateItemEntity(int index, Entity building, OutputSlot outputSlot, int itemID,
-            EntityCommandBuffer.ParallelWriter ecb, int worldScale)
+            EntityCommandBuffer.ParallelWriter ecb, int worldScale, BlobAssetReference<BlobGamePrefabData> blobPrefs)
         {
 
-            var itemEntity = InstantiateItemEntity(index, ecb, itemID);
+            var itemEntity = ecb.Instantiate(index, blobPrefs.Value.ItemPrefab);
+            
+            ecb.SetComponent(index,itemEntity,new AtlasModifier()
+            {
+                Value = blobPrefs.Value.GetAtlasPositionForItem(itemID),
+            });
 
             ecb.SetComponent(index, itemEntity, new ItemEntityStateDataComponent()
             {
@@ -54,20 +48,6 @@ namespace Project.Scripts.Utilities
                 SlotNumber = outputSlot.OwnIndex,
             });
             return itemEntity;
-        }
-
-        private static Entity InstantiateItemEntity(int index, EntityCommandBuffer.ParallelWriter ecb, int itemID)
-        {
-            var prefab = ItemPrefabs.Values[0];
-            for (var i = 0; i < ItemPrefabs.Keys.Length; i++)
-            {
-                var itemPrefabsKey = ItemPrefabs.Keys[i];
-                if (itemPrefabsKey == itemID)
-                {
-                    prefab = ItemPrefabs.Values[i];
-                }
-            }
-            return ecb.Instantiate(index, prefab);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Project.Scripts.ItemSystem;
 using Unity.Collections;
 using Unity.Mathematics;
 
@@ -9,6 +8,6 @@ namespace Project.Scripts.EntitySystem.Components.Grid
     public struct ResourcePatch
     {
         public NativeArray<int2> Positions;
-        public int ItemID;
+        public int itemID;
     }
 }

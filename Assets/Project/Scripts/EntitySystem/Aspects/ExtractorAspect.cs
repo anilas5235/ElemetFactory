@@ -1,6 +1,5 @@
 ﻿using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.Item;
-using Project.Scripts.ItemSystem;
 using Unity.Entities;
 
 namespace Project.Scripts.EntitySystem.Aspects

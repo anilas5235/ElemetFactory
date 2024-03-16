@@ -1,7 +1,6 @@
-using Project.Scripts.ItemSystem;
+using Project.Scripts.ScriptableData;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
 namespace Project.Scripts.Experimental
 {

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-namespace Project.Scripts.ItemSystem
+namespace Project.Scripts.ScriptableData
 {
-    [CreateAssetMenu(fileName = "ItemScriptableData", menuName = "ElementFactory/Data/Item", order = 0)]
+    [CreateAssetMenu(fileName = "ItemScriptableData", menuName = "Factory/Data/Item", order = 0)]
     public class ItemScriptableData : ScriptableObject
     {
         public string nameString;

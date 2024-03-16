@@ -98,7 +98,7 @@ namespace Project.Scripts.EntitySystem.Others
                 patches[index] = new ResourcePatch()
                 {
                     Positions = tempData.Positions,
-                    ItemID = tempData.ItemID,
+                    itemID = tempData.itemID,
                 };
             }
 
@@ -132,7 +132,7 @@ namespace Project.Scripts.EntitySystem.Others
             return new ResourcePatch()
             {
                 Positions = new NativeArray<int2>(cellPositions.AsArray(), Allocator.Temp),
-                ItemID = resourceID,
+                itemID = resourceID,
             };
         }
         private int GetPatchSize(int numberOfPatches = 1)

@@ -4,6 +4,7 @@ namespace Project.Scripts.Utilities
 {
     public static class GeneralUtilities
     {
+        private static Camera cam;
         public static TextMesh CreateWorldText(string text,Vector3 localPosition = default, int fontSize = 40,
             Color color = default, Transform parent = null,  TextAnchor textAnchor = TextAnchor.MiddleCenter,
             TextAlignment textAlignment = TextAlignment.Center, int sortingOrder =0)
@@ -42,13 +43,14 @@ namespace Project.Scripts.Utilities
 
         public static Vector3 GetMousePositionWithZ()
         {
-            return Camera.main != null ? Camera.main.ScreenToWorldPoint(Input.mousePosition) : default;
+            if (!cam) { cam = Camera.main;}
+            return cam ? cam.ScreenToWorldPoint(Input.mousePosition) : default;
         }
         
         public static float GausFunction(float x, float a, float b, float c)
         {
-            float frontFactor = 1 / a * Mathf.Sqrt(2 * Mathf.PI);
-            float exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
+            var frontFactor = 1 / a * Mathf.Sqrt(2 * Mathf.PI);
+            var exponential = (-1 / 2f) * Mathf.Pow((x - b) / c, 2);
             return frontFactor * Mathf.Exp(exponential);
         }
         

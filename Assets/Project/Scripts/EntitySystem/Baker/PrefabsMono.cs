@@ -1,14 +1,7 @@
-﻿using System;
-using Project.Scripts.Buildings.BuildingFoundation;
-using Project.Scripts.EntitySystem.Buffer;
-using Project.Scripts.EntitySystem.Components.Buildings;
+﻿using Project.Scripts.EntitySystem.Buffer;
 using Project.Scripts.EntitySystem.Components.DataObject;
-using Project.Scripts.EntitySystem.Components.Tags;
-using Project.Scripts.ItemSystem;
 using Unity.Entities;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Project.Scripts.EntitySystem.Baker
 {
@@ -19,10 +12,6 @@ namespace Project.Scripts.EntitySystem.Baker
         public GameObject tileBackgroundPrefab;
 
         public GameObject[] buildings;
-        private static ItemScriptableData[] GetItemScriptableDataData()
-        {
-            return Resources.LoadAll<ItemScriptableData>("Data/Items");
-        }
         
         public class PrefabsBaker : Baker<PrefabsMono>
         {
@@ -33,7 +22,6 @@ namespace Project.Scripts.EntitySystem.Baker
                 //Baking Buildings--------------------------------------------------------------------------------------
                 
                 var buffer = AddBuffer<EntityIDPair>(entity);
-
 
                 foreach (var prefab in authoring.buildings)
                 {

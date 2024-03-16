@@ -1,4 +1,5 @@
 using Project.Scripts.EntitySystem.Aspects;
+using Project.Scripts.EntitySystem.BlobAssets;
 using Project.Scripts.EntitySystem.Components;
 using Project.Scripts.EntitySystem.Components.Buildings;
 using Project.Scripts.Utilities;
@@ -38,6 +39,7 @@ namespace Project.Scripts.EntitySystem.Systems
                 {
                     ECB = ecb,
                     WorldScale = GenerationSystem.WorldScale,
+                    BlobGamePrefsAssetReference = WorldSetUpSystem.BlobGameAssetReference,
                 }.ScheduleParallel(new JobHandle());
                 
                 _endVariableECBSys.AddJobHandleForProducer(dep);
@@ -54,6 +56,7 @@ namespace Project.Scripts.EntitySystem.Systems
     {
         public EntityCommandBuffer.ParallelWriter ECB;
         public int WorldScale;
+        public BlobAssetReference<BlobGamePrefabData> BlobGamePrefsAssetReference;
 
         private void Execute([ChunkIndexInQuery] int index, ExtractorAspect extractorAspect)
         {
@@ -66,7 +69,7 @@ namespace Project.Scripts.EntitySystem.Systems
             }
 
             ItemEntityUtility.CreateItemEntity(index,extractorAspect.entity ,extractorAspect.outputSlots[0],
-                extractorAspect.ResourceId, ECB, WorldScale);
+                extractorAspect.ResourceId, ECB, WorldScale,BlobGamePrefsAssetReference);
         }
     }
 }
