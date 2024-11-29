@@ -215,8 +215,8 @@ namespace Project.Scripts.EntitySystem.Systems
                 chunkSaves.Add(newChunkData);
             }
             
-            WorldSaveHandler.CurrentWorldSave.chunkSaves = chunkSaves.ToArray();
-            WorldSaveHandler.SaveWorldToFile();
+            //WorldSaveHandler.CurrentWorldSave.chunkSaves = chunkSaves.ToArray();
+            //WorldSaveHandler.SaveWorldToFile();
             chunks.Dispose();
         }
     }
